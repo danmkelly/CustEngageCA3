@@ -710,6 +710,7 @@ function guidedSearch(e) {
   try { outcomeData = JSON.parse(s.outcome); } catch(ex) { showError('Please select a valid outcome.'); return false; }
   state.lastQuery = {
     type: 'guided',
+    query: [s.subject, s.strand, outcomeData.code, (outcomeData.label || outcomeData.name)].filter(Boolean).join(' — '),
     subject: s.subject,
     strand: s.strand,
     stage: s.stage,

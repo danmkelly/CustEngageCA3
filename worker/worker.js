@@ -1029,9 +1029,9 @@ async function handleQuery(request, env) {
     return jsonResponse({ error: "Invalid JSON body" }, 400);
   }
 
-  if (!body.query && body.mode !== "browse") {
+  if (!body.query && !body.outcome_code && body.mode !== "browse") {
     return jsonResponse(
-      { error: "Missing required field: query" },
+      { error: "Missing required field: query or outcome_code" },
       400
     );
   }
