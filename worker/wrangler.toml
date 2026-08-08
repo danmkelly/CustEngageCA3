@@ -1,0 +1,17 @@
+name = "teachers-pet"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+
+[vars]
+CATALOGUE_FILE = "Teaching Resources/Catalogue.xlsx"
+AUDIT_SHEET = "Audit"
+
+# NOTE: Following secrets must be set before deploy:
+#   wrangler secret put DEEPSEEK_API_KEY
+#   wrangler secret put MS_TENANT_ID
+#   wrangler secret put MS_CLIENT_ID
+#   wrangler secret put MS_CLIENT_SECRET
+#   wrangler secret put GEMINI_API_KEY
+#
+# Secrets are referenced in code via env.DEEPSEEK_API_KEY etc.
+# They are NOT declared in [[secrets]] blocks (deprecated in newer wrangler).

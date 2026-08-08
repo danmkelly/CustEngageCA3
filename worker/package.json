@@ -1,0 +1,10 @@
+{
+  "name": "teachers-pet",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Teacher's Pet — Agentic Resource Pipeline (CA3 Final Project)",
+  "main": "worker.js",
+  "dependencies": {
+    "jszip": "^3.10.1"
+  }
+}
