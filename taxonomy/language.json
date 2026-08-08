@@ -1,0 +1,139 @@
+{
+  "_description": "Primary Language Curriculum (2019) — English strand outcomes. TF codes with stage progression.",
+  "_source": "curriculumonline.ie/primary/curriculum-areas/primary-language/",
+  "_stages": {
+    "C1": "Junior Infants & Senior Infants",
+    "C2": "First & Second Class",
+    "C3": "Third & Fourth Class",
+    "C4": "Fifth & Sixth Class"
+  },
+  "strands": {
+    "Oral Language": {
+      "elements": {
+        "Communicating": {
+          "outcomes": [
+            {"code": "TF1", "label": "Engagement, listening and attention"},
+            {"code": "TF2", "label": "Motivation and choice"},
+            {"code": "TF3", "label": "Social conventions and awareness of others"},
+            {"code": "TF4", "label": "Sentence structure and grammar"},
+            {"code": "TF5", "label": "Vocabulary"}
+          ]
+        },
+        "Understanding": {
+          "outcomes": [
+            {"code": "TF6", "label": "Demonstration of understanding"},
+            {"code": "TF7", "label": "Requests, questions and interactions"},
+            {"code": "TF8", "label": "Categorisation"}
+          ]
+        },
+        "Exploring and Using": {
+          "outcomes": [
+            {"code": "TF9", "label": "Retelling and elaboration"},
+            {"code": "TF10", "label": "Playful and creative use of language"},
+            {"code": "TF11", "label": "Information giving, explanation and justification"},
+            {"code": "TF12", "label": "Description, prediction and reflection"}
+          ]
+        }
+      }
+    },
+    "Reading": {
+      "elements": {
+        "Engagement": {
+          "outcomes": [
+            {"code": "TF1", "label": "Engagement"},
+            {"code": "TF2", "label": "Motivation and choice"}
+          ]
+        },
+        "Communicating": {
+          "outcomes": [
+            {"code": "TF1", "label": "Engagement"},
+            {"code": "TF2", "label": "Motivation and choice"},
+            {"code": "TF3", "label": "Conventions of print and sentence structure"},
+            {"code": "TF4", "label": "Phonological and phonemic awareness"},
+            {"code": "TF5", "label": "Phonics, word recognition, and word study"},
+            {"code": "TF6", "label": "Vocabulary"}
+          ]
+        },
+        "Understanding": {
+          "outcomes": [
+            {"code": "TF7", "label": "Purpose, genre, and voice"},
+            {"code": "TF8", "label": "Response and author's intent"}
+          ]
+        },
+        "Exploring and Using": {
+          "outcomes": [
+            {"code": "TF9", "label": "Comprehension"},
+            {"code": "TF10", "label": "Fluency and self-correction"}
+          ]
+        }
+      }
+    },
+    "Writing": {
+      "elements": {
+        "Communicating": {
+          "outcomes": [
+            {"code": "TF1", "label": "Engagement"},
+            {"code": "TF2", "label": "Motivation and choice"},
+            {"code": "TF3", "label": "Conventions of print and sentence structure"},
+            {"code": "TF4", "label": "Spelling and word study"},
+            {"code": "TF5", "label": "Vocabulary"}
+          ]
+        },
+        "Understanding": {
+          "outcomes": [
+            {"code": "TF6", "label": "Purpose, genre, and voice"},
+            {"code": "TF7", "label": "Writing process and creating text"}
+          ]
+        },
+        "Exploring and Using": {
+          "outcomes": [
+            {"code": "TF8", "label": "Response and author's intent"},
+            {"code": "TF9", "label": "Handwriting and presentation"}
+          ]
+        }
+      }
+    }
+  },
+  "outcome_prose": {
+    "Reading": {
+      "TF4": {
+        "C1": "play with, recognise, and manipulate sounds to develop phonological and phonemic awareness",
+        "C2": "use phonological and phonemic awareness to decode and encode words",
+        "C3": "use a range of word identification strategies flexibly",
+        "C4": "use a comprehensive range of word identification strategies fluently"
+      },
+      "TF5": {
+        "C1": "recognise, name, and sound all lower-case and upper-case letters and identify common sounds",
+        "C2": "use phonic knowledge and a range of word identification strategies to read unfamiliar words",
+        "C3": "use phonic knowledge and a range of word identification strategies with flexibility and confidence",
+        "C4": "read widely and use a full range of word identification strategies flexibly and automatically"
+      },
+      "TF9": {
+        "C1": "recall and talk about significant events and details in a text",
+        "C2": "recall and discuss the main events, information, or ideas in a text",
+        "C3": "retrieve, interpret, and integrate information from a range of texts",
+        "C4": "synthesise, and critically evaluate information from a wide variety of texts"
+      },
+      "TF10": {
+        "C1": "read short, structured texts at an appropriate pace with understanding",
+        "C2": "read a range of texts accurately and with understanding at an appropriate pace",
+        "C3": "read a range of texts accurately, fluently, and with expression",
+        "C4": "read a wide range of challenging texts fluently, accurately, and with expression"
+      }
+    },
+    "Writing": {
+      "TF4": {
+        "C1": "use approximate spelling based on developing knowledge of letter-sound relationships",
+        "C2": "spell a range of high-frequency words and use phonetic strategies to attempt unfamiliar words",
+        "C3": "spell a wide range of words accurately using a range of spelling strategies",
+        "C4": "spell accurately and use spelling resources effectively"
+      },
+      "TF9": {
+        "C1": "develop a satisfactory and legible style of handwriting",
+        "C2": "use a clear and legible handwriting style, developing fluency and speed",
+        "C3": "use a fluent, legible, and joined handwriting style",
+        "C4": "produce legible, fluent, and efficiently-presented handwritten text"
+      }
+    }
+  }
+}

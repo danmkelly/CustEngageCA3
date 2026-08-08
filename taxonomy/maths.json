@@ -1,0 +1,114 @@
+{
+  "_description": "Primary Mathematics Curriculum (2023) — strand and stage structure. Progression Continua PC1–PC12.",
+  "_source": "curriculumonline.ie/primary/curriculum-areas/mathematics/",
+  "_stages": {
+    "S1": "Junior Infants & Senior Infants",
+    "S2": "First & Second Class",
+    "S3": "Third & Fourth Class",
+    "S4": "Fifth & Sixth Class"
+  },
+  "strands": {
+    "Algebra": {
+      "strand_units": [
+        {
+          "id": "PC1",
+          "name": "Patterns, rules and relationships",
+          "description": "Exploring, extending, and creating patterns and sequences; identifying rules that describe pattern structure; using rules to make predictions"
+        },
+        {
+          "id": "PC2",
+          "name": "Expressions and equations",
+          "description": "Understanding and using mathematical expressions, equations, and variables"
+        }
+      ]
+    },
+    "Data and Chance": {
+      "strand_units": [
+        {
+          "id": "PC3",
+          "name": "Data",
+          "description": "Collecting, representing, interpreting, and analysing data"
+        },
+        {
+          "id": "PC4",
+          "name": "Chance",
+          "description": "Understanding probability, likelihood, and uncertainty"
+        }
+      ]
+    },
+    "Measures": {
+      "strand_units": [
+        {
+          "id": "PC5",
+          "name": "Time, Money",
+          "description": "Understanding, measuring, and calculating time and money"
+        },
+        {
+          "id": "PC6",
+          "name": "Length, area, weight, capacity",
+          "description": "Understanding, measuring, and comparing length, area, weight, and capacity"
+        }
+      ]
+    },
+    "Number": {
+      "strand_units": [
+        {
+          "id": "PC8",
+          "name": "Uses of number",
+          "description": "Understanding how numbers are used in everyday life and across the curriculum"
+        },
+        {
+          "id": "PC9",
+          "name": "Numeration and counting",
+          "description": "Developing counting skills, number sense, and understanding of number systems"
+        },
+        {
+          "id": "PC10",
+          "name": "Place value and base ten",
+          "description": "Understanding place value, the base-ten system, and number structure"
+        },
+        {
+          "id": "PC11",
+          "name": "Sets and operations",
+          "description": "Understanding and using addition, subtraction, multiplication, division, and their relationships"
+        },
+        {
+          "id": "PC12",
+          "name": "Fractions",
+          "description": "Understanding fractions, decimals, percentages, and their relationships"
+        }
+      ]
+    },
+    "Shape and Space": {
+      "strand_units": [
+        {
+          "id": "PC7",
+          "name": "Spatial awareness, Shape, Transformation",
+          "description": "Understanding spatial relationships, properties of shapes, symmetry, and transformations (turns, angles)"
+        }
+      ]
+    }
+  },
+  "key_outcomes_by_stage": {
+    "Number": {
+      "PC9": {
+        "S1": "develop a sense of ten as the foundation for place value and counting; count, compare, and order numbers to 10",
+        "S2": "count, compare, and order numbers to 100; understand place value to 99",
+        "S3": "count, compare, and order numbers to 1,000; understand place value to 999",
+        "S4": "count, compare, and order numbers to at least 10,000; understand place value to 9,999"
+      },
+      "PC11": {
+        "S1": "develop an understanding of addition and subtraction as combining and partitioning sets",
+        "S2": "develop and use addition and subtraction facts to 20; add and subtract two-digit numbers",
+        "S3": "develop and use multiplication and division facts; multiply and divide within 100",
+        "S4": "use the four operations fluently with whole numbers and decimals"
+      },
+      "PC12": {
+        "S1": "recognise and create halves of sets and shapes",
+        "S2": "identify halves, quarters, and eighths; compare and order fractions with like denominators",
+        "S3": "understand fractions as numbers; find equivalent fractions; add and subtract fractions with like denominators",
+        "S4": "compare, order, add, and subtract fractions with unlike denominators; understand and use decimals and percentages"
+      }
+    }
+  }
+}
