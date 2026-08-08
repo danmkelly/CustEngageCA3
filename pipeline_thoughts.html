@@ -87,11 +87,11 @@
 <div class="tabs">
   <button class="tab-btn active" onclick="showTab('scope')">Scope</button>
   <button class="tab-btn" onclick="showTab('agents')">Agents (11)</button>
+  <button class="tab-btn" onclick="showTab('references')">References</button>
   <button class="tab-btn" onclick="showTab('decisions')">Decisions (7)</button>
   <button class="tab-btn" onclick="showTab('architecture')">Architecture</button>
   <button class="tab-btn" onclick="showTab('ux')">UX Design</button>
   <button class="tab-btn" onclick="showTab('catalogue')">Cataloguing</button>
-  <button class="tab-btn" onclick="showTab('references')">References</button>
   <button class="tab-btn journey" onclick="showTab('journey')">Design Journey Log</button>
 </div>
 
@@ -246,6 +246,67 @@
 <p>Failing Keelin means content doesn't reach the teacher. Max 2 Maker attempts. After 2 failures, the gap is left unfilled and the teacher is told honestly. This is trust calibration (Week 2: Lee &amp; See, 2004) — the system knows its limits and communicates them.</p>
 
 <p><strong>Cross-team handoff:</strong> Dev-Manager delivers deployed Worker + populated catalogue + taxonomy JSONs + agent definitions + signed-off build log → Ops-Manager takes ownership. Dev team archived, not retired; spun back up if rubric changes or bugs found.</p>
+
+</div>
+
+
+<!-- ============================================================== -->
+<!-- TAB: REFERENCES -->
+<!-- ============================================================== -->
+<div class="tab-panel" id="tab-references">
+
+<h2>Reference Taxonomies — Tying Resources to Outcomes</h2>
+
+<p>Resources get tagged not just by what they <em>are</em> but by what curriculum outcome they <em>serve</em>. This unlocks the two capabilities the brief requires: outcome-to-resource mapping, and gap detection.</p>
+
+<h3>Two regimes, one system</h3>
+
+<table>
+  <tr><th>Regime</th><th>Subjects</th><th>Outcome format</th><th>CA3 scope</th></tr>
+  <tr>
+    <td><strong>New framework</strong> (with codes)</td>
+    <td>Primary Language (2019), Primary Maths (2023)</td>
+    <td>TF codes (Language), Progression Continua PC1–PC12 (Maths)</td>
+    <td><span class="tag tag-green">Full outcome mapping</span></td>
+  </tr>
+  <tr>
+    <td><strong>1999 curriculum</strong> (prose only)</td>
+    <td>SESE, SPHE, PE, Arts</td>
+    <td>No outcome codes. Strand/unit prose per class band.</td>
+    <td><span class="tag tag-amber">Skeleton only</span> (synthetic strand/stage codes, no outcome matching)</td>
+  </tr>
+</table>
+
+<h4>Example: Language Curriculum TF codes</h4>
+<pre>Strand: Reading → Element: Understanding → Outcome 7: Purpose, genre, and voice
+Stage 1 (Infants): "show understanding through body language, facial expression..."
+Stage 2 (1st–2nd): "identify the purpose, genre, and voice of a text..."
+Stage 3 (3rd–4th): "compare and contrast the purpose, genre, and voice..."
+Stage 4 (5th–6th): "evaluate how purpose, genre, and voice shape meaning..."
+→ Code: TF7, C3 = Purpose/genre/voice, Stage 3 (3rd–4th class)</pre>
+
+<h4>Example: UFLI programme reference</h4>
+<pre>Lesson 54: VCe a_e pattern ("cake", "gate", "same")
+Cross-reference: Primary Language → Reading → TF4 (Phonics/word recognition) → Stage 2
+Query: "UFLI Lesson 54, 2nd class" → matches programme_ref="UFLI/L54" + grade_band="1st-2nd"
+Guard: generated plans must not use sounds from lessons > 54</pre>
+
+<div class="card">
+  <h4>Gap detection engine</h4>
+  <p>Iterate all curriculum outcomes → query catalogue for each → any outcome with zero resources above confidence threshold is a gap → triggers Ops-Researcher to search curriculumonline.ie → if found, suggest to teacher → if not and teacher requests: Ops-Maker generates lesson plan. This is the core agent handoff chain that maps to 25% of the grade.</p>
+</div>
+
+<div class="card">
+  <h4>Taxonomy authoring — one-time, ~3 hours</h4>
+  <table>
+    <tr><th>Taxonomy</th><th>Effort</th><th>Output</th></tr>
+    <tr><td>Language TF codes (12 outcomes × 3 strands × 4 stages)</td><td>~2 hours</td><td>taxonomy_language.json</td></tr>
+    <tr><td>Maths PC continua (5 strands, 12 continua)</td><td>~30 min</td><td>taxonomy_maths.json</td></tr>
+    <tr><td>UFLI scope-and-sequence (128 lessons)</td><td>~1 hour</td><td>taxonomy_ufli.json</td></tr>
+    <tr><td>1999 subjects (skeleton strand/stage)</td><td>~30 min</td><td>taxonomy_1999_skeleton.json</td></tr>
+  </table>
+  <p>No public API or structured data export exists from the NCCA. Taxonomies must be hand-authored from curriculumonline.ie web pages. One-time cost. Static, version-controlled JSON in the repo.</p>
+</div>
 
 </div>
 
@@ -518,67 +579,6 @@
     <td>N/A</td>
   </tr>
 </table>
-
-</div>
-
-
-<!-- ============================================================== -->
-<!-- TAB: REFERENCES -->
-<!-- ============================================================== -->
-<div class="tab-panel" id="tab-references">
-
-<h2>Reference Taxonomies — Tying Resources to Outcomes</h2>
-
-<p>Resources get tagged not just by what they <em>are</em> but by what curriculum outcome they <em>serve</em>. This unlocks the two capabilities the brief requires: outcome-to-resource mapping, and gap detection.</p>
-
-<h3>Two regimes, one system</h3>
-
-<table>
-  <tr><th>Regime</th><th>Subjects</th><th>Outcome format</th><th>CA3 scope</th></tr>
-  <tr>
-    <td><strong>New framework</strong> (with codes)</td>
-    <td>Primary Language (2019), Primary Maths (2023)</td>
-    <td>TF codes (Language), Progression Continua PC1–PC12 (Maths)</td>
-    <td><span class="tag tag-green">Full outcome mapping</span></td>
-  </tr>
-  <tr>
-    <td><strong>1999 curriculum</strong> (prose only)</td>
-    <td>SESE, SPHE, PE, Arts</td>
-    <td>No outcome codes. Strand/unit prose per class band.</td>
-    <td><span class="tag tag-amber">Skeleton only</span> (synthetic strand/stage codes, no outcome matching)</td>
-  </tr>
-</table>
-
-<h4>Example: Language Curriculum TF codes</h4>
-<pre>Strand: Reading → Element: Understanding → Outcome 7: Purpose, genre, and voice
-Stage 1 (Infants): "show understanding through body language, facial expression..."
-Stage 2 (1st–2nd): "identify the purpose, genre, and voice of a text..."
-Stage 3 (3rd–4th): "compare and contrast the purpose, genre, and voice..."
-Stage 4 (5th–6th): "evaluate how purpose, genre, and voice shape meaning..."
-→ Code: TF7, C3 = Purpose/genre/voice, Stage 3 (3rd–4th class)</pre>
-
-<h4>Example: UFLI programme reference</h4>
-<pre>Lesson 54: VCe a_e pattern ("cake", "gate", "same")
-Cross-reference: Primary Language → Reading → TF4 (Phonics/word recognition) → Stage 2
-Query: "UFLI Lesson 54, 2nd class" → matches programme_ref="UFLI/L54" + grade_band="1st-2nd"
-Guard: generated plans must not use sounds from lessons > 54</pre>
-
-<div class="card">
-  <h4>Gap detection engine</h4>
-  <p>Iterate all curriculum outcomes → query catalogue for each → any outcome with zero resources above confidence threshold is a gap → triggers Ops-Researcher to search curriculumonline.ie → if found, suggest to teacher → if not and teacher requests: Ops-Maker generates lesson plan. This is the core agent handoff chain that maps to 25% of the grade.</p>
-</div>
-
-<div class="card">
-  <h4>Taxonomy authoring — one-time, ~3 hours</h4>
-  <table>
-    <tr><th>Taxonomy</th><th>Effort</th><th>Output</th></tr>
-    <tr><td>Language TF codes (12 outcomes × 3 strands × 4 stages)</td><td>~2 hours</td><td>taxonomy_language.json</td></tr>
-    <tr><td>Maths PC continua (5 strands, 12 continua)</td><td>~30 min</td><td>taxonomy_maths.json</td></tr>
-    <tr><td>UFLI scope-and-sequence (128 lessons)</td><td>~1 hour</td><td>taxonomy_ufli.json</td></tr>
-    <tr><td>1999 subjects (skeleton strand/stage)</td><td>~30 min</td><td>taxonomy_1999_skeleton.json</td></tr>
-  </table>
-  <p>No public API or structured data export exists from the NCCA. Taxonomies must be hand-authored from curriculumonline.ie web pages. One-time cost. Static, version-controlled JSON in the repo.</p>
-</div>
 
 </div>
 
