@@ -117,6 +117,7 @@
   <a href="#decisions">Open Decisions</a>
   <a href="#references">References</a>
   <a href="#gapfilling">Gap Filling</a>
+  <a href="#architecture">Architecture</a>
 </div>
 
 
@@ -819,7 +820,190 @@
 
 
 <!-- ============================================================ -->
-<h2 id="summary">12. Summary of the Journey</h2>
+<h2 id="architecture">12. Architecture — Catalogue, Files, and the End-User Deliverable</h2>
+
+<div class="phase-label">How the pieces connect at run time</div>
+
+<p>Two practical design questions shape the run-time architecture: <strong>how does a web-based solution access a catalogue that lives in a private OneDrive folder?</strong> And <strong>what does the teacher actually receive at the end of a query?</strong></p>
+
+<h3>The catalogue is not the files</h3>
+
+<p>The resource collection is ~4,400 files in OneDrive. The web solution runs on GitHub Pages. These are fundamentally different environments. The key insight: <strong>decouple the catalogue (the index) from the assets (the files).</strong> The catalogue becomes a live, queryable data store; the files stay where they are.</p>
+
+<table>
+  <tr><th>Layer</th><th>Where it lives</th><th>How agents access it</th><th>How the teacher accesses it</th></tr>
+  <tr>
+    <td><strong>Catalogue index</strong><br>(resource metadata, tags, outcome mappings, file paths)</td>
+    <td><strong>Google Sheet</strong></td>
+    <td>Google Sheets API v4 — real authenticated API calls at run time. Read (Researcher queries for matching resources) and write (Maker adds generated resources, QA adds review notes).</td>
+    <td>Web UI query interface + direct Sheet access for browsing/editing</td>
+  </tr>
+  <tr>
+    <td><strong>Resource files</strong><br>(the actual PDFs, PPTXs, zips)</td>
+    <td><strong>OneDrive</strong> (teacher's personal)</td>
+    <td>Microsoft Graph API — the Maker/Communicator agent fetches files by path (stored in the Sheet) when preparing a bundle for the teacher. Requires the teacher to authenticate with their Microsoft account.</td>
+    <td>Already synced locally via OneDrive client. The solution produces a <em>manifest</em> — a list of file paths the teacher already has.</td>
+  </tr>
+  <tr>
+    <td><strong>Reference taxonomies</strong><br>(curriculum outcomes, UFLI scope, programme structures)</td>
+    <td><strong>GitHub repo</strong> as static JSON files</td>
+    <td>Loaded at build time or fetched at run time from the repo. Not a "live data source" — these are version-controlled reference data, stable between curriculum revisions.</td>
+    <td>Versioned alongside the code — transparent, auditable</td>
+  </tr>
+  <tr>
+    <td><strong>Generated content</strong><br>(lesson plans, gap reports, resource bundles)</td>
+    <td><strong>Google Sheet</strong> (metadata) + <strong>OneDrive</strong> (output files) or <strong>GitHub Pages</strong> (download links)</td>
+    <td>Maker writes new rows to Sheet; Communicator produces downloadable output. Generated lesson plans live as markdown in a dedicated Sheet column or as a linked file.</td>
+    <td>Download via the web UI; view summary inline</td>
+  </tr>
+</table>
+
+<div class="card">
+  <h4>Why Google Sheets satisfies the live-data requirement</h4>
+  <p>The CA3 brief requires <em>"at least one agent must connect to a live external data source via a genuine tool call/MCP/API query at run time — not hardcoded, cached, or copy-pasted (verified in the submitted code, not just claimed)."</em></p>
+  <p>A Google Sheet accessed via the Sheets API v4 satisfies this directly:</p>
+  <ul>
+    <li><strong>Real API call:</strong> The Researcher agent makes <code>sheets.spreadsheets.values.get</code> requests with a filter/query parameter. This is authenticatable, loggable, and demonstrable in the submitted code.</li>
+    <li><strong>Write-back:</strong> The Maker and Communicator agents <em>write</em> back to the Sheet — new resource rows, gap flags, generated lesson plans. The Sheet is the system of record, not a read-only mirror.</li>
+    <li><strong>Teacher-facing:</strong> The Sheet is also the teacher's manual interface. They can browse all resources, edit tags, add notes, and see what the agents have done — all without touching the web UI. This is trust calibration in action (Week 2 — Lee &amp; See, 2004): the system's reasoning is visible and editable.</li>
+    <li><strong>Free tier sufficient:</strong> Google Sheets API has a generous free quota (60 requests per minute per user, 500 requests per 100 seconds per project). More than enough for a single-teacher CA3 demo.</li>
+  </ul>
+  <p>The project brief itself suggested this: <em>"A live, queryable resource catalogue (e.g. a Google Sheet or lightweight database) that agents write to and read from at run time; this also serves as the project's live-data technical requirement."</em></p>
+</div>
+
+<h3>The end-user deliverable — what the teacher receives</h3>
+
+<p>When a teacher queries the system (e.g. <em>"I'm teaching 2nd class, outcome TF5, C2 — vocabulary development — what do I have?"</em>), the Communicator agent produces a two-part response:</p>
+
+<div class="card">
+  <h4>Part 1: Written summary (markdown, displayed in the web UI)</h4>
+  <pre style="white-space:pre-wrap;font-size:0.78rem;"># Resources for TF5, C2 — Vocabulary (Stage 2, 1st–2nd Class)
+
+## What the outcome requires
+Through appropriately playful and engaging learning experiences, children should be able to
+acquire and use a rich and varied vocabulary across the curriculum, including subject-specific
+vocabulary, and use a range of strategies to determine the meaning of unfamiliar words.
+
+## Matching resources in your catalogue (3 found)
+| Resource | Format | Notes |
+|---|---|---|
+| Christmas Long and Short a Sort | Worksheet | Seasonal — may want a non-seasonal equivalent |
+| Word Mapping Templates — Christmas | Template | Adaptable to vocabulary focus |
+| Morphology Word Ladders — Latin Bases | Game | For stronger readers; pair with simpler activity |
+
+## Gaps identified
+- No dedicated vocabulary-in-context activity at Stage 2 level
+- No non-seasonal word-sort for this outcome
+→ A lesson plan has been generated to fill these gaps (see below).
+
+## Generated content
+A lesson plan for TF5, C2 has been created: [download] [view inline]
+It uses the Word Mapping template from your catalogue + a new vocabulary-in-context activity.</pre>
+</div>
+
+<div class="card">
+  <h4>Part 2: Resource bundle (downloadable)</h4>
+  <p>The Communicator produces a downloadable package containing:</p>
+  <ul>
+    <li>The matched resources from the catalogue (the actual PDF files, fetched via OneDrive/Graph API or pre-synced)</li>
+    <li>The generated lesson plan (markdown or PDF)</li>
+    <li>A README.md summarising the content (same markdown as the web UI summary)</li>
+    <li>Optionally: the generated gap-fill worksheet if Tier 3 was attempted</li>
+  </ul>
+  <p>The bundle is delivered as a <strong>zip file</strong> via GitHub Pages download. The file names are preserved from the original catalogue so the teacher can cross-reference.</p>
+  <p><strong>For the CA3 demo:</strong> pre-sync a small subset of representative resource files (10–20 PDFs) to the GitHub repo so the download mechanic works end-to-end without OneDrive auth complexity. Name the full OneDrive/Graph API integration as production path in the Limitations section. The demo proves the pipeline; the production design is documented.</p>
+</div>
+
+<h3>Run-time data flow</h3>
+
+<pre class="ascii">
+  TEACHER QUERY
+  "I need resources for UFLI Lesson 54, 2nd class"
+        │
+        ▼
+  ┌─────────────────────────────────────────────────────────┐
+  │  RESEARCHER agent                                        │
+  │  • Parses query → extracts: programme=UFLI, lesson=54,   │
+  │    stage=Stage2                                            │
+  │  • Queries Google Sheet (live API call):                  │
+  │    GET rows WHERE programme_ref="UFLI/L54"               │
+  │  • Cross-references curriculum taxonomy JSON (from repo): │
+  │    UFLI L54 = VCe a_e → maps to TF4, C2 (Phonics,        │
+  │    Stage 2)                                                │
+  │  • Finds 3 matching resources in catalogue                │
+  │  • Identifies 1 gap: no word-work worksheet for L54       │
+  │  • Hands structured brief to Designer                     │
+  └──────────────┬──────────────────────────────────────────┘
+                 │
+                 ▼
+  ┌─────────────────────────────────────────────────────────┐
+  │  DESIGNER agent                                           │
+  │  • Designs lesson plan structure for the gap              │
+  │  • Selects template: "Phonics Word Work, independent      │
+  │    practice"                                                │
+  │  • Specifies: learning objective (from taxonomy),          │
+  │    warm-up (from catalogue resource #2), main activity    │
+  │    (new design), plenary (from catalogue resource #1)     │
+  │  • Hands specification to Maker                           │
+  └──────────────┬──────────────────────────────────────────┘
+                 │
+                 ▼
+  ┌─────────────────────────────────────────────────────────┐
+  │  MAKER agent                                              │
+  │  • Generates lesson plan markdown (LLM, low-risk text)    │
+  │  • Bundles catalogue resources (pre-synced files)         │
+  │  • Writes generated plan metadata → Google Sheet          │
+  │  • Hands bundle + summary to Communicator                 │
+  └──────────────┬──────────────────────────────────────────┘
+                 │
+                 ▼
+  ┌─────────────────────────────────────────────────────────┐
+  │  COMMUNICATOR agent                                       │
+  │  • Produces summary markdown (displayed in web UI)        │
+  │  • Creates downloadable zip bundle                        │
+  │  • Adds AI disclosure notice (who built what, confidence) │
+  │  • Presents output to teacher                             │
+  └──────────────┬──────────────────────────────────────────┘
+                 │
+                 ▼
+  ┌─────────────────────────────────────────────────────────┐
+  │  MANAGER agent (orchestration layer)                      │
+  │  • Logs the full pipeline run                             │
+  │  • Records: query, agents invoked, resources found,       │
+  │    resources generated, teacher action (download/view)    │
+  │  • Flags confidence scores below threshold for review     │
+  │  • Maintains the governance log (GOVERNANCE.md)           │
+  └─────────────────────────────────────────────────────────┘
+</pre>
+
+<div class="card">
+  <h4>Google Sheets schema for the catalogue</h4>
+  <table>
+    <tr><th>Column</th><th>Example</th><th>Source</th></tr>
+    <tr><td><code>id</code></td><td><code>RES-0047</code></td><td>Auto-generated on ingest</td></tr>
+    <tr><td><code>filename</code></td><td><code>Christmas-Long-and-Short-a-Sort.pdf</code></td><td>Filesystem</td></tr>
+    <tr><td><code>onedrive_path</code></td><td><code>Teaching Resources/xmas/ChristmasLongandShortaSort-1.pdf</code></td><td>Filesystem (relative to OneDrive root)</td></tr>
+    <tr><td><code>subject</code></td><td><code>Literacy</code></td><td>Folder + content analysis</td></tr>
+    <tr><td><code>subdomain</code></td><td><code>Phonics</code></td><td>Folder + content analysis</td></tr>
+    <tr><td><code>grade_band</code></td><td><code>1st–2nd</code></td><td>Content analysis</td></tr>
+    <tr><td><code>format</code></td><td><code>Worksheet</code></td><td>Content analysis</td></tr>
+    <tr><td><code>season</code></td><td><code>Christmas</code></td><td>Folder</td></tr>
+    <tr><td><code>curriculum_area</code></td><td><code>Primary Language</code></td><td>Reference taxonomy match</td></tr>
+    <tr><td><code>strand</code></td><td><code>Reading</code></td><td>Reference taxonomy match</td></tr>
+    <tr><td><code>outcome_code</code></td><td><code>TF4, C2</code></td><td>AI-inferred from content ↔ outcome mapping</td></tr>
+    <tr><td><code>programme</code></td><td><code>—</code></td><td>Folder or content detection</td></tr>
+    <tr><td><code>programme_ref</code></td><td><code>—</code></td><td>e.g. <code>UFLI/L54</code> if applicable</td></tr>
+    <tr><td><code>source</code></td><td><code>TPT</code></td><td>Content analysis</td></tr>
+    <tr><td><code>license</code></td><td><code>Single-classroom</code></td><td>Content analysis</td></tr>
+    <tr><td><code>ai_generated</code></td><td><code>FALSE</code></td><td>TRUE if created by Maker agent</td></tr>
+    <tr><td><code>confidence</code></td><td><code>0.85</code></td><td>Tagging confidence from AI classifier</td></tr>
+    <tr><td><code>last_verified</code></td><td><code>2026-08-08</code></td><td>Human review timestamp (governance)</td></tr>
+  </table>
+</div>
+
+
+<!-- ============================================================ -->
+<h2 id="summary">13. Summary of the Journey</h2>
 
 <table>
   <tr><th>Phase</th><th>What we learned</th><th>Key metric</th></tr>
@@ -867,6 +1051,11 @@
     <td>Content discovery online</td>
     <td>Most sources lack APIs. curriculumonline.ie is scrapable and directly curriculum-aligned. OER Commons has a real API but uses US Common Core standards — mapping US→Irish standards is the interesting engineering challenge. TPT/Twinkl are out of scope (no API, terms prohibit). Recommended: narrow scraping proof-of-concept from curriculumonline.ie + name OER Commons standards-mapping as future work.</td>
     <td>One strand, one stage for demo; OER Commons for "Limitations &amp; Future" section</td>
+  </tr>
+  <tr>
+    <td>Run-time architecture</td>
+    <td>Decouple catalogue (Google Sheet, live API, satisfies dynamic data req) from files (OneDrive, pre-synced subset in repo for demo). End-user deliverable: Communicator produces (a) markdown summary with resource rationale, (b) downloadable zip bundle of matched + generated content. Teacher also has direct Sheet access for browsing/auditing — trust calibration via transparency.</td>
+    <td>Google Sheets API = live data source; ~15-column schema; demo uses 10–20 pre-synced files</td>
   </tr>
 </table>
 
