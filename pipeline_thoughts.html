@@ -120,6 +120,7 @@
   <a href="#architecture">Architecture</a>
   <a href="#msft-ecosystem">MS Ecosystem</a>
   <a href="#ux">UX Design</a>
+  <a href="#scope">Vision &amp; Scope</a>
 </div>
 
 
@@ -1409,7 +1410,147 @@ TEACHER gets UFLI54-2ndClass.zip — every file, ready to use.
 
 
 <!-- ============================================================ -->
-<h2 id="summary">15. Summary of the Journey</h2>
+<h2 id="scope">15. Teacher's Pet — Full Vision, CA3 Scope, and the Rationale Behind Every Cut</h2>
+
+<div class="phase-label">This is a scoped example of a model that works for any info-burdened professional</div>
+
+<p>What we are building is a <strong>personal knowledge concierge</strong> — an agentic system that ingests a professional's private reference library, indexes it against external frameworks, fills gaps intelligently, and responds to queries in multiple modes (structured, fuzzy, exploratory). A teacher. A solicitor. A consultant. The domain changes; the architecture doesn't. Teacher's Pet is the scoped instance for this CA3. The full model is what sits behind it.</p>
+
+<h3>The full vision — Teacher's Pet at scale</h3>
+
+<p>In production, Teacher's Pet would serve an entire school or community of practice. Every decision below that we are <em>not</em> building for CA3 is listed here as the long-term target — so the scoping is intentional, not ignorant.</p>
+
+<table>
+  <tr><th>#</th><th>Capability</th><th>Full vision</th><th>CA3 scope</th><th>Why scoped</th></tr>
+  <tr>
+    <td><strong>V1</strong></td>
+    <td>Content sources</td>
+    <td>Personal OneDrive catalogue + web discovery from curriculumonline.ie, Scoilnet, OER Commons (with US→Irish standards mapping), PDST/Oide. Automated periodic refresh. Licence-aware ingestion chain.</td>
+    <td>Personal OneDrive catalogue only. No web discovery. No automated refresh.</td>
+    <td>Web discovery is a separate engineering problem (scraping, parsing, deduplication, licensing) that doesn't add rubric value. The live-data requirement is already satisfied by the Excel catalogue + OneDrive file fetch. One solid live-data source with real API calls beats two half-built ones.</td>
+  </tr>
+  <tr>
+    <td><strong>V2</strong></td>
+    <td>Curriculum coverage</td>
+    <td>All subjects: Primary Language (English + Gaeilge), Mathematics, SESE (Science, Geography, History), SPHE, PE, Arts Education (Visual Arts, Music, Drama). Both 1999 and modernised frameworks with full outcome-level mapping. Synthetic codes for 1999 subjects where native codes don't exist.</td>
+    <td>Primary Language (English) + Primary Mathematics. Modernised frameworks only (TF codes + PC continua). No Gaeilge. 1999 subjects get strand/stage skeleton in the taxonomy JSON but no per-outcome matching.</td>
+    <td>The richness of the rubric argument — two-regime problem, synthetic coding, gap detection — is fully demonstrable with two subjects. Adding 6 more subjects is rote transcription, not insight. The Language + Maths pair covers the two taxonomy styles (coded outcomes vs. progression continua), which is the interesting engineering contrast.</td>
+  </tr>
+  <tr>
+    <td><strong>V3</strong></td>
+    <td>Gaeilge</td>
+    <td>Full Irish-language support: catalogue tagging of Gaeilge resources, Irish-language query understanding, Gaeilge lesson plan generation, bilingual UI.</td>
+    <td>No Gaeilge. The ~119 Gaeilge files in the catalogue are tagged with subject=Gaeilge from folder name but not deep-parsed or outcome-mapped. The UI and generated content are English-only.</td>
+    <td>LLMs are materially weaker in Irish — grammatical errors, dialect mismatches, unnatural phrasing. Generating Irish-language educational content with an LLM is an active research problem, not a CA3 deliverable. Naming this as a deliberate exclusion shows domain awareness. The exclusion is itself a trust-calibration move (Week 2): don't claim capability you can't deliver.</td>
+  </tr>
+  <tr>
+    <td><strong>V4</strong></td>
+    <td>Content generation</td>
+    <td>Tier 1–4 spectrum fully implemented: gap descriptions, lesson plans, worksheets/activities (with image generation or HTML/CSS layout), auto-adaptation of existing resources to different levels. Quality-assurance agent validates all generated content against the target outcome before release.</td>
+    <td>Tier 2 only: lesson plan generation (structured markdown text). No worksheet generation. No image generation. No auto-adaptation.</td>
+    <td>Lesson plans are the sweet spot (Section 11): LLMs produce them reliably, the hallucination surface is small (outcome prose is ground truth), and a teacher can judge quality in 30 seconds. Worksheet generation requires solving layout, age-appropriateness, visual design, and image generation — four hard problems that don't prove the agent pipeline any better than lesson plans do. The pipeline is the point; the content is the demo.</td>
+  </tr>
+  <tr>
+    <td><strong>V5</strong></td>
+    <td>User model</td>
+    <td>Multi-teacher, school-wide, or community-level. Shared catalogues. Peer review of generated content. Role-based access. Usage analytics for school leadership. Collaborative filtering for resource quality.</td>
+    <td>Single teacher. No sharing. No collaboration. No analytics.</td>
+    <td>The brief explicitly scopes out multi-user features for v1. Adding them would require identity management, permissions, and shared state — all orthogonal to demonstrating the agent pipeline. The architecture supports extension (Excel Online is shareable, the Worker is stateless) but the demo doesn't build it.</td>
+  </tr>
+  <tr>
+    <td><strong>V6</strong></td>
+    <td>Auth model</td>
+    <td>Delegated OAuth: teacher signs in with Microsoft account. MSAL.js in the frontend. Graph API calls are user-delegated. Each teacher sees only their own OneDrive content. No content exposure. GDPR-compliant by design.</td>
+    <td>No user auth. Worker uses app-only MS Graph credentials. Content is exposed through the Worker. Acceptable for a single-teacher graded demo; unacceptable for production.</td>
+    <td>Adding MSAL.js adds friction (login popup, consent screen, token management) and development time (~2 hours) that doesn't improve the rubric argument. The app-only pattern proves the Graph API integration just as well. The Limitations section names delegated auth as the production fix and explains why it matters (GDPR, content isolation, audit trails).</td>
+  </tr>
+  <tr>
+    <td><strong>V7</strong></td>
+    <td>Catalogue tagging depth</td>
+    <td>Every resource deep-parsed: text extraction for text-rich PDFs, Gemini Flash vision for image-heavy PDFs, Tesseract/Marker OCR for borderline cases. Full multi-dimension tagging (18 columns). Confidence scores on every tag. Human-in-the-loop review for low-confidence tags on a governance cadence.</td>
+    <td>Folder+filename fast pass for all resources. Deep content parse (pdfplumber text extraction + DeepSeek classification) for a representative sample (~100–200 files, targeting the Language + UFLI subset). Vision pass for a smaller sample (~20–30 image-heavy files) to demonstrate the pipeline. Remaining resources tagged from folder structure only, with the <code>confidence</code> column reflecting the difference.</td>
+    <td>The tagging exploration (Sections 3–6) proved that full deep parse is trivially cheap (~$5 API, ~90 min compute) but the CA3 rubric values demonstrated architecture over catalogue completeness. A representative sample shows the pipeline works. The confidence column honestly communicates coverage. The full parse is named as a one-time production run.</td>
+  </tr>
+  <tr>
+    <td><strong>V8</strong></td>
+    <td>Programme support</td>
+    <td>UFLI, Numicon, Jolly Phonics, Heggerty, Sounds-Write, Treasa Bowe Spelling, Lyn Stone Spelling for Life, school-specific schemes. Scope-and-sequence taxonomies for all. Teacher can add custom programme structures.</td>
+    <td>UFLI only. The 24 UFLI files are the strongest programme signal in the collection. Numicon and morphology plan taxonomies are authored as JSON skeletons but not wired into the demo's active matching.</td>
+    <td>One well-integrated programme reference proves the pattern more convincingly than five shallowly-integrated ones. UFLI was chosen because (a) it has the most files, (b) its scope-and-sequence is well-documented and easy to author as JSON, (c) its lesson-based structure maps cleanly to outcome codes.</td>
+  </tr>
+  <tr>
+    <td><strong>V9</strong></td>
+    <td>UI polish</td>
+    <td>Responsive design for mobile/tablet. Accessibility (WCAG 2.1 AA). Teacher-customisable tag dimensions. Saved queries and bundles. Offline support for browse mode. Print-friendly resource cards.</td>
+    <td>Single-page desktop web app. Functional, not beautiful. The three-mode interaction model works end-to-end but without responsive design, offline support, or teacher customisation.</td>
+    <td>UI polish doesn't demonstrate agent architecture. The wireframe (Section 14) shows the interaction model clearly; the working demo proves the pipeline. The visual design can be basic HTML/CSS — the lecturer grades the agents, not the CSS.</td>
+  </tr>
+  <tr>
+    <td><strong>V10</strong></td>
+    <td>Governance &amp; trust automation</td>
+    <td>Automated bias testing (paired-prompt comparison from the brief). Periodic catalogue quality audits. Drift detection on generated content. Escalation workflows. Teacher confidence calibration dashboards. Full audit trail with searchable logs.</td>
+    <td>Manual artefacts: GOVERNANCE.md covering disclosure, escalation, and review cadence. AI_DISCLOSURE.md embedded in every bundle README. Disagreement flags written to Excel (manual review). Paired-prompt bias test run once with screenshots in the writeup. Manager logs session data to an audit sheet but no automated analysis.</td>
+    <td>The brief asks for governance practice, not governance automation. A well-written GOVERNANCE.md that names triggers, routes, response times, and review cadences — and is actually referenced by the Manager agent's code — demonstrates the principle better than a half-built automated system. The paired-prompt test (Section "Regulatory and Ethical Considerations" in the brief) is a one-time artefact, not a recurring process.</td>
+  </tr>
+</table>
+
+<h3>Seven numbered decisions — push back on any of them</h3>
+
+<div class="card">
+  <h4>Decision 1: The demo proves the pipeline, not the catalogue</h4>
+  <p>The rubric's heaviest-weighted criterion is Handoff &amp; Orchestration (25%) — does each agent's output become the next agent's real input? A shallowly-tagged catalogue of 4,400 files with perfect handoffs scores higher than an exhaustively-tagged catalogue with loose handoffs. Build the pipeline solid; fill the catalogue enough to demonstrate it.</p>
+</div>
+
+<div class="card">
+  <h4>Decision 2: Two curriculum subjects > all of them</h4>
+  <p>Language + Maths covers the two taxonomy styles the Irish curriculum uses (coded outcomes vs. progression continua). Adding SESE/SPHE/PE/Arts is transcription work — it proves endurance, not insight. The two-regime problem is fully demonstrable with two subjects.</p>
+</div>
+
+<div class="card">
+  <h4>Decision 3: Text generation only — lesson plans are the product</h4>
+  <p>Lesson plans are what LLMs do best, what teachers value most (planning is the time-sink), and what the brief explicitly names as the baseline (<em>"at least creation of lesson plans"</em>). Worksheet generation is the brief's own "stretch" — name it as such and don't build it.</p>
+</div>
+
+<div class="card">
+  <h4>Decision 4: One programme reference (UFLI) proves the pattern</h4>
+  <p>24 files in the collection are already UFLI-tagged in filename. The scope-and-sequence is well-documented. The lesson-based structure maps cleanly to outcome codes. One tight integration demonstrates the programme-reference concept better than five shallow ones.</p>
+</div>
+
+<div class="card">
+  <h4>Decision 5: App-only Graph auth for the demo; name delegated auth as production fix</h4>
+  <p>The demo needs zero friction to feel magical. A login popup kills the illusion. The Limitations section explains exactly what changes for production (MSAL.js, delegated permissions, content isolation) and why it matters (GDPR Art 5 data minimisation, Art 32 security). The lecturer sees you know the right answer even if you're not building it.</p>
+</div>
+
+<div class="card">
+  <h4>Decision 6: Representative sample for deep parsing; confidence column for honesty</h4>
+  <p>Parse ~100–200 text-rich files + ~20–30 image-heavy files. Tag the rest from folder structure. The <code>confidence</code> column in the catalogue tells the truth: 0.9 = deep-parsed, 0.5 = folder-inferred. This is trust calibration applied to your own system (Week 2 — Lee &amp; See, 2004).</p>
+</div>
+
+<div class="card">
+  <h4>Decision 7: No Gaeilge — exclusion as domain awareness</h4>
+  <p>Irish-language LLM generation is unreliable. Naming this as a deliberate exclusion with the specific reasoning (grammatical errors, dialect mismatch, unnatural phrasing) demonstrates you understand AI limitations, not that you forgot about Gaeilge. The ~119 Gaeilge resources are tagged as subject=Gaeilge from folder name and left out of scope.</p>
+</div>
+
+<h3>The model behind Teacher's Pet</h3>
+
+<div class="card">
+  <h4>What generalises</h4>
+  <p>Swap the domain and the architecture holds:</p>
+  <table>
+    <tr><th>Teacher's Pet component</th><th>Generalised equivalent</th></tr>
+    <tr><td>Irish Primary Curriculum + UFLI scope</td><td>Any professional reference framework (legal precedent taxonomy, medical guideline hierarchy, engineering standards catalogue, consulting methodology library)</td></tr>
+    <tr><td>~4,400 teaching resources on OneDrive</td><td>Any professional's private reference collection (case files, research papers, project templates, client deliverables, technical specs)</td></tr>
+    <tr><td>Three entry modes (guided, fuzzy, browse)</td><td>Same three modes for any domain: structured lookup by framework code, free-text recall ("that deck with the blue slide about retention"), exploratory browsing</td></tr>
+    <tr><td>Lesson plan generation for gaps</td><td>Brief generation, proposal drafting, research synthesis, code scaffolding — any structured professional output where the framework provides ground truth and the model fills structure</td></tr>
+    <tr><td>Disagreement → catalogue improvement</td><td>Every professional knowledge system degrades without maintenance. Disagreement as a first-class interaction keeps the system honest over time</td></tr>
+    <tr><td>Static frontend + Worker backend + file store</td><td>Identical architecture for any personal knowledge concierge. The Worker is the AI orchestration layer; the file store is whatever the professional already uses</td></tr>
+  </table>
+  <p>Teacher's Pet is the scoped instance. The generalised model is a <strong>personal knowledge concierge</strong> — an agentic system that indexes a professional's private library against their domain's reference frameworks and fills gaps intelligently. The CA3 build proves the architecture. The consultancy application is a different domain string, same codebase.</p>
+</div>
+
+
+<!-- ============================================================ -->
+<h2 id="summary">16. Summary of the Journey</h2>
 
 <table>
   <tr><th>Phase</th><th>What we learned</th><th>Key metric</th></tr>
@@ -1475,7 +1616,7 @@ TEACHER gets UFLI54-2ndClass.zip — every file, ready to use.
   </tr>
 </table>
 
-<p>The exploration moved from <em>"can we just use folder names?"</em> (yes, mostly) to <em>"what does reading the files add?"</em> (a lot, but with a hard ceiling) to <em>"how do we break through that ceiling?"</em> (vision LLMs) to <em>"what dimension are teachers actually searching on?"</em> (curriculum outcomes) to <em>"what do we do when the catalogue comes up empty?"</em> (describe, generate, discover) to <em>"how does the teacher actually interact with this?"</em> (three modes, one surface, disagreement as a feature). The full spine is now clear for a CA3 build: MS ecosystem + Cloudflare Worker for zero-auth serverless AI, Excel catalogue with live Graph API, reference taxonomies for Language + UFLI, three interaction modes feeding one results+refinement panel, gap detection driving lesson plan generation, and the bundle as the deliberate terminal action. This shows the lecturer you understand the engineering, the strategic tradeoffs, the domain, <em>and</em> the user — which is the whole point of the module.</p>
+<p>The exploration moved from <em>"can we just use folder names?"</em> (yes, mostly) to <em>"what does reading the files add?"</em> (a lot, but with a hard ceiling) to <em>"how do we break through that ceiling?"</em> (vision LLMs) to <em>"what dimension are teachers actually searching on?"</em> (curriculum outcomes) to <em>"what do we do when the catalogue comes up empty?"</em> (describe, generate, discover) to <em>"how does the teacher actually interact with this?"</em> (three modes, one surface, disagreement as a feature) to <em>"what exactly are we building, and why not the rest?"</em> (10 scoped capabilities, 7 numbered decisions). <strong>Teacher's Pet</strong> is the scoped CA3 instance of a generalisable model: a personal knowledge concierge that works for any info-burdened professional. The CA3 build proves the agent pipeline; the full vision proves you understand what sits behind it. Both are what the rubric rewards.</p>
 
 
 <hr>
