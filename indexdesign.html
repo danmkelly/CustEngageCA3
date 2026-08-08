@@ -116,6 +116,7 @@
   <a href="#hybrid">Recommended Hybrid</a>
   <a href="#decisions">Open Decisions</a>
   <a href="#references">References</a>
+  <a href="#gapfilling">Gap Filling</a>
 </div>
 
 
@@ -646,7 +647,179 @@
 
 
 <!-- ============================================================ -->
-<h2 id="summary">11. Summary of the Journey</h2>
+<h2 id="gapfilling">11. Gap Filling — Create, Describe, or Discover?</h2>
+
+<div class="phase-label">When the catalogue comes up empty</div>
+
+<p>Once the gap detection engine (Section 10) identifies that an outcome has zero matching resources, the system must do <em>something</em> useful. The project brief is deliberately flexible: <em>"content generation will at least be creation of lesson plans that bridge curriculum/outcomes and content/methods to fulfil; stretch will be new content creation if easy enough."</em> So the real question is: <strong>what tier of response is both useful to a teacher and safe to build?</strong></p>
+
+<h3>The spectrum: from safe to ambitious</h3>
+
+<table>
+  <tr><th>Tier</th><th>What the system does</th><th>AI risk</th><th>Teacher value</th><th>CA3 fit</th></tr>
+  <tr>
+    <td><strong>1. Gap description</strong></td>
+    <td>Names the gap with context: "You have nothing for TF5, C3. You <em>do</em> have resources for the same outcome at C2 and C4 — these could be adapted. Suggested activity type: word-mapping with morphology focus at 3rd-class level."</td>
+    <td><span class="tag tag-green">Very low</span></td>
+    <td>Medium — saves search time but teacher still does the creating</td>
+    <td>Solid baseline — demonstrates pipeline, handoff, reasoning</td>
+  </tr>
+  <tr>
+    <td><strong>2. Lesson plan generation</strong></td>
+    <td>Produces a structured lesson plan: learning objectives (from outcome prose), suggested activities (from catalogue exemplars at adjacent levels), materials list, differentiation notes, assessment check. Text only, no worksheets.</td>
+    <td><span class="tag tag-green">Low</span></td>
+    <td>High — lesson planning is the time-sink teachers complain about most</td>
+    <td>Good stretch — text generation is what LLMs do best; low hallucination surface</td>
+  </tr>
+  <tr>
+    <td><strong>3. Worksheet/activity generation</strong></td>
+    <td>Generates actual printable content: a CVC word sort, a fractions worksheet, a writing prompt page. Would need image generation or careful HTML/CSS layout.</td>
+    <td><span class="tag tag-amber">Medium</span></td>
+    <td>Very high — this is what "content creation" means to most teachers</td>
+    <td>Ambitious — high failure risk (layout, age-appropriateness, Gaeilge accuracy)</td>
+  </tr>
+  <tr>
+    <td><strong>4. Auto-adapt from adjacent</strong></td>
+    <td>Takes an existing resource tagged to a nearby outcome/stage and adapts it: a C2 worksheet gets harder vocabulary, a junior-infant game gets senior-infant complexity.</td>
+    <td><span class="tag tag-amber">Medium</span></td>
+    <td>High — but trust is critical; a bad adaptation is worse than nothing</td>
+    <td>Named as future — adaptation is harder than generation; the LLM must understand what "harder" means pedagogically</td>
+  </tr>
+</table>
+
+<div class="card">
+  <h4>Why lesson plans are the sweet spot for CA3</h4>
+  <ul>
+    <li><strong>LLMs excel at structured text:</strong> A lesson plan is a template with predictable sections (objective, warm-up, main activity, plenary, differentiation, assessment). Models produce these reliably because the format is well-represented in training data.</li>
+    <li><strong>Low hallucination surface:</strong> The learning objective comes directly from the curriculum outcome prose — the model isn't inventing it, it's restating and contextualising it. Activities can reference catalogue exemplars rather than being invented from scratch.</li>
+    <li><strong>Natural quality gate:</strong> A teacher can scan a lesson plan in 30 seconds and judge its usefulness. A badly-generated worksheet might have subtle errors that take longer to spot.</li>
+    <li><strong>Directly fulfils the brief:</strong> "Creation of lesson plans that bridge curriculum/outcomes and content/methods to fulfil" is the brief's own baseline. Anything beyond this is the brief's own "stretch."</li>
+    <li><strong>Maps to rubric:</strong> The Maker agent receives a structured gap (from Researcher) → produces a structured lesson plan (handoff to QA/Communicator) → the plan references specific catalogue resources. This is a clean, demonstrable pipeline.</li>
+  </ul>
+</div>
+
+<h3>What AI gets wrong in educational content — and how to guard against it</h3>
+
+<table>
+  <tr><th>Failure mode</th><th>Example</th><th>Guard</th></tr>
+  <tr>
+    <td><strong>Curriculum misalignment</strong></td>
+    <td>Suggesting "narrative perspective" activities for infants because the LLM doesn't know that's a 5th-class concept in the Irish curriculum</td>
+    <td>The reference taxonomy is the prompt's ground truth. The prompt includes the exact outcome prose + stage descriptor. "This is Stage 2 (1st–2nd class). All activities must be appropriate for 7–8 year olds."</td>
+  </tr>
+  <tr>
+    <td><strong>Gaeilge errors</strong></td>
+    <td>LLMs are significantly weaker in Irish than English. Generated Irish-language content will contain grammatical errors, unnatural phrasing, or dialect mismatches.</td>
+    <td><strong>Do not generate Irish-language content in v1.</strong> For Gaeilge gaps, the Maker lists the gap and suggests catalogue resources; it does not attempt generation. Name this as a deliberate limitation with the reasoning.</td>
+  </tr>
+  <tr>
+    <td><strong>Age-inappropriate complexity</strong></td>
+    <td>Suggesting a debate activity for senior infants; using vocabulary three grade levels above target</td>
+    <td>Stage descriptor in prompt + explicit instruction: "Activities must be appropriate for Stage X. If unsure, default to simpler."</td>
+  </tr>
+  <tr>
+    <td><strong>Over-standardisation</strong></td>
+    <td>Every generated lesson plan follows the exact same structure, losing the variety that keeps classrooms engaging</td>
+    <td>Prompt variety: rotate through activity types (pair work, game, write-the-room, discussion, hands-on) and structure templates. Include "vary the activity format" as a system instruction.</td>
+  </tr>
+  <tr>
+    <td><strong>Phonics/programme mismatch</strong></td>
+    <td>A UFLI-aligned lesson plan accidentally introduces a sound from the wrong lesson sequence</td>
+    <td>The UFLI scope &amp; sequence is part of the prompt. "This resource must only use sounds introduced up to and including Lesson 42. Do not use sounds from later lessons."</td>
+  </tr>
+</table>
+
+
+<h3>Online content discovery — how hard is it?</h3>
+
+<div class="phase-label">Finding new content to supplement the offline catalogue</div>
+
+<p>The project brief is careful about this: <em>"A defined, legitimately accessible set of discovery sources (e.g. curriculum specification documents, PDST/oide.ie resources, an open-education-resource repository with a real API), not open web crawling or scraping platforms without API access."</em> It also says <em>"will try to have a limited proof of concept of discovering new content and adding to the catalogue; scope will be tight."</em></p>
+
+<p>This is a fundamentally harder problem than catalogue tagging or gap generation. Here's why, broken down by source:</p>
+
+<table>
+  <tr><th>Source</th><th>Accessibility</th><th>Structure</th><th>Relevance</th><th>CA3 viability</th></tr>
+  <tr>
+    <td><strong>curriculumonline.ie</strong><br>(NCCA official)</td>
+    <td><span class="tag tag-green">Public, no API</span></td>
+    <td><span class="tag tag-amber">Semi-structured HTML</span><br>Strand/element/outcome pages are consistently structured. Scrapable with BeautifulSoup. Exemplar videos and support materials are linked from outcome pages.</td>
+    <td><span class="tag tag-green">Highest</span><br>Directly ties to the reference taxonomy — every resource is already outcome-mapped by the NCCA.</td>
+    <td><strong>Good candidate.</strong> Write the Researcher agent to scrape a specific strand's exemplar page, extract linked resources, and add them to the catalogue pre-tagged with correct outcome codes. One strand is enough to prove the concept.</td>
+  </tr>
+  <tr>
+    <td><strong>oide.ie</strong><br>(formerly PDST)</td>
+    <td><span class="tag tag-green">Public, no API</span></td>
+    <td><span class="tag tag-red">Unstructured</span><br>Blog-style posts, PDF downloads, varied page layouts. No consistent metadata.</td>
+    <td><span class="tag tag-green">High</span><br>Official CPD resources — trusted, curriculum-aligned, Irish-context.</td>
+    <td><strong>Hard without a parser per page type.</strong> Possible for a narrow scope (e.g. one subject area), but fragile. Name as stretch.</td>
+  </tr>
+  <tr>
+    <td><strong>Scoilnet.ie</strong><br>(official portal)</td>
+    <td><span class="tag tag-amber">Public, possibly has API</span></td>
+    <td><span class="tag tag-amber">Unknown</span><br>Ireland's official education portal. Has a search function, resource database with curriculum tags. May have an undocumented API or RSS feed.</td>
+    <td><span class="tag tag-green">High</span><br>Curated, curriculum-tagged by humans. The gold standard for Irish teacher resources.</td>
+    <td><strong>Investigate first.</strong> If Scoilnet has a search API or structured data endpoint, this is the best single source. If not, scraping is feasible but needs a dedicated parser.</td>
+  </tr>
+  <tr>
+    <td><strong>OER Commons</strong><br>(open education)</td>
+    <td><span class="tag tag-green">Public API</span></td>
+    <td><span class="tag tag-green">Structured</span><br>REST API returns JSON with subject, grade, standard alignment, license. Well-documented at api.oercommons.org.</td>
+    <td><span class="tag tag-amber">Medium</span><br>US-centric. Common Core alignment, not Irish curriculum. Would need a mapping layer to translate US standards to Irish outcomes. Good for generic resources (maths operations, science concepts) that are curriculum-agnostic.</td>
+    <td><strong>Good for proofs-of-concept.</strong> The API is free, documented, and returns structured data. The mapping problem is the interesting engineering challenge — exactly what the rubric rewards.</td>
+  </tr>
+  <tr>
+    <td><strong>Twinkl.ie</strong></td>
+    <td><span class="tag tag-red">Subscription, no public API</span></td>
+    <td><span class="tag tag-red">Closed</span></td>
+    <td><span class="tag tag-green">High</span></td>
+    <td><strong>Out of scope.</strong> Terms of service prohibit automated access. No API.</td>
+  </tr>
+  <tr>
+    <td><strong>Teachers Pay Teachers</strong></td>
+    <td><span class="tag tag-red">No public API, terms prohibit scraping</span></td>
+    <td><span class="tag tag-red">Closed</span></td>
+    <td><span class="tag tag-amber">Medium</span><br>Much of the catalogue already comes from TPT, but accessing new content programmatically is not permitted.</td>
+    <td><strong>Out of scope.</strong> Explicitly excluded by the project brief.</td>
+  </tr>
+</table>
+
+<div class="card">
+  <h4>Recommended CA3 approach: curriculumonline.ie scraping proof-of-concept</h4>
+  <p><strong>Scope:</strong> Pick one strand (e.g. Reading, Stage 2) from the Primary Language Curriculum. The Researcher agent:</p>
+  <ol>
+    <li>Fetches the Reading outcome page from curriculumonline.ie</li>
+    <li>Extracts linked exemplar videos, support materials, and suggested texts</li>
+    <li>Tags each discovered resource with its correct outcome code (already present on the page)</li>
+    <li>Checks the catalogue for duplicates (by URL or title similarity)</li>
+    <li>Adds new resources to the catalogue with a <code>source: curriculumonline.ie</code> tag</li>
+  </ol>
+  <p><strong>Why this works for CA3:</strong></p>
+  <ul>
+    <li>It's a <strong>genuine live data pull</strong> — the Researcher connects to an external URL at run time, satisfying the technical gate</li>
+    <li>It's <strong>legitimate</strong> — curriculumonline.ie is public, NCCA-published content with no terms prohibiting educational access</li>
+    <li>It's <strong>narrow in scope</strong> — one strand, one stage, ~12 outcomes. Builds credibility without over-promising</li>
+    <li>The <strong>US→Irish standards mapping problem</strong> for OER Commons is named as future work — a richer engineering challenge than simple scraping, and a better vehicle for the "Limitations &amp; Future Opportunities" section</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h4>Discovery vs. creation — which fills gaps better?</h4>
+  <table>
+    <tr><th></th><th>Content generation (Tier 2)</th><th>Content discovery (curriculumonline.ie)</th></tr>
+    <tr><td><strong>Quality</strong></td><td>Variable — depends on prompt engineering and LLM capability</td><td>High — NCCA-vetted, human-authored</td></tr>
+    <tr><td><strong>Coverage</strong></td><td>Any outcome, any subject — limited only by LLM quality</td><td>Only what the NCCA has published — big gaps in practice activities, worksheets</td></tr>
+    <tr><td><strong>Irish-specific knowledge</strong></td><td>Weak — LLMs have limited training data on the Irish curriculum context</td><td>Perfect — these <em>are</em> the Irish curriculum</td></tr>
+    <tr><td><strong>Engineering effort</strong></td><td>Medium — prompt design, template building, QA agent</td><td>Medium — scraper, parser, deduplication logic</td></tr>
+    <tr><td><strong>CA3 rubric value</strong></td><td>Demonstrates Maker agent and pipeline handoff</td><td>Demonstrates Researcher agent and live data connection</td></tr>
+    <tr><td><strong>Best for</strong></td><td>Filling gaps the NCCA doesn't cover (worksheets, games, practice activities)</td><td>Building the catalogue with trusted, curriculum-aligned foundation content</td></tr>
+  </table>
+  <p><strong>They're complementary, not competing.</strong> Discovery builds the foundation; generation fills the practice-activity gaps. A CA3 demo that shows both — even if each is narrow in scope — demonstrates understanding of the full pipeline far better than going deep on one.</p>
+</div>
+
+
+<!-- ============================================================ -->
+<h2 id="summary">12. Summary of the Journey</h2>
 
 <table>
   <tr><th>Phase</th><th>What we learned</th><th>Key metric</th></tr>
@@ -685,9 +858,19 @@
     <td>Curriculum-to-resource mapping creates a natural pipeline: Researcher finds gaps → Maker generates content → QA validates. Maps directly to rubric criteria (Handoff, Strategic Rationale, Live Data).</td>
     <td>Every uncatalogued outcome triggers Maker agent</td>
   </tr>
+  <tr>
+    <td>Gap filling strategy</td>
+    <td>Four-tier spectrum from gap description (safe, quick) through lesson plan generation (sweet spot for CA3) to worksheet generation (ambitious). Lesson plans are the best CA3 target: LLMs do structured text well, low hallucination surface, teacher can judge quality in 30 seconds. Gaeilge generation is explicitly excluded — LLMs are too weak in Irish.</td>
+    <td>Tier 2 (lesson plans) recommended for demo</td>
+  </tr>
+  <tr>
+    <td>Content discovery online</td>
+    <td>Most sources lack APIs. curriculumonline.ie is scrapable and directly curriculum-aligned. OER Commons has a real API but uses US Common Core standards — mapping US→Irish standards is the interesting engineering challenge. TPT/Twinkl are out of scope (no API, terms prohibit). Recommended: narrow scraping proof-of-concept from curriculumonline.ie + name OER Commons standards-mapping as future work.</td>
+    <td>One strand, one stage for demo; OER Commons for "Limitations &amp; Future" section</td>
+  </tr>
 </table>
 
-<p>The exploration moved from <em>"can we just use folder names?"</em> (yes, mostly) to <em>"what does reading the files add?"</em> (a lot, but with a hard ceiling) to <em>"how do we break through that ceiling?"</em> (vision LLMs) to <em>"what dimension are teachers actually searching on?"</em> (curriculum outcomes). The right answer for a CA3 project: demonstrate the pipeline architecture with a small, high-confidence reference set (Language Curriculum + UFLI), deep-parse a representative resource sample, implement gap detection as the core agent handoff, and name full-scale production as future work. This shows the lecturer you understand the engineering, the strategic tradeoffs, <em>and</em> the domain — which is the whole point of the module.</p>
+<p>The exploration moved from <em>"can we just use folder names?"</em> (yes, mostly) to <em>"what does reading the files add?"</em> (a lot, but with a hard ceiling) to <em>"how do we break through that ceiling?"</em> (vision LLMs) to <em>"what dimension are teachers actually searching on?"</em> (curriculum outcomes) to <em>"what do we do when the catalogue comes up empty?"</em> (describe smartly, generate lesson plans safely, discover from public sources narrowly). The right answer for a CA3 project: hand-author the Language Curriculum + UFLI reference taxonomies, deep-parse a representative resource sample with the hybrid text+vision pipeline, implement gap detection → lesson plan generation as the core Maker-agent handoff, add a curriculumonline.ie scraping proof-of-concept as a live-data connection, and name full-scale ambitions (worksheet generation, OER standards mapping, multi-user features) honestly in the Limitations &amp; Future section. This shows the lecturer you understand the engineering, the strategic tradeoffs, and the domain — which is the whole point of the module.</p>
 
 
 <hr>
