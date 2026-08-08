@@ -170,9 +170,9 @@ async function graphRequest(env, url, options) {
 // MS GRAPH — Excel Catalogue Operations
 // --------------------------------------------------------------------------
 
-function catalogueUsedRangeUrl() {
+function catalogueUsedRangeUrl(env) {
   var filePath = encodeURIComponent("Teaching Resources/Catalogue.xlsx");
-  return MS_GRAPH_BASE + "/me/drive/root:" + filePath +
+  return MS_GRAPH_BASE + "/users/" + env.ONEDRIVE_USER + "/drive/root:" + filePath +
     ":/workbook/worksheets/Catalogue/usedRange";
 }
 
@@ -181,12 +181,14 @@ function catalogueUsedRangeUrl() {
  * Returns an array of row objects keyed by column names from the header row.
  */
 async function fetchCatalogue(env) {
-  var url = catalogueUsedRangeUrl();
+  var url = catalogueUsedRangeUrl(env);
   var resp = await graphRequest(env, url);
 
   if (!resp.ok) {
+    if (resp.status === 404) return []; // Catalogue not uploaded yet — return empty
     var text = await resp.text();
-    throw new Error("Failed to read catalogue: " + resp.status + " " + text);
+    console.error("Catalogue fetch failed: " + resp.status + " " + text.substring(0, 200));
+    return []; // Graceful degradation — platform works, catalogue is empty
   }
 
   var data = await resp.json();
@@ -226,7 +228,7 @@ function parseExcelRows(values) {
 async function logToAuditSheet(env, auditRow) {
   try {
     var filePath = encodeURIComponent("Teaching Resources/Catalogue.xlsx");
-    var url = MS_GRAPH_BASE + "/me/drive/root:" + filePath +
+    var url = MS_GRAPH_BASE + "/users/" + env.ONEDRIVE_USER + "/drive/root:" + filePath +
       ":/workbook/tables/Audit/rows";
     var resp = await graphRequest(env, url, {
       method: "POST",
@@ -255,7 +257,7 @@ async function downloadFromOneDrive(env, onedrivePath) {
   var encodedPath = encodeURIComponent(onedrivePath);
   var resp = await graphRequest(
     env,
-    MS_GRAPH_BASE + "/me/drive/root:/Teaching Resources/" +
+    MS_GRAPH_BASE + "/users/" + env.ONEDRIVE_USER + "/drive/root:/Teaching Resources/" +
       encodedPath + ":/content"
   );
   if (!resp.ok) {
@@ -1391,6 +1393,14 @@ export default {
         request.method === "GET"
       ) {
         return await handleCatalogue(request, env);
+      }
+
+      if (
+        pathname.startsWith("/api/taxonomy/") &&
+        request.method === "GET"
+      ) {
+        var tname = pathname.split("/api/taxonomy/")[1];
+        return await handleTaxonomy(request, env, tname);
       }
 
       // 404 for unmatched routes

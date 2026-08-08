@@ -5,6 +5,7 @@ compatibility_date = "2025-01-01"
 [vars]
 CATALOGUE_FILE = "Teaching Resources/Catalogue.xlsx"
 AUDIT_SHEET = "Audit"
+ONEDRIVE_USER = "dan_m_kelly@hotmail.com"
 
 # NOTE: Following secrets must be set before deploy:
 #   wrangler secret put DEEPSEEK_API_KEY
