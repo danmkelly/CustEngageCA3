@@ -82,6 +82,7 @@
   .section-nav a:hover { background: var(--accent-light); }
   hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
   .phase-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.25rem; }
+  .decision-made { font-weight: 700; color: #dc2626; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border); }
   .big-num { font-size: 2.5rem; font-weight: 800; line-height: 1; letter-spacing: -0.03em; }
   .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin: 1rem 0 1.5rem; }
   .stat { text-align: center; padding: 1rem; background: var(--accent-light); border-radius: 8px; }
@@ -1499,36 +1500,43 @@ TEACHER gets UFLI54-2ndClass.zip — every file, ready to use.
 <div class="card">
   <h4>Decision 1: The demo proves the pipeline, not the catalogue</h4>
   <p>The rubric's heaviest-weighted criterion is Handoff &amp; Orchestration (25%) — does each agent's output become the next agent's real input? A shallowly-tagged catalogue of 4,400 files with perfect handoffs scores higher than an exhaustively-tagged catalogue with loose handoffs. Build the pipeline solid; fill the catalogue enough to demonstrate it.</p>
+  <p class="decision-made">→ Decision: Deep-parse a representative sample (~150 files). Tag the rest from folder structure. Prove the handoffs first; catalogue completeness is the production run.</p>
 </div>
 
 <div class="card">
-  <h4>Decision 2: Two curriculum subjects > all of them</h4>
+  <h4>Decision 2: Two curriculum subjects &gt; all of them</h4>
   <p>Language + Maths covers the two taxonomy styles the Irish curriculum uses (coded outcomes vs. progression continua). Adding SESE/SPHE/PE/Arts is transcription work — it proves endurance, not insight. The two-regime problem is fully demonstrable with two subjects.</p>
+  <p class="decision-made">→ Decision: Build full outcome-level mapping for Primary Language (TF codes) + Primary Mathematics (PC continua). 1999 subjects get strand/stage skeleton only.</p>
 </div>
 
 <div class="card">
   <h4>Decision 3: Text generation only — lesson plans are the product</h4>
   <p>Lesson plans are what LLMs do best, what teachers value most (planning is the time-sink), and what the brief explicitly names as the baseline (<em>"at least creation of lesson plans"</em>). Worksheet generation is the brief's own "stretch" — name it as such and don't build it.</p>
+  <p class="decision-made">→ Decision: Maker agent generates structured markdown lesson plans only. Worksheet/image generation is named as future work, not built.</p>
 </div>
 
 <div class="card">
   <h4>Decision 4: One programme reference (UFLI) proves the pattern</h4>
   <p>24 files in the collection are already UFLI-tagged in filename. The scope-and-sequence is well-documented. The lesson-based structure maps cleanly to outcome codes. One tight integration demonstrates the programme-reference concept better than five shallow ones.</p>
+  <p class="decision-made">→ Decision: Author the UFLI scope-and-sequence as JSON. Numicon and morphology plan taxonomies are authored as skeletons but not wired into active matching.</p>
 </div>
 
 <div class="card">
   <h4>Decision 5: App-only Graph auth for the demo; name delegated auth as production fix</h4>
   <p>The demo needs zero friction to feel magical. A login popup kills the illusion. The Limitations section explains exactly what changes for production (MSAL.js, delegated permissions, content isolation) and why it matters (GDPR Art 5 data minimisation, Art 32 security). The lecturer sees you know the right answer even if you're not building it.</p>
+  <p class="decision-made">→ Decision: Ship the demo with app-only Graph auth in the Worker. No user login. Document delegated auth as the production path in Limitations.</p>
 </div>
 
 <div class="card">
   <h4>Decision 6: Representative sample for deep parsing; confidence column for honesty</h4>
   <p>Parse ~100–200 text-rich files + ~20–30 image-heavy files. Tag the rest from folder structure. The <code>confidence</code> column in the catalogue tells the truth: 0.9 = deep-parsed, 0.5 = folder-inferred. This is trust calibration applied to your own system (Week 2 — Lee &amp; See, 2004).</p>
+  <p class="decision-made">→ Decision: Deep-parse ~150 files targeting the Language + UFLI subset. Vision-parse ~25 image-heavy files. All other resources: folder-tagged with confidence=0.5. Full parse is the production run.</p>
 </div>
 
 <div class="card">
   <h4>Decision 7: No Gaeilge — exclusion as domain awareness</h4>
   <p>Irish-language LLM generation is unreliable. Naming this as a deliberate exclusion with the specific reasoning (grammatical errors, dialect mismatch, unnatural phrasing) demonstrates you understand AI limitations, not that you forgot about Gaeilge. The ~119 Gaeilge resources are tagged as subject=Gaeilge from folder name and left out of scope.</p>
+  <p class="decision-made">→ Decision: Exclude Gaeilge from generation, outcome mapping, and deep parsing. Tag from folder only. Name the reasoning explicitly in the writeup.</p>
 </div>
 
 <h3>The model behind Teacher's Pet</h3>
