@@ -115,6 +115,7 @@
   <a href="#options">Four Options</a>
   <a href="#hybrid">Recommended Hybrid</a>
   <a href="#decisions">Open Decisions</a>
+  <a href="#references">References</a>
 </div>
 
 
@@ -441,7 +442,211 @@
 
 
 <!-- ============================================================ -->
-<h2 id="summary">10. Summary of the Journey</h2>
+<h2 id="references">10. Reference Taxonomies — Tying Resources to Curriculum Outcomes</h2>
+
+<div class="phase-label">The missing dimension</div>
+
+<p>Everything up to this point has been about describing what a resource <em>is</em> — its subject, format, grade band, season. But a teacher doesn't search by resource attributes. A teacher searches by <strong>need</strong>: <em>"I'm teaching 2nd class, strand unit 'Place Value', what do I have?"</em> or <em>"I need a UFLI lesson 42 activity for my SET group."</em></p>
+
+<p>This requires a fundamentally different tagging dimension: <strong>curriculum outcome alignment</strong>. Resources get tagged not just by what they are, but by what curriculum outcome they serve. This unlocks two capabilities the project brief explicitly asks for:</p>
+
+<ol>
+  <li><strong>Outcome-to-resource mapping:</strong> Given a curriculum outcome code, return matching resources</li>
+  <li><strong>Gap detection:</strong> Iterate all outcomes, identify those with zero matching resources, and trigger the Maker agent to generate content for those gaps</li>
+</ol>
+
+<h3>Two regimes, one system</h3>
+
+<p>The Irish primary curriculum is in transition. Some subjects use the 1999 framework (no structured outcome codes), others use the new framework with coded outcomes. The system must handle both.</p>
+
+<h4>A. The New Framework — structured outcomes</h4>
+
+<table>
+  <tr><th>Curriculum area</th><th>Strands</th><th>Taxonomy structure</th><th>Code format</th></tr>
+  <tr>
+    <td><strong>Primary Language</strong> (2019)<br>English + Gaeilge</td>
+    <td>Oral Language, Reading, Writing</td>
+    <td>Strand → Element → Outcome (1–12) → Stage (1–4)</td>
+    <td><code>TF5, C3</code><br>(Vocabulary outcome, Stage 3 = 3rd–4th class)</td>
+  </tr>
+  <tr>
+    <td><strong>Primary Mathematics</strong> (2023)</td>
+    <td>Algebra, Data &amp; Chance, Measures, Number, Shape &amp; Space</td>
+    <td>Strand → Strand Unit → Stage (1–4) → Prose outcome</td>
+    <td><code>PC9, Stage 2</code><br>(Numeration &amp; counting continuum, 1st–2nd class)</td>
+  </tr>
+</table>
+
+<p>The Language Curriculum uses explicit TF (torthaí foghlama / learning outcome) codes with stage suffixes. The Maths Curriculum uses 12 Progression Continua (PC1–PC12) — PDF documents mapping each strand unit's development across stages. Outcomes are prose, not codes, so the system must normalise them.</p>
+
+<h4>B. The 1999 Curriculum — prose only</h4>
+
+<table>
+  <tr><th>Subject</th><th>Strands</th><th>Class-level granularity</th></tr>
+  <tr><td><strong>SESE: Science</strong></td><td>Living things, Energy &amp; forces, Materials, Environmental awareness</td><td>Infants, 1st–2nd, 3rd–4th, 5th–6th</td></tr>
+  <tr><td><strong>SESE: Geography</strong></td><td>Human environments, Natural environments, Environmental awareness</td><td>Same bands</td></tr>
+  <tr><td><strong>SESE: History</strong></td><td>Myself &amp; family, Story, Early people, Life in the past, Eras of change, Politics &amp; conflict</td><td>Same bands</td></tr>
+  <tr><td><strong>SPHE</strong></td><td>Myself, Myself &amp; others, Myself &amp; the wider world</td><td>Same bands</td></tr>
+  <tr><td><strong>PE</strong></td><td>Athletics, Dance, Gymnastics, Games, Outdoor &amp; adventure, Aquatics</td><td>Same bands</td></tr>
+  <tr><td><strong>Arts Education</strong></td><td>Visual Arts, Music, Drama</td><td>Same bands</td></tr>
+</table>
+
+<p>These subjects have <strong>no outcome codes</strong>. The system must generate synthetic identifiers (e.g. <code>SESE/SCI/Living-things/Infants</code>) and infer alignment from resource content rather than matching explicit codes. This is a fundamentally harder problem — it requires the system to understand that a "parts of a plant" worksheet maps to SESE > Science > Living things > Plants and animals, infants level, without a machine-readable code to match against.</p>
+
+<div class="card">
+  <h4>Synthetic coding scheme for 1999 curriculum subjects</h4>
+  <table>
+    <tr><th>Field</th><th>Example</th><th>Derivation</th></tr>
+    <tr><td>Area</td><td><code>SESE</code></td><td>Curriculum area</td></tr>
+    <tr><td>Subject</td><td><code>SCI</code></td><td>3-letter code</td></tr>
+    <tr><td>Strand</td><td><code>Living-things</code></td><td>Slugified strand name</td></tr>
+    <tr><td>Strand unit</td><td><code>Plants-and-animals</code></td><td>Slugified unit name</td></tr>
+    <tr><td>Stage</td><td><code>S1</code> (Infants), <code>S2</code> (1st–2nd), <code>S3</code> (3rd–4th), <code>S4</code> (5th–6th)</td><td>Normalised from class band</td></tr>
+  </table>
+  <p>Result: <code>SESE/SCI/Living-things/Plants-and-animals/S1</code></p>
+</div>
+
+
+<h3>Programme-specific reference taxonomies</h3>
+
+<div class="phase-label">What the resource collection actually shows is in use</div>
+
+<table>
+  <tr><th>Programme</th><th>Evidence in collection</th><th>Taxonomy structure</th><th>Granularity</th></tr>
+  <tr>
+    <td><strong>UFLI Foundations</strong></td>
+    <td>24 files, 2 subdirs, 1 webinar recording</td>
+    <td>Lessons 1–128 + alphabet lessons A–J, grouped into 13 blocks (CVC → Affixes)</td>
+    <td>Per-lesson: e.g. <code>UFLI/L54</code> = VCe a_e pattern</td>
+  </tr>
+  <tr>
+    <td><strong>Numicon</strong></td>
+    <td>1 subdir in maths</td>
+    <td>6 colour-coded levels: 1 (Red, ages 3–5) → 6 (Purple, ages 7–8)</td>
+    <td>Per-level: e.g. <code>Numicon/L3-Yellow</code> = Number to 100</td>
+  </tr>
+  <tr>
+    <td><strong>Morphology programme</strong></td>
+    <td>27-week plan for 3rd–6th class</td>
+    <td>Weekly Latin/Greek bases: Week 1 re-, Week 2 struct, through Week 27 fac/fact/fect/fic</td>
+    <td>Per-week: e.g. <code>MORPH/W14/con</code></td>
+  </tr>
+  <tr>
+    <td><strong>Treasa Bowe Spelling</strong></td>
+    <td>Course modules, webinar folders</td>
+    <td>Modules: Spelling Rules, Morphology (Latin Bases)</td>
+    <td>Per-module</td>
+  </tr>
+</table>
+
+<p><strong>Jolly Phonics</strong> is conspicuously <em>absent</em> from the collection despite being Ireland's most common infant phonics programme. The phonics content follows UFLI's scope and sequence instead. This is useful — it tells us the teacher made a deliberate methodological choice, and the system should not force-match Jolly Phonics outcomes unless the teacher explicitly adds that reference.</p>
+
+
+<h3>How reference integration changes the tagging pipeline</h3>
+
+<p>The earlier tagging dimensions (subject, format, grade, season, pedagogy) are still needed. But now we add a new, orthogonal layer:</p>
+
+<div class="card">
+  <h4>Tag Dimension: Curriculum Alignment</h4>
+  <table>
+    <tr><th>Field</th><th>Example</th><th>Source</th></tr>
+    <tr><td><code>curriculum_area</code></td><td><code>Primary Language</code></td><td>Matched from content against reference taxonomy</td></tr>
+    <tr><td><code>strand</code></td><td><code>Reading</code></td><td>Content-matched or folder-inferred</td></tr>
+    <tr><td><code>element</code></td><td><code>Understanding</code></td><td>Content only (no folder signal)</td></tr>
+    <tr><td><code>outcome_code</code></td><td><code>TF7, C2</code></td><td>AI-inferred from resource content ↔ outcome prose</td></tr>
+    <tr><td><code>stage</code></td><td><code>Stage 2 (1st–2nd)</code></td><td>AI-inferred or folder-hinted</td></tr>
+    <tr><td><code>programme</code></td><td><code>UFLI</code></td><td>Folder name or content detection</td></tr>
+    <tr><td><code>programme_ref</code></td><td><code>Lesson 42 (FLSZ rule)</code></td><td>AI-inferred from scope &amp; sequence</td></tr>
+  </table>
+</div>
+
+<p>This is not a replacement for the existing tags — it's a second pass. The workflow becomes:</p>
+
+<ol>
+  <li><strong>Pass 1:</strong> Content tags (subject, format, grade, season, pedagogy) — fast, folder-augmented, as designed before</li>
+  <li><strong>Pass 2:</strong> Curriculum alignment — send resource text + reference taxonomy to DeepSeek with the prompt: <em>"Here is a teaching resource and a curriculum taxonomy. Which outcome(s) does this resource serve? Return JSON with outcome codes and confidence."</em></li>
+  <li><strong>Pass 3:</strong> Gap analysis — iterate all curriculum outcomes; any with zero resources above a confidence threshold is a gap → trigger Maker agent</li>
+</ol>
+
+
+<h3>The gap detection engine</h3>
+
+<p>This is where the agent pipeline earns its grade. Gap detection connects every part of the system:</p>
+
+<pre class="ascii">
+  REFERENCE TAXONOMY                    RESOURCE CATALOGUE
+  (hand-authored once)                  (built by Pass 1 + 2)
+  ┌──────────────────┐                  ┌──────────────────────┐
+  │ TF1, C1           │────────────────→│ Phonics mat #47      │
+  │ TF1, C2           │────────────────→│ Phonics mat #47      │
+  │ TF1, C3           │────────────────→│ (none found)  ← GAP  │
+  │ TF1, C4           │────────────────→│ Comprehension #12    │
+  │ TF2, C1           │────────────────→│ (none found)  ← GAP  │
+  │ ...               │                  │ ...                  │
+  └──────────────────┘                  └──────────────────────┘
+                                                  │
+                                          Gaps trigger Maker:
+                                          "Generate a resource
+                                           for TF1, C3 (Oral Language,
+                                           Engagement/listening/attention,
+                                           Stage 3, 3rd–4th class)"
+</pre>
+
+<p>The Maker agent receives the outcome prose + stage descriptor + any exemplar resources from adjacent stages, and generates a novel worksheet/activity/lesson plan that fills the gap. The QA agent (one of the brief's suggested extensions) then validates it against the outcome.</p>
+
+
+<h3>Practical implementation for CA3</h3>
+
+<p>The curriculum taxonomies must be hand-authored because <strong>no public API or structured data export exists</strong> from the NCCA. The Language Curriculum outcomes and Maths Progression Continua are published as web pages and PDFs respectively, with no JSON endpoint. For the CA3 scope:</p>
+
+<div class="card">
+  <h4>Recommended scope for reference taxonomy ingestion</h4>
+  <table>
+    <tr><th>Reference</th><th>Action</th><th>Effort</th></tr>
+    <tr>
+      <td>Primary Language Curriculum (TF codes)</td>
+      <td>Author a ~120-line JSON of all TF1–TF12 outcomes × 4 stages for English strands. This is the strongest candidate because (a) it has explicit codes, (b) it directly maps to the largest part of the resource collection (phonics, morphology, writing, comprehension).</td>
+      <td><strong>2–3 hours</strong> of transcribing from curriculumonline.ie</td>
+    </tr>
+    <tr>
+      <td>UFLI scope &amp; sequence</td>
+      <td>Author a JSON of all 128 lessons with their focus descriptions. 24 files in the collection are already UFLI-aligned in filename — this gives instant high-confidence matches.</td>
+      <td><strong>1 hour</strong> — the scope is well-documented</td>
+    </tr>
+    <tr>
+      <td>Primary Maths (PC1–PC12)</td>
+      <td>Synthetic codes only (no prose transcription needed). Match resources to strand × stage; skip per-outcome matching for v1 since outcomes are prose and matching requires significant AI inference.</td>
+      <td><strong>30 minutes</strong> for the strand/unit structure</td>
+    </tr>
+    <tr>
+      <td>1999 curriculum subjects</td>
+      <td>Synthetic codes for strand × stage. Accept that v1 will have low-confidence matching since there are no structured outcomes to align against — the Maker agent can still generate against strand/stage gaps.</td>
+      <td><strong>1 hour</strong> for 6 subjects</td>
+    </tr>
+    <tr>
+      <td>Numicon, Morphology plan</td>
+      <td>Author if time permits; otherwise name as future work. These are single-classroom programmes and their taxonomies will change per-school anyway.</td>
+      <td>Nice-to-have</td>
+    </tr>
+  </table>
+</div>
+
+<p><strong>Total reference authoring: ~5 hours</strong> for the scope that matters most (Language Curriculum + UFLI + Maths structure + 1999 subject shells). This is a one-time cost — the taxonomies are static and reusable. They become a committed artefact in the repo alongside the agent definitions.</p>
+
+<div class="card">
+  <h4>Gap analysis as a CA3 rubric win</h4>
+  <p>Curriculum gap detection maps directly to the CA3 brief's core requirements:</p>
+  <ul>
+    <li><strong>Handoff &amp; Orchestration (25%):</strong> The Researcher agent ingests the reference taxonomy and resource catalogue, identifies gaps, and hands a structured gap list to the Maker. Each gap is a real input to the next agent — not a loosely related task.</li>
+    <li><strong>Strategic Rationale:</strong> Naming the two-curriculum-regime problem (1999 vs. new framework) and designing a synthetic coding scheme for the older one is exactly the kind of domain-specific reasoning the rubric rewards.</li>
+    <li><strong>Regulatory/Ethics:</strong> The gap detection process itself is a quality-assurance mechanism — it prevents the system from claiming coverage it doesn't have, which is a trust-calibration move straight out of Week 2 (Lee &amp; See, 2004).</li>
+    <li><strong>Live data:</strong> The reference taxonomies and the catalogue are both queryable at run time via the Google Sheet (or lightweight DB) — two live data sources, not one.</li>
+  </ul>
+</div>
+
+
+<!-- ============================================================ -->
+<h2 id="summary">11. Summary of the Journey</h2>
 
 <table>
   <tr><th>Phase</th><th>What we learned</th><th>Key metric</th></tr>
@@ -470,9 +675,19 @@
     <td>Text → DeepSeek for 70%; images → Gemini Flash vision for 30%</td>
     <td>~$6–16 total, ~100 min processing</td>
   </tr>
+  <tr>
+    <td>Reference taxonomies</td>
+    <td>Curriculum outcomes are the search dimension teachers actually use; no public API exists so taxonomies must be hand-authored (~5 hrs). Two-regime problem (1999 vs. new framework) requires synthetic codes for older subjects. UFLI scope &amp; sequence maps directly to 24 existing files.</td>
+    <td>~120 Language outcomes, 128 UFLI lessons, 6 synthetic subjects</td>
+  </tr>
+  <tr>
+    <td>Gap detection</td>
+    <td>Curriculum-to-resource mapping creates a natural pipeline: Researcher finds gaps → Maker generates content → QA validates. Maps directly to rubric criteria (Handoff, Strategic Rationale, Live Data).</td>
+    <td>Every uncatalogued outcome triggers Maker agent</td>
+  </tr>
 </table>
 
-<p>The exploration moved from <em>"can we just use folder names?"</em> (yes, mostly) to <em>"what does reading the files add?"</em> (a lot, but with a hard ceiling) to <em>"how do we break through that ceiling?"</em> (vision LLMs). The right answer for a CA3 project is the optimised hybrid: demonstrate the pipeline architecture, deep-parse a representative sample, and name the full production path as future work. This shows the lecturer you understand both the engineering <em>and</em> the strategic tradeoffs.</p>
+<p>The exploration moved from <em>"can we just use folder names?"</em> (yes, mostly) to <em>"what does reading the files add?"</em> (a lot, but with a hard ceiling) to <em>"how do we break through that ceiling?"</em> (vision LLMs) to <em>"what dimension are teachers actually searching on?"</em> (curriculum outcomes). The right answer for a CA3 project: demonstrate the pipeline architecture with a small, high-confidence reference set (Language Curriculum + UFLI), deep-parse a representative resource sample, implement gap detection as the core agent handoff, and name full-scale production as future work. This shows the lecturer you understand the engineering, the strategic tradeoffs, <em>and</em> the domain — which is the whole point of the module.</p>
 
 
 <hr>
