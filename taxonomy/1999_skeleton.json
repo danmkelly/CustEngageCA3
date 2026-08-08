@@ -1,0 +1,210 @@
+{
+  "_note": "The 1999 Primary School Curriculum subjects lack native alphanumeric outcome codes. This skeleton uses synthetic identifiers (e.g. SESE-SCI-1a) to provide a navigable structure for catalogue tagging and user browsing. No outcome prose is included — these subjects are structurally mapped only.",
+  "subjects": {
+    "SESE_Science": {
+      "label": "SESE: Science",
+      "strands": [
+        {
+          "name": "Living Things",
+          "stages": ["Junior Infants – 2nd Class", "3rd – 6th Class"],
+          "synthetic_id_prefix": "SESE-SCI-1"
+        },
+        {
+          "name": "Energy and Forces",
+          "stages": ["Junior Infants – 2nd Class", "3rd – 6th Class"],
+          "synthetic_id_prefix": "SESE-SCI-2"
+        },
+        {
+          "name": "Materials",
+          "stages": ["Junior Infants – 2nd Class", "3rd – 6th Class"],
+          "synthetic_id_prefix": "SESE-SCI-3"
+        },
+        {
+          "name": "Environmental Awareness and Care",
+          "stages": ["Junior Infants – 2nd Class", "3rd – 6th Class"],
+          "synthetic_id_prefix": "SESE-SCI-4"
+        }
+      ]
+    },
+    "SESE_Geography": {
+      "label": "SESE: Geography",
+      "strands": [
+        {
+          "name": "Human Environments",
+          "stages": ["Junior Infants – 2nd Class", "3rd – 6th Class"],
+          "synthetic_id_prefix": "SESE-GEO-1"
+        },
+        {
+          "name": "Natural Environments",
+          "stages": ["Junior Infants – 2nd Class", "3rd – 6th Class"],
+          "synthetic_id_prefix": "SESE-GEO-2"
+        },
+        {
+          "name": "Environmental Awareness and Care",
+          "stages": ["Junior Infants – 2nd Class", "3rd – 6th Class"],
+          "synthetic_id_prefix": "SESE-GEO-3"
+        }
+      ]
+    },
+    "SESE_History": {
+      "label": "SESE: History",
+      "strands": [
+        {
+          "name": "Myself and My Family",
+          "stages": ["Junior Infants – 2nd Class", "3rd – 6th Class"],
+          "synthetic_id_prefix": "SESE-HIS-1"
+        },
+        {
+          "name": "Story",
+          "stages": ["Junior Infants – 2nd Class", "3rd – 6th Class"],
+          "synthetic_id_prefix": "SESE-HIS-2"
+        },
+        {
+          "name": "Change and Continuity",
+          "stages": ["Junior Infants – 2nd Class", "3rd – 6th Class"],
+          "synthetic_id_prefix": "SESE-HIS-3"
+        },
+        {
+          "name": "Local Studies",
+          "stages": ["Junior Infants – 2nd Class", "3rd – 6th Class"],
+          "synthetic_id_prefix": "SESE-HIS-4"
+        },
+        {
+          "name": "Early People and Ancient Societies",
+          "stages": ["3rd – 6th Class"],
+          "synthetic_id_prefix": "SESE-HIS-5"
+        },
+        {
+          "name": "Life, Society, Work, and Culture in the Past",
+          "stages": ["3rd – 6th Class"],
+          "synthetic_id_prefix": "SESE-HIS-6"
+        },
+        {
+          "name": "Continuity and Change Over Time",
+          "stages": ["3rd – 6th Class"],
+          "synthetic_id_prefix": "SESE-HIS-7"
+        }
+      ]
+    },
+    "SPHE": {
+      "label": "Social, Personal and Health Education",
+      "strands": [
+        {
+          "name": "Myself",
+          "stages": ["Junior Infants – 2nd Class", "3rd – 6th Class"],
+          "synthetic_id_prefix": "SPHE-1"
+        },
+        {
+          "name": "Myself and Others",
+          "stages": ["Junior Infants – 2nd Class", "3rd – 6th Class"],
+          "synthetic_id_prefix": "SPHE-2"
+        },
+        {
+          "name": "Myself and the Wider World",
+          "stages": ["Junior Infants – 2nd Class", "3rd – 6th Class"],
+          "synthetic_id_prefix": "SPHE-3"
+        }
+      ]
+    },
+    "PE": {
+      "label": "Physical Education",
+      "strands": [
+        {
+          "name": "Athletics",
+          "stages": ["Junior Infants – 2nd Class", "3rd – 6th Class"],
+          "synthetic_id_prefix": "PE-1"
+        },
+        {
+          "name": "Dance",
+          "stages": ["Junior Infants – 2nd Class", "3rd – 6th Class"],
+          "synthetic_id_prefix": "PE-2"
+        },
+        {
+          "name": "Gymnastics",
+          "stages": ["Junior Infants – 2nd Class", "3rd – 6th Class"],
+          "synthetic_id_prefix": "PE-3"
+        },
+        {
+          "name": "Games",
+          "stages": ["Junior Infants – 2nd Class", "3rd – 6th Class"],
+          "synthetic_id_prefix": "PE-4"
+        },
+        {
+          "name": "Outdoor and Adventure Activities",
+          "stages": ["Junior Infants – 2nd Class", "3rd – 6th Class"],
+          "synthetic_id_prefix": "PE-5"
+        },
+        {
+          "name": "Aquatics",
+          "stages": ["Junior Infants – 2nd Class", "3rd – 6th Class"],
+          "synthetic_id_prefix": "PE-6"
+        }
+      ]
+    },
+    "Arts_VisualArts": {
+      "label": "Arts Education: Visual Arts",
+      "strands": [
+        {
+          "name": "Drawing",
+          "stages": ["Junior Infants – 2nd Class", "3rd – 6th Class"],
+          "synthetic_id_prefix": "ARTS-VA-1"
+        },
+        {
+          "name": "Paint and Colour",
+          "stages": ["Junior Infants – 2nd Class", "3rd – 6th Class"],
+          "synthetic_id_prefix": "ARTS-VA-2"
+        },
+        {
+          "name": "Print",
+          "stages": ["Junior Infants – 2nd Class", "3rd – 6th Class"],
+          "synthetic_id_prefix": "ARTS-VA-3"
+        },
+        {
+          "name": "Clay",
+          "stages": ["Junior Infants – 2nd Class", "3rd – 6th Class"],
+          "synthetic_id_prefix": "ARTS-VA-4"
+        },
+        {
+          "name": "Construction",
+          "stages": ["Junior Infants – 2nd Class", "3rd – 6th Class"],
+          "synthetic_id_prefix": "ARTS-VA-5"
+        },
+        {
+          "name": "Fabric and Fibre",
+          "stages": ["Junior Infants – 2nd Class", "3rd – 6th Class"],
+          "synthetic_id_prefix": "ARTS-VA-6"
+        }
+      ]
+    },
+    "Arts_Music": {
+      "label": "Arts Education: Music",
+      "strands": [
+        {
+          "name": "Listening and Responding",
+          "stages": ["Junior Infants – 2nd Class", "3rd – 6th Class"],
+          "synthetic_id_prefix": "ARTS-MUS-1"
+        },
+        {
+          "name": "Performing",
+          "stages": ["Junior Infants – 2nd Class", "3rd – 6th Class"],
+          "synthetic_id_prefix": "ARTS-MUS-2"
+        },
+        {
+          "name": "Composing",
+          "stages": ["Junior Infants – 2nd Class", "3rd – 6th Class"],
+          "synthetic_id_prefix": "ARTS-MUS-3"
+        }
+      ]
+    },
+    "Arts_Drama": {
+      "label": "Arts Education: Drama",
+      "strands": [
+        {
+          "name": "Drama to Explore Feelings, Knowledge, and Ideas, Leading to Understanding",
+          "stages": ["Junior Infants – 2nd Class", "3rd – 6th Class"],
+          "synthetic_id_prefix": "ARTS-DRA-1"
+        }
+      ]
+    }
+  }
+}
