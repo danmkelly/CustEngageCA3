@@ -3,1887 +3,630 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CA3 — Catalogue Index Design Journey</title>
+<title>Teacher's Pet — Pipeline Design</title>
 <style>
   :root {
-    --bg: #fafaf9;
-    --card: #ffffff;
-    --text: #1c1917;
-    --muted: #78716c;
-    --accent: #2563eb;
-    --accent-light: #eff6ff;
-    --border: #e7e5e4;
-    --green: #16a34a;
-    --red: #dc2626;
-    --amber: #d97706;
-    --purple: #7c3aed;
-    --code-bg: #1e293b;
-    --code-text: #e2e8f0;
+    --bg: #fafaf9; --card: #fff; --text: #1c1917; --muted: #78716c;
+    --accent: #2563eb; --accent-light: #eff6ff; --border: #e7e5e4;
+    --green: #16a34a; --red: #dc2626; --amber: #d97706; --purple: #7c3aed;
+    --code-bg: #1e293b; --code-text: #e2e8f0;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.7;
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 2rem 1.5rem 6rem;
-  }
-  h1 { font-size: 2rem; margin-bottom: 0.25rem; letter-spacing: -0.02em; }
-  h2 { font-size: 1.35rem; margin: 2.5rem 0 0.75rem; padding-top: 1rem; border-top: 1px solid var(--border); letter-spacing: -0.01em; }
-  h3 { font-size: 1.05rem; margin: 1.5rem 0 0.5rem; color: var(--accent); }
-  p { margin-bottom: 1rem; }
-  .meta { color: var(--muted); font-size: 0.9rem; margin-bottom: 2rem; }
-  .repo { display: inline-block; background: var(--accent-light); color: var(--accent); padding: 0.15rem 0.6rem; border-radius: 4px; font-family: monospace; font-size: 0.85rem; text-decoration: none; }
-  .repo:hover { text-decoration: underline; }
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 1.25rem 1.5rem;
-    margin-bottom: 1.25rem;
-  }
-  .card h4 { font-size: 0.95rem; margin-bottom: 0.5rem; }
-  .card ul { padding-left: 1.25rem; }
-  .card li { margin-bottom: 0.35rem; font-size: 0.92rem; }
-  table { width: 100%; border-collapse: collapse; margin: 1rem 0 1.5rem; font-size: 0.9rem; }
-  th, td { padding: 0.6rem 0.75rem; text-align: left; border-bottom: 1px solid var(--border); }
-  th { background: var(--accent-light); font-weight: 600; color: var(--accent); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
-  tr:last-child td { border-bottom: none; }
-  .num { text-align: right; font-variant-numeric: tabular-nums; }
-  .tag { display: inline-block; padding: 0.1rem 0.5rem; border-radius: 3px; font-size: 0.75rem; font-weight: 600; margin-right: 0.25rem; }
-  .tag-green { background: #dcfce7; color: #166534; }
-  .tag-amber { background: #fef3c7; color: #92400e; }
-  .tag-red { background: #fee2e2; color: #991b1b; }
-  .tag-purple { background: #f3e8ff; color: #6b21a8; }
+  body { font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem 6rem; }
+  h1 { font-size: 1.8rem; letter-spacing: -0.02em; }
+  h2 { font-size: 1.25rem; margin: 1.5rem 0 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--border); }
+  h3 { font-size: 1rem; margin: 1rem 0 0.4rem; color: var(--accent); }
+  p { margin-bottom: 0.75rem; }
+  .meta { color: var(--muted); font-size: 0.85rem; margin-bottom: 1rem; }
+  .repo { display: inline-block; background: var(--accent-light); color: var(--accent); padding: 0.15rem 0.6rem; border-radius: 4px; font-family: monospace; font-size: 0.8rem; text-decoration: none; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 0.75rem; }
+  .card h4 { font-size: 0.9rem; margin-bottom: 0.35rem; }
+  .card ul { padding-left: 1.2rem; }
+  .card li { margin-bottom: 0.25rem; font-size: 0.88rem; }
+  table { width: 100%; border-collapse: collapse; margin: 0.75rem 0 1rem; font-size: 0.85rem; }
+  th, td { padding: 0.45rem 0.6rem; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { background: var(--accent-light); font-weight: 600; color: var(--accent); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .tag { display: inline-block; padding: 0.1rem 0.45rem; border-radius: 3px; font-size: 0.7rem; font-weight: 600; margin-right: 0.2rem; }
+  .tag-green { background: #dcfce7; color: #166534; } .tag-amber { background: #fef3c7; color: #92400e; }
+  .tag-red { background: #fee2e2; color: #991b1b; } .tag-purple { background: #f3e8ff; color: #6b21a8; }
   .tag-blue { background: #dbeafe; color: #1e40af; }
-  pre {
-    background: var(--code-bg);
-    color: var(--code-text);
-    padding: 1rem 1.25rem;
-    border-radius: 6px;
-    overflow-x: auto;
-    font-size: 0.82rem;
-    line-height: 1.5;
-    margin: 1rem 0 1.5rem;
-  }
-  .ascii { font-size: 0.75rem; line-height: 1.4; }
-  blockquote {
-    border-left: 3px solid var(--accent);
-    padding: 0.5rem 0 0.5rem 1rem;
-    margin: 1rem 0;
-    color: var(--muted);
-    font-style: italic;
-  }
-  .highlight { background: linear-gradient(180deg, transparent 60%, #fef08a 60%); }
-  .section-nav { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 1.5rem 0; }
-  .section-nav a { font-size: 0.8rem; color: var(--accent); text-decoration: none; padding: 0.2rem 0.5rem; border: 1px solid var(--border); border-radius: 4px; }
-  .section-nav a:hover { background: var(--accent-light); }
-  hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
-  .phase-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.25rem; }
-  .decision-made { font-weight: 700; color: #dc2626; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border); }
-  .big-num { font-size: 2.5rem; font-weight: 800; line-height: 1; letter-spacing: -0.03em; }
-  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin: 1rem 0 1.5rem; }
-  .stat { text-align: center; padding: 1rem; background: var(--accent-light); border-radius: 8px; }
-  .stat .val { font-size: 1.5rem; font-weight: 700; color: var(--accent); }
-  .stat .lbl { font-size: 0.75rem; color: var(--muted); margin-top: 0.25rem; }
-  .options-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 1rem; margin: 1rem 0 1.5rem; }
-  @media (max-width: 500px) {
-    body { padding: 1rem; }
-    .options-grid { grid-template-columns: 1fr; }
-    table { font-size: 0.78rem; }
-    th, td { padding: 0.4rem 0.5rem; }
-  }
+  pre { background: var(--code-bg); color: var(--code-text); padding: 0.75rem 1rem; border-radius: 6px; overflow-x: auto; font-size: 0.78rem; line-height: 1.45; margin: 0.75rem 0 1rem; }
+  .ascii { font-size: 0.7rem; line-height: 1.35; }
+  .decision-made { font-weight: 700; color: var(--red); margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--border); }
+  .phase-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.2rem; }
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.75rem; margin: 0.75rem 0 1rem; }
+  .stat { text-align: center; padding: 0.75rem; background: var(--accent-light); border-radius: 8px; }
+  .stat .val { font-size: 1.3rem; font-weight: 700; color: var(--accent); }
+  .stat .lbl { font-size: 0.7rem; color: var(--muted); margin-top: 0.15rem; }
+
+  /* Tabs */
+  .tabs { display: flex; flex-wrap: wrap; gap: 0; margin: 1.5rem 0 0; border-bottom: 2px solid var(--border); }
+  .tab-btn { padding: 0.5rem 1rem; font-size: 0.82rem; font-weight: 600; background: none; border: none; border-bottom: 2px solid transparent; margin-bottom: -2px; cursor: pointer; color: var(--muted); transition: color 0.15s, border-color 0.15s; }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-panel { display: none; padding-top: 1rem; }
+  .tab-panel.active { display: block; }
+  @media (max-width: 700px) { .tabs { flex-direction: column; } .tab-btn { border-bottom: 1px solid var(--border); margin-bottom: 0; } .tab-btn.active { border-bottom-color: var(--accent); } }
+
+  details { margin: 1rem 0; }
+  details summary { cursor: pointer; font-size: 0.9rem; font-weight: 600; color: var(--accent); padding: 0.5rem 0; }
+  details summary:hover { text-decoration: underline; }
+
+  .go { display: inline-block; background: #dcfce7; color: #166534; padding: 0.1rem 0.5rem; border-radius: 3px; font-weight: 700; font-size: 0.75rem; }
+  .warn { display: inline-block; background: #fef3c7; color: #92400e; padding: 0.1rem 0.5rem; border-radius: 3px; font-weight: 700; font-size: 0.75rem; }
 </style>
 </head>
 <body>
 
-<h1>CA3 — Agentic Organisation<br>Catalogue Index Design</h1>
+<h1>Teacher's Pet</h1>
 <p class="meta">
-  <a class="repo" href="https://github.com/danmkelly/CustEngageCA3">github.com/danmkelly/CustEngageCA3</a><br>
-  Daniel Kelly — PGDip/MSc AI for Business, NCI<br>
-  Compiled from an exploration with OpenCode AI, August 2026
+  <a class="repo" href="https://github.com/danmkelly/CustEngageCA3">github.com/danmkelly/CustEngageCA3</a> &mdash;
+  CA3 Final Project, H9CEAI Customer Engagement &amp; AI, NCI PGDip/MSc AI for Business<br>
+  A personal knowledge concierge for info-burdened professionals. Teacher's Pet is the scoped CA3 instance.
 </p>
 
-<div class="section-nav">
-  <a href="#context">Context</a>
-  <a href="#collection">The Collection</a>
-  <a href="#phase1">Phase 1: Folder-Level</a>
-  <a href="#phase2">Phase 2: Content-Level</a>
-  <a href="#phase3">Phase 3: Quantifying</a>
-  <a href="#phase4">Phase 4: Image PDFs</a>
-  <a href="#options">Four Options</a>
-  <a href="#hybrid">Recommended Hybrid</a>
-  <a href="#decisions">Open Decisions</a>
-  <a href="#references">References</a>
-  <a href="#gapfilling">Gap Filling</a>
-  <a href="#architecture">Architecture</a>
-  <a href="#msft-ecosystem">MS Ecosystem</a>
-  <a href="#two-teams">Two Teams</a>
-  <a href="#ux">UX Design</a>
-  <a href="#scope">Vision &amp; Scope</a>
-</div>
-
-
-<!-- ============================================================ -->
-<h2 id="context">1. Project Context</h2>
-
-<p>The CA3 Final Project (Customer Engagement &amp; Artificial Intelligence, H9CEAI) requires building an <strong>Agentic Organisation</strong> — a five-agent pipeline (Researcher, Designer, Maker, Communicator, Manager) that collaboratively solves a real customer-engagement problem. The chosen domain: <strong>Irish primary teachers overwhelmed by curriculum-aligned resource discovery</strong>.</p>
-
-<p>The solution must demonstrate:</p>
-<ul>
-  <li>An unbroken handoff chain where each agent's output becomes the next agent's real input (25% of grade)</li>
-  <li>At least one agent connecting to a live external data source via MCP/API at run time</li>
-  <li>A catalogue taxonomy capable of multi-dimensional tagging across subject, grade, format, season, pedagogy, and source</li>
-</ul>
-
-<p>The initial content corpus is a teacher's manually curated <strong>Teaching Resources</strong> folder — ~4,850 files built up over years of classroom practice. This document captures the exploration from naive folder-based categorisation through to a costed, benchmarked plan for full-content indexing.</p>
-
-
-<!-- ============================================================ -->
-<h2 id="collection">2. The Teaching Resources Collection</h2>
-
-<div class="stat-grid">
-  <div class="stat"><div class="val">4,398</div><div class="lbl">Files (excl. archives)</div></div>
-  <div class="stat"><div class="val">41.6 GB</div><div class="lbl">Total size</div></div>
-  <div class="stat"><div class="val">70+</div><div class="lbl">Top-level folders</div></div>
-  <div class="stat"><div class="val">3,321</div><div class="lbl">PDF files</div></div>
-  <div class="stat"><div class="val">670</div><div class="lbl">Images (JPG/PNG)</div></div>
-  <div class="stat"><div class="val">119</div><div class="lbl">ZIP bundles</div></div>
-</div>
-
-<table>
-  <tr><th>File type</th><th class="num">Count</th><th>Parseable?</th><th>Notes</th></tr>
-  <tr><td>PDF</td><td class="num">3,321</td><td><span class="tag tag-green">Yes</span></td><td>Text extraction via pdfplumber; 30% image-heavy</td></tr>
-  <tr><td>JPG / PNG</td><td class="num">670</td><td><span class="tag tag-red">No</span></td><td>Screenshots of craft ideas/inspiration — no text layer</td></tr>
-  <tr><td>PPTX</td><td class="num">135</td><td><span class="tag tag-green">Yes</span></td><td>python-pptx, near-instant extraction</td></tr>
-  <tr><td>ZIP</td><td class="num">119</td><td><span class="tag tag-amber">Nested</span></td><td>Must extract and recurse; est. ~15 files per archive</td></tr>
-  <tr><td>DOCX</td><td class="num">58</td><td><span class="tag tag-green">Yes</span></td><td>python-docx</td></tr>
-  <tr><td>MP4</td><td class="num">27</td><td><span class="tag tag-red">No</span></td><td>2.75 GB of PD webinar recordings</td></tr>
-  <tr><td>TXT / MD / HTML</td><td class="num">41</td><td><span class="tag tag-green">Yes</span></td><td>Instant</td></tr>
-  <tr><td>Other (PPT, DOC, MHT, etc.)</td><td class="num">27</td><td><span class="tag tag-amber">Partial</span></td><td>Legacy formats, mostly unparseable</td></tr>
-</table>
-
-<p><strong>Key finding:</strong> The folder structure itself is the teacher's implicit taxonomy. Folders like <code>phonics/digraphs</code>, <code>maths/fractions</code>, <code>SEL/empathy</code>, and <code>xmas/Maths</code> already encode subject, sub-domain, and seasonal dimensions. The question is: how much additional signal does deep content analysis add?</p>
-
-
-<!-- ============================================================ -->
-<h2 id="phase1">3. Phase 1 — Naive Folder-Level Categorisation</h2>
-
-<div class="phase-label">Where we started</div>
-
-<p>The first pass treated the folder structure <em>as</em> the taxonomy. Each folder was mapped to a category, sub-categories inherited from subdirectories. This produced the initial <a href="https://github.com/danmkelly/CustEngageCA3/blob/main/CATALOGUE.md">CATALOGUE.md</a> — 20 top-level categories covering Literacy (~1,800 files), Mathematics (~545), SESE (~95), Gaeilge (~119), SEL (~338), and so on.</p>
-
-<div class="card">
-  <h4>What folder-level gave us</h4>
-  <ul>
-    <li>Instant scan — 30 seconds for 4,398 files</li>
-    <li>3–4 reliable tags per file (subject, sub-domain, season from folder path)</li>
-    <li>Clean top-level structure matching Irish primary curriculum areas</li>
-    <li>Multi-category detection where folders cross-cut (e.g. <code>xmas/Maths/</code>)</li>
-  </ul>
-</div>
-
-<div class="card">
-  <h4>What folder-level missed</h4>
-  <ul>
-    <li><strong>Duplicate detection:</strong> <code>Free Fall Bundle (4).pdf</code> and <code>Free Fall Bundle (4) 1.pdf</code> are identical content — invisible from names alone</li>
-    <li><strong>Content type:</strong> Is it a lesson plan, a worksheet, a game, or a poster? The folder says "maths" but not "write-the-room counting centre"</li>
-    <li><strong>Grade band:</strong> Most folders mix infants through 6th class with no signal in the path</li>
-    <li><strong>Pedagogy:</strong> SOR-aligned? Play-based? Differentiated? Invisible</li>
-    <li><strong>Source &amp; licensing:</strong> Teachers Pay Teachers single-classroom licenses — critical for the regulatory/ethics section</li>
-    <li><strong>UUID filenames:</strong> 3.5% of PDFs have names like <code>941dbfe6-b2bb-4ebe-bc7c-2fde69145b77.pdf</code> — zero signal</li>
-  </ul>
-</div>
-
-<p>A folder-level approach tags ~30% of the useful dimensions for a teacher query like <em>"morphology games for seniors around Christmas"</em>. It gets <em>morphology</em> (folder) and <em>Christmas</em> (folder), but misses <em>game</em> (content type), <em>seniors</em> (grade band), and whether it's SOR-aligned (pedagogy).</p>
-
-
-<!-- ============================================================ -->
-<h2 id="phase2">4. Phase 2 — Content-Level Experiment</h2>
-
-<div class="phase-label">Testing whether reading files matters</div>
-
-<p>We took one sample folder — <code>fall resources literacy numeracy</code> (3 PDFs) — and extracted their actual text with <code>pdfplumber</code>.</p>
-
-<h3>What content extraction revealed that folder names didn't</h3>
-
-<table>
-  <tr><th>File</th><th>Folder tags</th><th>Content-level tags added</th></tr>
-  <tr>
-    <td><code>Free Fall Bundle (4).pdf</code></td>
-    <td><span class="tag tag-blue">Season/Fall</span> <span class="tag tag-purple">Literacy</span> <span class="tag tag-purple">Maths</span></td>
-    <td>
-      <span class="tag tag-green">Duplicate detected</span>
-      <span class="tag tag-green">Grade/PreK-K</span>
-      <span class="tag tag-green">Format/Write-the-Room</span>
-      <span class="tag tag-green">Format/Sensory-Bin</span>
-      <span class="tag tag-green">Sub-domain/Counting</span>
-      <span class="tag tag-green">Sub-domain/Subitizing</span>
-      <span class="tag tag-amber">Source/TPT</span>
-      <span class="tag tag-amber">License/Single-Classroom</span>
-      <span class="tag tag-amber">20-author collaboration</span>
-    </td>
-  </tr>
-  <tr>
-    <td><code>Just Add Words Fall .pdf</code></td>
-    <td><span class="tag tag-blue">Season/Fall</span></td>
-    <td>
-      <span class="tag tag-green">Sub-domain/Writing</span>
-      <span class="tag tag-green">Format/Picture Prompts</span>
-      <span class="tag tag-green">Pedagogy/Independent-Work</span>
-      <span class="tag tag-green">Pedagogy/Differentiation</span>
-      <span class="tag tag-green">Grade/K-2</span>
-      <span class="tag tag-amber">Source/TPT</span>
-      <span class="tag tag-amber">Author/TeachingInBlueJeans</span>
-    </td>
-  </tr>
-</table>
-
-<p><strong>3 tags from folder → 6–8 tags from content.</strong> Content extraction tripled the tagging surface. But the experiment also surfaced the hard ceiling: 9 of 14 pages in <code>Just Add Words Fall</code> yielded <em>zero</em> extractable text — they were purely image-based writing prompt sheets. The instructional value lived in pictures, not words.</p>
-
-<blockquote>Takeaway: folder-level captures ~30% of the tagging surface. Content extraction triples it — but with a hard ceiling where image-heavy worksheets dominate.</blockquote>
-
-
-<!-- ============================================================ -->
-<h2 id="phase3">5. Phase 3 — Quantifying the Two Approaches</h2>
-
-<div class="phase-label">Full deep parse vs. optimised hybrid</div>
-
-<p>We benchmarked <code>pdfplumber</code> on a 50-PDF random sample to get real timing data, then extrapolated to the full collection.</p>
-
-<h3>Benchmark results (50 PDF sample)</h3>
-
-<div class="stat-grid">
-  <div class="stat"><div class="val">25</div><div class="lbl">Avg pages per PDF</div></div>
-  <div class="stat"><div class="val">1.43s</div><div class="lbl">Parse time per PDF</div></div>
-  <div class="stat"><div class="val">4,652</div><div class="lbl">Avg chars extracted</div></div>
-  <div class="stat"><div class="val">30%</div><div class="lbl">Image-heavy (&lt;500 chars)</div></div>
-  <div class="stat"><div class="val">48%</div><div class="lbl">Text-rich (&gt;2,000 chars)</div></div>
-  <div class="stat"><div class="val">3.5%</div><div class="lbl">UUID filenames</div></div>
-</div>
-
-<h3>Approach comparison</h3>
-
-<table>
-  <tr><th></th><th>Full Deep Parse</th><th>Optimised Hybrid</th></tr>
-  <tr><td><strong>Files parsed</strong></td><td class="num">~5,340 (all parseable)</td><td class="num">~370–520 (gaps only)</td></tr>
-  <tr><td><strong>Processing time</strong></td><td class="num">~90 minutes</td><td class="num">~10–15 minutes</td></tr>
-  <tr><td><strong>Tags per file (avg)</strong></td><td class="num">6–8</td><td class="num">3–5</td></tr>
-  <tr><td><strong>Duplicate detection</strong></td><td>Automatic</td><td>Missed (unless filename match)</td></tr>
-  <tr><td><strong>Source/license detection</strong></td><td>Captured</td><td>Missed</td></tr>
-  <tr><td><strong>Image-only page handling</strong></td><td>Empty — fails silently</td><td>Same limitation</td></tr>
-  <tr><td><strong>DeepSeek API cost</strong></td><td class="num">~$3.10</td><td class="num">~$0.29</td></tr>
-  <tr><td><strong>+ Vision for image-heavy</strong></td><td class="num">+ ~$1.75</td><td class="num">+ ~$0.26</td></tr>
-  <tr><td><strong>Total API cost</strong></td><td class="num"><strong>~$4.85</strong></td><td class="num"><strong>~$0.55</strong></td></tr>
-</table>
-
-<p>The API cost is trivially cheap either way. The real cost is engineering time to build the pipeline, and the quality gap is driven by the image-heavy-PDF problem — not by parse depth.</p>
-
-
-<!-- ============================================================ -->
-<h2 id="phase4">6. Phase 4 — The Image-Heavy PDF Problem</h2>
-
-<div class="phase-label">The real bottleneck</div>
-
-<p><strong>30% of PDFs (996 files) yield fewer than 500 characters of extractable text.</strong> These are predominantly:</p>
-<ul>
-  <li>Scanned/photographed worksheets where the instructional content is in the picture</li>
-  <li>Craft templates (cut-and-paste, colour-by-number, tracing sheets)</li>
-  <li>Classroom posters and display materials</li>
-  <li>Activity cards and game boards where structure is visual</li>
-</ul>
-
-<p>Standard <code>pdfplumber</code> text extraction gets almost nothing from them because there <em>is</em> no embedded text layer. The value a teacher would search for — "CVC word sort with pumpkin theme for infants" — is visually obvious to a human but invisible to a text parser.</p>
-
-<div class="card">
-  <h4>Case study: Just Add Words Fall (14 pages)</h4>
-  <ul>
-    <li>Pages 1–4: Introduction, terms, author bio — <strong>1,200 chars of extractable text</strong></li>
-    <li>Pages 5–14: The actual picture writing prompts — <strong>0 chars</strong> (just a copyright footer)</li>
-    <li>All the instructional value is in the images: a scarecrow scene, a pumpkin patch, autumn leaves</li>
-    <li>A text-only parser learns it's "about fall writing" but completely misses that it's 10 distinct scene-based prompts</li>
-  </ul>
-</div>
-
-
-<!-- ============================================================ -->
-<h2 id="options">7. Four Options for Solving Image Extraction</h2>
-
-<div class="options-grid">
-
-  <div class="card">
-    <h4>Option 1: Tesseract OCR <span class="tag tag-green">Free</span></h4>
-    <p><code>pdf2image</code> + <code>pytesseract</code> — run OCR on every page, feed extracted text to DeepSeek for tagging.</p>
-    <table>
-      <tr><td>Accuracy</td><td>85–92% on clean print; poor on handwriting, decorative fonts, cluttered layouts</td></tr>
-      <tr><td>Speed</td><td>2–3s per page → 50–75s per 25-page PDF</td></tr>
-      <tr><td>996 PDFs</td><td>~14–21 hours local processing</td></tr>
-      <tr><td>Cost</td><td><strong>Free</strong></td></tr>
-      <tr><td>Best for</td><td>Clean worksheets, typed instructions</td></tr>
-      <tr><td>Worst for</td><td>Handwritten annotations, clip-art-heavy craft templates</td></tr>
-    </table>
-  </div>
-
-  <div class="card">
-    <h4>Option 2: Cloud OCR <span class="tag tag-amber">~$37</span></h4>
-    <p>Azure Document Intelligence / Google Document AI / AWS Textract. Returns structured JSON with text, tables, and layout analysis.</p>
-    <table>
-      <tr><td>Accuracy</td><td>95%+ on printed text; handles tables, multi-column</td></tr>
-      <tr><td>Speed</td><td>~1s per page (async batch)</td></tr>
-      <tr><td>996 PDFs</td><td>~7 hours (async, wall-clock much faster)</td></tr>
-      <tr><td>Cost</td><td><strong>~$37</strong> (@ $1.50/1,000 pages)</td></tr>
-      <tr><td>Best for</td><td>Mixed content, tables, multi-column worksheets</td></tr>
-    </table>
-  </div>
-
-  <div class="card">
-    <h4>Option 3: Marker (open-source) <span class="tag tag-green">Free</span></h4>
-    <p>PDF-to-markdown converter with built-in OCR. Preserves layout, handles equations and mixed content better than raw Tesseract.</p>
-    <table>
-      <tr><td>Accuracy</td><td>Strong layout preservation; better on mixed text/image</td></tr>
-      <tr><td>Speed</td><td>GPU: 2s/page; CPU: 20s/page</td></tr>
-      <tr><td>996 PDFs</td><td>GPU: ~14 hours; CPU: ~140 hours</td></tr>
-      <tr><td>Cost</td><td><strong>Free</strong> (GPU recommended)</td></tr>
-      <tr><td>Setup</td><td><code>pip install marker-pdf</code>; ~2GB model download</td></tr>
-    </table>
-  </div>
-
-  <div class="card">
-    <h4>Option 4: Vision LLM <span class="tag tag-purple">$2–125</span></h4>
-    <p>Send page images directly to a multimodal model. Bypasses OCR entirely — the model <em>sees</em> the worksheet and describes it directly.</p>
-    <table>
-      <tr><th>Model</th><th>Cost per image</th><th>996 PDFs (25 pages each)</th></tr>
-      <tr><td>Gemini 1.5 Flash</td><td>$0.0001–0.0005</td><td><strong>~$2.50–12.50</strong></td></tr>
-      <tr><td>GPT-4o</td><td>$0.002–0.005</td><td>~$50–125</td></tr>
-      <tr><td>Claude 3.5 Sonnet</td><td>$0.003–0.006</td><td>~$75–150</td></tr>
-    </table>
-    <p style="margin-top:0.5rem;"><strong>Unique advantage:</strong> The model can infer pedagogical intent directly from the image — "cut-and-paste CVC word sort, K-1st, independent centre activity, SOR-aligned" — without any intermediate text extraction step. This is the only approach that captures what a worksheet <em>does</em>, not just what it <em>says</em>.</p>
-    <p><strong>Best for:</strong> Activity type identification, grade-level inference, pedagogical intent.<br>
-    <strong>Worst for:</strong> Structured metadata extraction (author, source, license terms — though these are usually on text-heavy intro pages).</p>
-  </div>
-
-</div>
-
-
-<!-- ============================================================ -->
-<h2 id="hybrid">8. Recommended Hybrid Architecture</h2>
-
-<div class="phase-label">How to put it together</div>
-
-<pre class="ascii">
-                    ┌──────────────────────────────────────────────┐
-                    │           ALL PDFs (3,321)                   │
-                    └──────────────────┬───────────────────────────┘
-                                       │
-                              Fast text-extraction pass
-                              (pdfplumber, ~90 min)
-                                       │
-                    ┌──────────────────┴───────────────────────────┐
-                    │                                              │
-              Text-rich (70%)                            Image-heavy (30%)
-              ≥500 chars                                 <500 chars
-                    │                                              │
-        ┌───────────┴───────────┐                    ┌─────────────┴─────────────┐
-        │                       │                    │                           │
-   DeepSeek classify     Folder tags           Gemini Flash             Tesseract/Marker
-   (~6-8 tags/file)      supplement            vision → tags            OCR → DeepSeek
-   ~$3.10                (free)                ~$2.50–12.50             (free)
-                                              (direct pedagogical      (~14-140 hrs CPU)
-                                               inference from image)
-                    │                                              │
-                    └──────────────────┬───────────────────────────┘
-                                       │
-                              Unified tag store
-                              (JSON/SQLite/Google Sheet)
-                                       │
-                              Queryable catalogue
-                              with multi-dimension tags
-</pre>
-
-<p>The <strong>Gemini Flash vision path</strong> (Option 4) is the most compelling for image-heavy PDFs because:</p>
-<ol>
-  <li>At $2.50–12.50 for all 996 PDFs, it's in the same cost ballpark as cloud OCR ($37) but with orders of magnitude less engineering (no OCR pipeline to build or tune)</li>
-  <li>It captures <em>pedagogical intent</em> — "this is a write-the-room counting centre for PreK-K" — that OCR text alone cannot express</li>
-  <li>It handles the worst case (craft templates with zero words) gracefully — the model can still describe the activity from the visual layout</li>
-  <li>Prompt engineering: send the image with "Describe this teaching resource. Output JSON with: subject, subdomain, grade_band, format, activity_type, season, pedagogy_flags, requires_preparation"</li>
-</ol>
-
-<p>For the 70% text-rich PDFs, DeepSeek classification on extracted text is perfectly adequate and trivially cheap ($3.10). The prompt would similarly request structured JSON output from the extracted text content.</p>
-
-
-<!-- ============================================================ -->
-<h2 id="decisions">9. Open Design Decisions</h2>
-
-<div class="card">
-  <h4>Decision 1: Parse depth — full or optimised?</h4>
-  <p>At $4.85 vs $0.55 total API cost, money isn't the deciding factor. The question is: <strong>does the engineering effort to build the full pipeline (ZIP extraction, nested recursion, error handling for 5,000+ files) justify the 3–5 extra tags per file?</strong> For the CA3 deliverable — where the rubric values demonstrated handoffs and live data over catalogue completeness — the optimised approach (folder-pass + deep-parse only gaps) is likely the right tradeoff. The full deep parse can be named as "production path" in the future-work section.</p>
-</div>
-
-<div class="card">
-  <h4>Decision 2: Vision model for image-heavy PDFs?</h4>
-  <p>Gemini Flash at $2.50–12.50 is almost free. The question is whether the CA3 rubric rewards this level of catalogue sophistication, or whether demonstrating the <em>architecture</em> (the pipeline design, the handoff, the live data connection) carries more weight than an exhaustively tagged catalogue. If the rubric favours architecture, build the pipeline to handle image-heavy PDFs but only run it on a representative sample (50–100 files) for the demo.</p>
-</div>
-
-<div class="card">
-  <h4>Decision 3: Tag taxonomy — how many dimensions?</h4>
-  <table>
-    <tr><th>Dimension</th><th>Example values</th><th>Source</th></tr>
-    <tr><td>Subject</td><td>Literacy, Maths, SESE, Gaeilge, SPHE, Arts, PE</td><td>Folder name</td></tr>
-    <tr><td>Sub-domain</td><td>Phonics, Morphology, Fractions, Map Skills</td><td>Folder + content</td></tr>
-    <tr><td>Grade band</td><td>Infants, 1st–2nd, 3rd–4th, 5th–6th, SEN, Multi-grade</td><td>Content only</td></tr>
-    <tr><td>Format</td><td>Worksheet, Game, Lesson Plan, Poster, Assessment, Flash Cards, Write-the-Room, Sensory Bin</td><td>Content only</td></tr>
-    <tr><td>Season/Event</td><td>Christmas, Halloween, Easter, Back-to-School, Generic</td><td>Folder name</td></tr>
-    <tr><td>Pedagogy</td><td>SOR-aligned, Play-based, Differentiated, Independent Work, Whole-class, Pair Work</td><td>Content only</td></tr>
-    <tr><td>Source</td><td>TPT, Twinkl, Self-made, PDST, NCCA, Unknown</td><td>Content only</td></tr>
-    <tr><td>License</td><td>Single-classroom, Open/free, School-wide, Unknown</td><td>Content only</td></tr>
-  </table>
-  <p>The first four rows are what a teacher query needs. The last three are what the <strong>regulatory/ethics section</strong> (EU AI Act, GDPR, IP rights) of the CA3 writeup needs. Both are required.</p>
-</div>
-
-<div class="card">
-  <h4>Decision 4: Live data connection — the catalogue as the mandatory API call</h4>
-  <p>The project brief requires at least one agent must connect to a live external data source via MCP/API at run time. The catalogue itself (a Google Sheet or lightweight database that agents write to and read from) is the natural candidate — it satisfies the technical gate <em>and</em> the narrative (agents don't work from cached data, they query the live catalogue at run time). This avoids bolting on an artificial API call unrelated to the core problem.</p>
-</div>
-
-
-<!-- ============================================================ -->
-<h2 id="references">10. Reference Taxonomies — Tying Resources to Curriculum Outcomes</h2>
-
-<div class="phase-label">The missing dimension</div>
-
-<p>Everything up to this point has been about describing what a resource <em>is</em> — its subject, format, grade band, season. But a teacher doesn't search by resource attributes. A teacher searches by <strong>need</strong>: <em>"I'm teaching 2nd class, strand unit 'Place Value', what do I have?"</em> or <em>"I need a UFLI lesson 42 activity for my SET group."</em></p>
-
-<p>This requires a fundamentally different tagging dimension: <strong>curriculum outcome alignment</strong>. Resources get tagged not just by what they are, but by what curriculum outcome they serve. This unlocks two capabilities the project brief explicitly asks for:</p>
-
-<ol>
-  <li><strong>Outcome-to-resource mapping:</strong> Given a curriculum outcome code, return matching resources</li>
-  <li><strong>Gap detection:</strong> Iterate all outcomes, identify those with zero matching resources, and trigger the Maker agent to generate content for those gaps</li>
-</ol>
-
-<h3>Two regimes, one system</h3>
-
-<p>The Irish primary curriculum is in transition. Some subjects use the 1999 framework (no structured outcome codes), others use the new framework with coded outcomes. The system must handle both.</p>
-
-<h4>A. The New Framework — structured outcomes</h4>
-
-<table>
-  <tr><th>Curriculum area</th><th>Strands</th><th>Taxonomy structure</th><th>Code format</th></tr>
-  <tr>
-    <td><strong>Primary Language</strong> (2019)<br>English + Gaeilge</td>
-    <td>Oral Language, Reading, Writing</td>
-    <td>Strand → Element → Outcome (1–12) → Stage (1–4)</td>
-    <td><code>TF5, C3</code><br>(Vocabulary outcome, Stage 3 = 3rd–4th class)</td>
-  </tr>
-  <tr>
-    <td><strong>Primary Mathematics</strong> (2023)</td>
-    <td>Algebra, Data &amp; Chance, Measures, Number, Shape &amp; Space</td>
-    <td>Strand → Strand Unit → Stage (1–4) → Prose outcome</td>
-    <td><code>PC9, Stage 2</code><br>(Numeration &amp; counting continuum, 1st–2nd class)</td>
-  </tr>
-</table>
-
-<p>The Language Curriculum uses explicit TF (torthaí foghlama / learning outcome) codes with stage suffixes. The Maths Curriculum uses 12 Progression Continua (PC1–PC12) — PDF documents mapping each strand unit's development across stages. Outcomes are prose, not codes, so the system must normalise them.</p>
-
-<h4>B. The 1999 Curriculum — prose only</h4>
-
-<table>
-  <tr><th>Subject</th><th>Strands</th><th>Class-level granularity</th></tr>
-  <tr><td><strong>SESE: Science</strong></td><td>Living things, Energy &amp; forces, Materials, Environmental awareness</td><td>Infants, 1st–2nd, 3rd–4th, 5th–6th</td></tr>
-  <tr><td><strong>SESE: Geography</strong></td><td>Human environments, Natural environments, Environmental awareness</td><td>Same bands</td></tr>
-  <tr><td><strong>SESE: History</strong></td><td>Myself &amp; family, Story, Early people, Life in the past, Eras of change, Politics &amp; conflict</td><td>Same bands</td></tr>
-  <tr><td><strong>SPHE</strong></td><td>Myself, Myself &amp; others, Myself &amp; the wider world</td><td>Same bands</td></tr>
-  <tr><td><strong>PE</strong></td><td>Athletics, Dance, Gymnastics, Games, Outdoor &amp; adventure, Aquatics</td><td>Same bands</td></tr>
-  <tr><td><strong>Arts Education</strong></td><td>Visual Arts, Music, Drama</td><td>Same bands</td></tr>
-</table>
-
-<p>These subjects have <strong>no outcome codes</strong>. The system must generate synthetic identifiers (e.g. <code>SESE/SCI/Living-things/Infants</code>) and infer alignment from resource content rather than matching explicit codes. This is a fundamentally harder problem — it requires the system to understand that a "parts of a plant" worksheet maps to SESE > Science > Living things > Plants and animals, infants level, without a machine-readable code to match against.</p>
-
-<div class="card">
-  <h4>Synthetic coding scheme for 1999 curriculum subjects</h4>
-  <table>
-    <tr><th>Field</th><th>Example</th><th>Derivation</th></tr>
-    <tr><td>Area</td><td><code>SESE</code></td><td>Curriculum area</td></tr>
-    <tr><td>Subject</td><td><code>SCI</code></td><td>3-letter code</td></tr>
-    <tr><td>Strand</td><td><code>Living-things</code></td><td>Slugified strand name</td></tr>
-    <tr><td>Strand unit</td><td><code>Plants-and-animals</code></td><td>Slugified unit name</td></tr>
-    <tr><td>Stage</td><td><code>S1</code> (Infants), <code>S2</code> (1st–2nd), <code>S3</code> (3rd–4th), <code>S4</code> (5th–6th)</td><td>Normalised from class band</td></tr>
-  </table>
-  <p>Result: <code>SESE/SCI/Living-things/Plants-and-animals/S1</code></p>
-</div>
-
-
-<h3>Programme-specific reference taxonomies</h3>
-
-<div class="phase-label">What the resource collection actually shows is in use</div>
-
-<table>
-  <tr><th>Programme</th><th>Evidence in collection</th><th>Taxonomy structure</th><th>Granularity</th></tr>
-  <tr>
-    <td><strong>UFLI Foundations</strong></td>
-    <td>24 files, 2 subdirs, 1 webinar recording</td>
-    <td>Lessons 1–128 + alphabet lessons A–J, grouped into 13 blocks (CVC → Affixes)</td>
-    <td>Per-lesson: e.g. <code>UFLI/L54</code> = VCe a_e pattern</td>
-  </tr>
-  <tr>
-    <td><strong>Numicon</strong></td>
-    <td>1 subdir in maths</td>
-    <td>6 colour-coded levels: 1 (Red, ages 3–5) → 6 (Purple, ages 7–8)</td>
-    <td>Per-level: e.g. <code>Numicon/L3-Yellow</code> = Number to 100</td>
-  </tr>
-  <tr>
-    <td><strong>Morphology programme</strong></td>
-    <td>27-week plan for 3rd–6th class</td>
-    <td>Weekly Latin/Greek bases: Week 1 re-, Week 2 struct, through Week 27 fac/fact/fect/fic</td>
-    <td>Per-week: e.g. <code>MORPH/W14/con</code></td>
-  </tr>
-  <tr>
-    <td><strong>Treasa Bowe Spelling</strong></td>
-    <td>Course modules, webinar folders</td>
-    <td>Modules: Spelling Rules, Morphology (Latin Bases)</td>
-    <td>Per-module</td>
-  </tr>
-</table>
-
-<p><strong>Jolly Phonics</strong> is conspicuously <em>absent</em> from the collection despite being Ireland's most common infant phonics programme. The phonics content follows UFLI's scope and sequence instead. This is useful — it tells us the teacher made a deliberate methodological choice, and the system should not force-match Jolly Phonics outcomes unless the teacher explicitly adds that reference.</p>
-
-
-<h3>How reference integration changes the tagging pipeline</h3>
-
-<p>The earlier tagging dimensions (subject, format, grade, season, pedagogy) are still needed. But now we add a new, orthogonal layer:</p>
-
-<div class="card">
-  <h4>Tag Dimension: Curriculum Alignment</h4>
-  <table>
-    <tr><th>Field</th><th>Example</th><th>Source</th></tr>
-    <tr><td><code>curriculum_area</code></td><td><code>Primary Language</code></td><td>Matched from content against reference taxonomy</td></tr>
-    <tr><td><code>strand</code></td><td><code>Reading</code></td><td>Content-matched or folder-inferred</td></tr>
-    <tr><td><code>element</code></td><td><code>Understanding</code></td><td>Content only (no folder signal)</td></tr>
-    <tr><td><code>outcome_code</code></td><td><code>TF7, C2</code></td><td>AI-inferred from resource content ↔ outcome prose</td></tr>
-    <tr><td><code>stage</code></td><td><code>Stage 2 (1st–2nd)</code></td><td>AI-inferred or folder-hinted</td></tr>
-    <tr><td><code>programme</code></td><td><code>UFLI</code></td><td>Folder name or content detection</td></tr>
-    <tr><td><code>programme_ref</code></td><td><code>Lesson 42 (FLSZ rule)</code></td><td>AI-inferred from scope &amp; sequence</td></tr>
-  </table>
-</div>
-
-<p>This is not a replacement for the existing tags — it's a second pass. The workflow becomes:</p>
-
-<ol>
-  <li><strong>Pass 1:</strong> Content tags (subject, format, grade, season, pedagogy) — fast, folder-augmented, as designed before</li>
-  <li><strong>Pass 2:</strong> Curriculum alignment — send resource text + reference taxonomy to DeepSeek with the prompt: <em>"Here is a teaching resource and a curriculum taxonomy. Which outcome(s) does this resource serve? Return JSON with outcome codes and confidence."</em></li>
-  <li><strong>Pass 3:</strong> Gap analysis — iterate all curriculum outcomes; any with zero resources above a confidence threshold is a gap → trigger Maker agent</li>
-</ol>
-
-
-<h3>The gap detection engine</h3>
-
-<p>This is where the agent pipeline earns its grade. Gap detection connects every part of the system:</p>
-
-<pre class="ascii">
-  REFERENCE TAXONOMY                    RESOURCE CATALOGUE
-  (hand-authored once)                  (built by Pass 1 + 2)
-  ┌──────────────────┐                  ┌──────────────────────┐
-  │ TF1, C1           │────────────────→│ Phonics mat #47      │
-  │ TF1, C2           │────────────────→│ Phonics mat #47      │
-  │ TF1, C3           │────────────────→│ (none found)  ← GAP  │
-  │ TF1, C4           │────────────────→│ Comprehension #12    │
-  │ TF2, C1           │────────────────→│ (none found)  ← GAP  │
-  │ ...               │                  │ ...                  │
-  └──────────────────┘                  └──────────────────────┘
-                                                  │
-                                          Gaps trigger Maker:
-                                          "Generate a resource
-                                           for TF1, C3 (Oral Language,
-                                           Engagement/listening/attention,
-                                           Stage 3, 3rd–4th class)"
-</pre>
-
-<p>The Maker agent receives the outcome prose + stage descriptor + any exemplar resources from adjacent stages, and generates a novel worksheet/activity/lesson plan that fills the gap. The QA agent (one of the brief's suggested extensions) then validates it against the outcome.</p>
-
-
-<h3>Practical implementation for CA3</h3>
-
-<p>The curriculum taxonomies must be hand-authored because <strong>no public API or structured data export exists</strong> from the NCCA. The Language Curriculum outcomes and Maths Progression Continua are published as web pages and PDFs respectively, with no JSON endpoint. For the CA3 scope:</p>
-
-<div class="card">
-  <h4>Recommended scope for reference taxonomy ingestion</h4>
-  <table>
-    <tr><th>Reference</th><th>Action</th><th>Effort</th></tr>
-    <tr>
-      <td>Primary Language Curriculum (TF codes)</td>
-      <td>Author a ~120-line JSON of all TF1–TF12 outcomes × 4 stages for English strands. This is the strongest candidate because (a) it has explicit codes, (b) it directly maps to the largest part of the resource collection (phonics, morphology, writing, comprehension).</td>
-      <td><strong>2–3 hours</strong> of transcribing from curriculumonline.ie</td>
-    </tr>
-    <tr>
-      <td>UFLI scope &amp; sequence</td>
-      <td>Author a JSON of all 128 lessons with their focus descriptions. 24 files in the collection are already UFLI-aligned in filename — this gives instant high-confidence matches.</td>
-      <td><strong>1 hour</strong> — the scope is well-documented</td>
-    </tr>
-    <tr>
-      <td>Primary Maths (PC1–PC12)</td>
-      <td>Synthetic codes only (no prose transcription needed). Match resources to strand × stage; skip per-outcome matching for v1 since outcomes are prose and matching requires significant AI inference.</td>
-      <td><strong>30 minutes</strong> for the strand/unit structure</td>
-    </tr>
-    <tr>
-      <td>1999 curriculum subjects</td>
-      <td>Synthetic codes for strand × stage. Accept that v1 will have low-confidence matching since there are no structured outcomes to align against — the Maker agent can still generate against strand/stage gaps.</td>
-      <td><strong>1 hour</strong> for 6 subjects</td>
-    </tr>
-    <tr>
-      <td>Numicon, Morphology plan</td>
-      <td>Author if time permits; otherwise name as future work. These are single-classroom programmes and their taxonomies will change per-school anyway.</td>
-      <td>Nice-to-have</td>
-    </tr>
-  </table>
-</div>
-
-<p><strong>Total reference authoring: ~5 hours</strong> for the scope that matters most (Language Curriculum + UFLI + Maths structure + 1999 subject shells). This is a one-time cost — the taxonomies are static and reusable. They become a committed artefact in the repo alongside the agent definitions.</p>
-
-<div class="card">
-  <h4>Gap analysis as a CA3 rubric win</h4>
-  <p>Curriculum gap detection maps directly to the CA3 brief's core requirements:</p>
-  <ul>
-    <li><strong>Handoff &amp; Orchestration (25%):</strong> The Researcher agent ingests the reference taxonomy and resource catalogue, identifies gaps, and hands a structured gap list to the Maker. Each gap is a real input to the next agent — not a loosely related task.</li>
-    <li><strong>Strategic Rationale:</strong> Naming the two-curriculum-regime problem (1999 vs. new framework) and designing a synthetic coding scheme for the older one is exactly the kind of domain-specific reasoning the rubric rewards.</li>
-    <li><strong>Regulatory/Ethics:</strong> The gap detection process itself is a quality-assurance mechanism — it prevents the system from claiming coverage it doesn't have, which is a trust-calibration move straight out of Week 2 (Lee &amp; See, 2004).</li>
-    <li><strong>Live data:</strong> The reference taxonomies and the catalogue are both queryable at run time via the Google Sheet (or lightweight DB) — two live data sources, not one.</li>
-  </ul>
-</div>
-
-
-<!-- ============================================================ -->
-<h2 id="gapfilling">11. Gap Filling — Create, Describe, or Discover?</h2>
-
-<div class="phase-label">When the catalogue comes up empty</div>
-
-<p>Once the gap detection engine (Section 10) identifies that an outcome has zero matching resources, the system must do <em>something</em> useful. The project brief is deliberately flexible: <em>"content generation will at least be creation of lesson plans that bridge curriculum/outcomes and content/methods to fulfil; stretch will be new content creation if easy enough."</em> So the real question is: <strong>what tier of response is both useful to a teacher and safe to build?</strong></p>
-
-<h3>The spectrum: from safe to ambitious</h3>
-
-<table>
-  <tr><th>Tier</th><th>What the system does</th><th>AI risk</th><th>Teacher value</th><th>CA3 fit</th></tr>
-  <tr>
-    <td><strong>1. Gap description</strong></td>
-    <td>Names the gap with context: "You have nothing for TF5, C3. You <em>do</em> have resources for the same outcome at C2 and C4 — these could be adapted. Suggested activity type: word-mapping with morphology focus at 3rd-class level."</td>
-    <td><span class="tag tag-green">Very low</span></td>
-    <td>Medium — saves search time but teacher still does the creating</td>
-    <td>Solid baseline — demonstrates pipeline, handoff, reasoning</td>
-  </tr>
-  <tr>
-    <td><strong>2. Lesson plan generation</strong></td>
-    <td>Produces a structured lesson plan: learning objectives (from outcome prose), suggested activities (from catalogue exemplars at adjacent levels), materials list, differentiation notes, assessment check. Text only, no worksheets.</td>
-    <td><span class="tag tag-green">Low</span></td>
-    <td>High — lesson planning is the time-sink teachers complain about most</td>
-    <td>Good stretch — text generation is what LLMs do best; low hallucination surface</td>
-  </tr>
-  <tr>
-    <td><strong>3. Worksheet/activity generation</strong></td>
-    <td>Generates actual printable content: a CVC word sort, a fractions worksheet, a writing prompt page. Would need image generation or careful HTML/CSS layout.</td>
-    <td><span class="tag tag-amber">Medium</span></td>
-    <td>Very high — this is what "content creation" means to most teachers</td>
-    <td>Ambitious — high failure risk (layout, age-appropriateness, Gaeilge accuracy)</td>
-  </tr>
-  <tr>
-    <td><strong>4. Auto-adapt from adjacent</strong></td>
-    <td>Takes an existing resource tagged to a nearby outcome/stage and adapts it: a C2 worksheet gets harder vocabulary, a junior-infant game gets senior-infant complexity.</td>
-    <td><span class="tag tag-amber">Medium</span></td>
-    <td>High — but trust is critical; a bad adaptation is worse than nothing</td>
-    <td>Named as future — adaptation is harder than generation; the LLM must understand what "harder" means pedagogically</td>
-  </tr>
-</table>
-
-<div class="card">
-  <h4>Why lesson plans are the sweet spot for CA3</h4>
-  <ul>
-    <li><strong>LLMs excel at structured text:</strong> A lesson plan is a template with predictable sections (objective, warm-up, main activity, plenary, differentiation, assessment). Models produce these reliably because the format is well-represented in training data.</li>
-    <li><strong>Low hallucination surface:</strong> The learning objective comes directly from the curriculum outcome prose — the model isn't inventing it, it's restating and contextualising it. Activities can reference catalogue exemplars rather than being invented from scratch.</li>
-    <li><strong>Natural quality gate:</strong> A teacher can scan a lesson plan in 30 seconds and judge its usefulness. A badly-generated worksheet might have subtle errors that take longer to spot.</li>
-    <li><strong>Directly fulfils the brief:</strong> "Creation of lesson plans that bridge curriculum/outcomes and content/methods to fulfil" is the brief's own baseline. Anything beyond this is the brief's own "stretch."</li>
-    <li><strong>Maps to rubric:</strong> The Maker agent receives a structured gap (from Researcher) → produces a structured lesson plan (handoff to QA/Communicator) → the plan references specific catalogue resources. This is a clean, demonstrable pipeline.</li>
-  </ul>
-</div>
-
-<h3>What AI gets wrong in educational content — and how to guard against it</h3>
-
-<table>
-  <tr><th>Failure mode</th><th>Example</th><th>Guard</th></tr>
-  <tr>
-    <td><strong>Curriculum misalignment</strong></td>
-    <td>Suggesting "narrative perspective" activities for infants because the LLM doesn't know that's a 5th-class concept in the Irish curriculum</td>
-    <td>The reference taxonomy is the prompt's ground truth. The prompt includes the exact outcome prose + stage descriptor. "This is Stage 2 (1st–2nd class). All activities must be appropriate for 7–8 year olds."</td>
-  </tr>
-  <tr>
-    <td><strong>Gaeilge errors</strong></td>
-    <td>LLMs are significantly weaker in Irish than English. Generated Irish-language content will contain grammatical errors, unnatural phrasing, or dialect mismatches.</td>
-    <td><strong>Do not generate Irish-language content in v1.</strong> For Gaeilge gaps, the Maker lists the gap and suggests catalogue resources; it does not attempt generation. Name this as a deliberate limitation with the reasoning.</td>
-  </tr>
-  <tr>
-    <td><strong>Age-inappropriate complexity</strong></td>
-    <td>Suggesting a debate activity for senior infants; using vocabulary three grade levels above target</td>
-    <td>Stage descriptor in prompt + explicit instruction: "Activities must be appropriate for Stage X. If unsure, default to simpler."</td>
-  </tr>
-  <tr>
-    <td><strong>Over-standardisation</strong></td>
-    <td>Every generated lesson plan follows the exact same structure, losing the variety that keeps classrooms engaging</td>
-    <td>Prompt variety: rotate through activity types (pair work, game, write-the-room, discussion, hands-on) and structure templates. Include "vary the activity format" as a system instruction.</td>
-  </tr>
-  <tr>
-    <td><strong>Phonics/programme mismatch</strong></td>
-    <td>A UFLI-aligned lesson plan accidentally introduces a sound from the wrong lesson sequence</td>
-    <td>The UFLI scope &amp; sequence is part of the prompt. "This resource must only use sounds introduced up to and including Lesson 42. Do not use sounds from later lessons."</td>
-  </tr>
-</table>
-
-
-<h3>Online content discovery — how hard is it?</h3>
-
-<div class="phase-label">Finding new content to supplement the offline catalogue</div>
-
-<p>The project brief is careful about this: <em>"A defined, legitimately accessible set of discovery sources (e.g. curriculum specification documents, PDST/oide.ie resources, an open-education-resource repository with a real API), not open web crawling or scraping platforms without API access."</em> It also says <em>"will try to have a limited proof of concept of discovering new content and adding to the catalogue; scope will be tight."</em></p>
-
-<p>This is a fundamentally harder problem than catalogue tagging or gap generation. Here's why, broken down by source:</p>
-
-<table>
-  <tr><th>Source</th><th>Accessibility</th><th>Structure</th><th>Relevance</th><th>CA3 viability</th></tr>
-  <tr>
-    <td><strong>curriculumonline.ie</strong><br>(NCCA official)</td>
-    <td><span class="tag tag-green">Public, no API</span></td>
-    <td><span class="tag tag-amber">Semi-structured HTML</span><br>Strand/element/outcome pages are consistently structured. Scrapable with BeautifulSoup. Exemplar videos and support materials are linked from outcome pages.</td>
-    <td><span class="tag tag-green">Highest</span><br>Directly ties to the reference taxonomy — every resource is already outcome-mapped by the NCCA.</td>
-    <td><strong>Good candidate.</strong> Write the Researcher agent to scrape a specific strand's exemplar page, extract linked resources, and add them to the catalogue pre-tagged with correct outcome codes. One strand is enough to prove the concept.</td>
-  </tr>
-  <tr>
-    <td><strong>oide.ie</strong><br>(formerly PDST)</td>
-    <td><span class="tag tag-green">Public, no API</span></td>
-    <td><span class="tag tag-red">Unstructured</span><br>Blog-style posts, PDF downloads, varied page layouts. No consistent metadata.</td>
-    <td><span class="tag tag-green">High</span><br>Official CPD resources — trusted, curriculum-aligned, Irish-context.</td>
-    <td><strong>Hard without a parser per page type.</strong> Possible for a narrow scope (e.g. one subject area), but fragile. Name as stretch.</td>
-  </tr>
-  <tr>
-    <td><strong>Scoilnet.ie</strong><br>(official portal)</td>
-    <td><span class="tag tag-amber">Public, possibly has API</span></td>
-    <td><span class="tag tag-amber">Unknown</span><br>Ireland's official education portal. Has a search function, resource database with curriculum tags. May have an undocumented API or RSS feed.</td>
-    <td><span class="tag tag-green">High</span><br>Curated, curriculum-tagged by humans. The gold standard for Irish teacher resources.</td>
-    <td><strong>Investigate first.</strong> If Scoilnet has a search API or structured data endpoint, this is the best single source. If not, scraping is feasible but needs a dedicated parser.</td>
-  </tr>
-  <tr>
-    <td><strong>OER Commons</strong><br>(open education)</td>
-    <td><span class="tag tag-green">Public API</span></td>
-    <td><span class="tag tag-green">Structured</span><br>REST API returns JSON with subject, grade, standard alignment, license. Well-documented at api.oercommons.org.</td>
-    <td><span class="tag tag-amber">Medium</span><br>US-centric. Common Core alignment, not Irish curriculum. Would need a mapping layer to translate US standards to Irish outcomes. Good for generic resources (maths operations, science concepts) that are curriculum-agnostic.</td>
-    <td><strong>Good for proofs-of-concept.</strong> The API is free, documented, and returns structured data. The mapping problem is the interesting engineering challenge — exactly what the rubric rewards.</td>
-  </tr>
-  <tr>
-    <td><strong>Twinkl.ie</strong></td>
-    <td><span class="tag tag-red">Subscription, no public API</span></td>
-    <td><span class="tag tag-red">Closed</span></td>
-    <td><span class="tag tag-green">High</span></td>
-    <td><strong>Out of scope.</strong> Terms of service prohibit automated access. No API.</td>
-  </tr>
-  <tr>
-    <td><strong>Teachers Pay Teachers</strong></td>
-    <td><span class="tag tag-red">No public API, terms prohibit scraping</span></td>
-    <td><span class="tag tag-red">Closed</span></td>
-    <td><span class="tag tag-amber">Medium</span><br>Much of the catalogue already comes from TPT, but accessing new content programmatically is not permitted.</td>
-    <td><strong>Out of scope.</strong> Explicitly excluded by the project brief.</td>
-  </tr>
-</table>
-
-<div class="card">
-  <h4>Recommended CA3 approach: curriculumonline.ie scraping proof-of-concept</h4>
-  <p><strong>Scope:</strong> Pick one strand (e.g. Reading, Stage 2) from the Primary Language Curriculum. The Researcher agent:</p>
-  <ol>
-    <li>Fetches the Reading outcome page from curriculumonline.ie</li>
-    <li>Extracts linked exemplar videos, support materials, and suggested texts</li>
-    <li>Tags each discovered resource with its correct outcome code (already present on the page)</li>
-    <li>Checks the catalogue for duplicates (by URL or title similarity)</li>
-    <li>Adds new resources to the catalogue with a <code>source: curriculumonline.ie</code> tag</li>
-  </ol>
-  <p><strong>Why this works for CA3:</strong></p>
-  <ul>
-    <li>It's a <strong>genuine live data pull</strong> — the Researcher connects to an external URL at run time, satisfying the technical gate</li>
-    <li>It's <strong>legitimate</strong> — curriculumonline.ie is public, NCCA-published content with no terms prohibiting educational access</li>
-    <li>It's <strong>narrow in scope</strong> — one strand, one stage, ~12 outcomes. Builds credibility without over-promising</li>
-    <li>The <strong>US→Irish standards mapping problem</strong> for OER Commons is named as future work — a richer engineering challenge than simple scraping, and a better vehicle for the "Limitations &amp; Future Opportunities" section</li>
-  </ul>
-</div>
-
-<div class="card">
-  <h4>Discovery vs. creation — which fills gaps better?</h4>
-  <table>
-    <tr><th></th><th>Content generation (Tier 2)</th><th>Content discovery (curriculumonline.ie)</th></tr>
-    <tr><td><strong>Quality</strong></td><td>Variable — depends on prompt engineering and LLM capability</td><td>High — NCCA-vetted, human-authored</td></tr>
-    <tr><td><strong>Coverage</strong></td><td>Any outcome, any subject — limited only by LLM quality</td><td>Only what the NCCA has published — big gaps in practice activities, worksheets</td></tr>
-    <tr><td><strong>Irish-specific knowledge</strong></td><td>Weak — LLMs have limited training data on the Irish curriculum context</td><td>Perfect — these <em>are</em> the Irish curriculum</td></tr>
-    <tr><td><strong>Engineering effort</strong></td><td>Medium — prompt design, template building, QA agent</td><td>Medium — scraper, parser, deduplication logic</td></tr>
-    <tr><td><strong>CA3 rubric value</strong></td><td>Demonstrates Maker agent and pipeline handoff</td><td>Demonstrates Researcher agent and live data connection</td></tr>
-    <tr><td><strong>Best for</strong></td><td>Filling gaps the NCCA doesn't cover (worksheets, games, practice activities)</td><td>Building the catalogue with trusted, curriculum-aligned foundation content</td></tr>
-  </table>
-  <p><strong>They're complementary, not competing.</strong> Discovery builds the foundation; generation fills the practice-activity gaps. A CA3 demo that shows both — even if each is narrow in scope — demonstrates understanding of the full pipeline far better than going deep on one.</p>
-</div>
-
-
-<!-- ============================================================ -->
-<h2 id="architecture">12. Architecture — Catalogue, Files, and the End-User Deliverable</h2>
-
-<div class="phase-label">How the pieces connect at run time</div>
-
-<p>Two practical design questions shape the run-time architecture: <strong>how does a web-based solution access a catalogue that lives in a private OneDrive folder?</strong> And <strong>what does the teacher actually receive at the end of a query?</strong></p>
-
-<h3>The catalogue is not the files</h3>
-
-<p>The resource collection is ~4,400 files in OneDrive. The web solution runs on GitHub Pages. These are fundamentally different environments. The key insight: <strong>decouple the catalogue (the index) from the assets (the files).</strong> The catalogue becomes a live, queryable data store; the files stay where they are.</p>
-
-<table>
-  <tr><th>Layer</th><th>Where it lives</th><th>How agents access it</th><th>How the teacher accesses it</th></tr>
-  <tr>
-    <td><strong>Catalogue index</strong><br>(resource metadata, tags, outcome mappings, file paths)</td>
-    <td><strong>Google Sheet</strong></td>
-    <td>Google Sheets API v4 — real authenticated API calls at run time. Read (Researcher queries for matching resources) and write (Maker adds generated resources, QA adds review notes).</td>
-    <td>Web UI query interface + direct Sheet access for browsing/editing</td>
-  </tr>
-  <tr>
-    <td><strong>Resource files</strong><br>(the actual PDFs, PPTXs, zips)</td>
-    <td><strong>OneDrive</strong> (teacher's personal)</td>
-    <td>Microsoft Graph API — the Maker/Communicator agent fetches files by path (stored in the Sheet) when preparing a bundle for the teacher. Requires the teacher to authenticate with their Microsoft account.</td>
-    <td>Already synced locally via OneDrive client. The solution produces a <em>manifest</em> — a list of file paths the teacher already has.</td>
-  </tr>
-  <tr>
-    <td><strong>Reference taxonomies</strong><br>(curriculum outcomes, UFLI scope, programme structures)</td>
-    <td><strong>GitHub repo</strong> as static JSON files</td>
-    <td>Loaded at build time or fetched at run time from the repo. Not a "live data source" — these are version-controlled reference data, stable between curriculum revisions.</td>
-    <td>Versioned alongside the code — transparent, auditable</td>
-  </tr>
-  <tr>
-    <td><strong>Generated content</strong><br>(lesson plans, gap reports, resource bundles)</td>
-    <td><strong>Google Sheet</strong> (metadata) + <strong>OneDrive</strong> (output files) or <strong>GitHub Pages</strong> (download links)</td>
-    <td>Maker writes new rows to Sheet; Communicator produces downloadable output. Generated lesson plans live as markdown in a dedicated Sheet column or as a linked file.</td>
-    <td>Download via the web UI; view summary inline</td>
-  </tr>
-</table>
-
-<div class="card">
-  <h4>Why Google Sheets satisfies the live-data requirement</h4>
-  <p>The CA3 brief requires <em>"at least one agent must connect to a live external data source via a genuine tool call/MCP/API query at run time — not hardcoded, cached, or copy-pasted (verified in the submitted code, not just claimed)."</em></p>
-  <p>A Google Sheet accessed via the Sheets API v4 satisfies this directly:</p>
-  <ul>
-    <li><strong>Real API call:</strong> The Researcher agent makes <code>sheets.spreadsheets.values.get</code> requests with a filter/query parameter. This is authenticatable, loggable, and demonstrable in the submitted code.</li>
-    <li><strong>Write-back:</strong> The Maker and Communicator agents <em>write</em> back to the Sheet — new resource rows, gap flags, generated lesson plans. The Sheet is the system of record, not a read-only mirror.</li>
-    <li><strong>Teacher-facing:</strong> The Sheet is also the teacher's manual interface. They can browse all resources, edit tags, add notes, and see what the agents have done — all without touching the web UI. This is trust calibration in action (Week 2 — Lee &amp; See, 2004): the system's reasoning is visible and editable.</li>
-    <li><strong>Free tier sufficient:</strong> Google Sheets API has a generous free quota (60 requests per minute per user, 500 requests per 100 seconds per project). More than enough for a single-teacher CA3 demo.</li>
-  </ul>
-  <p>The project brief itself suggested this: <em>"A live, queryable resource catalogue (e.g. a Google Sheet or lightweight database) that agents write to and read from at run time; this also serves as the project's live-data technical requirement."</em></p>
-</div>
-
-<h3>The end-user deliverable — what the teacher receives</h3>
-
-<p>When a teacher queries the system (e.g. <em>"I'm teaching 2nd class, outcome TF5, C2 — vocabulary development — what do I have?"</em>), the Communicator agent produces a two-part response:</p>
-
-<div class="card">
-  <h4>Part 1: Written summary (markdown, displayed in the web UI)</h4>
-  <pre style="white-space:pre-wrap;font-size:0.78rem;"># Resources for TF5, C2 — Vocabulary (Stage 2, 1st–2nd Class)
-
-## What the outcome requires
-Through appropriately playful and engaging learning experiences, children should be able to
-acquire and use a rich and varied vocabulary across the curriculum, including subject-specific
-vocabulary, and use a range of strategies to determine the meaning of unfamiliar words.
-
-## Matching resources in your catalogue (3 found)
-| Resource | Format | Notes |
-|---|---|---|
-| Christmas Long and Short a Sort | Worksheet | Seasonal — may want a non-seasonal equivalent |
-| Word Mapping Templates — Christmas | Template | Adaptable to vocabulary focus |
-| Morphology Word Ladders — Latin Bases | Game | For stronger readers; pair with simpler activity |
-
-## Gaps identified
-- No dedicated vocabulary-in-context activity at Stage 2 level
-- No non-seasonal word-sort for this outcome
-→ A lesson plan has been generated to fill these gaps (see below).
-
-## Generated content
-A lesson plan for TF5, C2 has been created: [download] [view inline]
-It uses the Word Mapping template from your catalogue + a new vocabulary-in-context activity.</pre>
-</div>
-
-<div class="card">
-  <h4>Part 2: Resource bundle (downloadable)</h4>
-  <p>The Communicator produces a downloadable package containing:</p>
-  <ul>
-    <li>The matched resources from the catalogue (the actual PDF files, fetched via OneDrive/Graph API or pre-synced)</li>
-    <li>The generated lesson plan (markdown or PDF)</li>
-    <li>A README.md summarising the content (same markdown as the web UI summary)</li>
-    <li>Optionally: the generated gap-fill worksheet if Tier 3 was attempted</li>
-  </ul>
-  <p>The bundle is delivered as a <strong>zip file</strong> via GitHub Pages download. The file names are preserved from the original catalogue so the teacher can cross-reference.</p>
-  <p><strong>For the CA3 demo:</strong> pre-sync a small subset of representative resource files (10–20 PDFs) to the GitHub repo so the download mechanic works end-to-end without OneDrive auth complexity. Name the full OneDrive/Graph API integration as production path in the Limitations section. The demo proves the pipeline; the production design is documented.</p>
-</div>
-
-<h3>Run-time data flow</h3>
-
-<pre class="ascii">
-  TEACHER QUERY
-  "I need resources for UFLI Lesson 54, 2nd class"
-        │
-        ▼
-  ┌─────────────────────────────────────────────────────────┐
-  │  RESEARCHER agent                                        │
-  │  • Parses query → extracts: programme=UFLI, lesson=54,   │
-  │    stage=Stage2                                            │
-  │  • Queries Google Sheet (live API call):                  │
-  │    GET rows WHERE programme_ref="UFLI/L54"               │
-  │  • Cross-references curriculum taxonomy JSON (from repo): │
-  │    UFLI L54 = VCe a_e → maps to TF4, C2 (Phonics,        │
-  │    Stage 2)                                                │
-  │  • Finds 3 matching resources in catalogue                │
-  │  • Identifies 1 gap: no word-work worksheet for L54       │
-  │  • Hands structured brief to Designer                     │
-  └──────────────┬──────────────────────────────────────────┘
-                 │
-                 ▼
-  ┌─────────────────────────────────────────────────────────┐
-  │  DESIGNER agent                                           │
-  │  • Designs lesson plan structure for the gap              │
-  │  • Selects template: "Phonics Word Work, independent      │
-  │    practice"                                                │
-  │  • Specifies: learning objective (from taxonomy),          │
-  │    warm-up (from catalogue resource #2), main activity    │
-  │    (new design), plenary (from catalogue resource #1)     │
-  │  • Hands specification to Maker                           │
-  └──────────────┬──────────────────────────────────────────┘
-                 │
-                 ▼
-  ┌─────────────────────────────────────────────────────────┐
-  │  MAKER agent                                              │
-  │  • Generates lesson plan markdown (LLM, low-risk text)    │
-  │  • Bundles catalogue resources (pre-synced files)         │
-  │  • Writes generated plan metadata → Google Sheet          │
-  │  • Hands bundle + summary to Communicator                 │
-  └──────────────┬──────────────────────────────────────────┘
-                 │
-                 ▼
-  ┌─────────────────────────────────────────────────────────┐
-  │  COMMUNICATOR agent                                       │
-  │  • Produces summary markdown (displayed in web UI)        │
-  │  • Creates downloadable zip bundle                        │
-  │  • Adds AI disclosure notice (who built what, confidence) │
-  │  • Presents output to teacher                             │
-  └──────────────┬──────────────────────────────────────────┘
-                 │
-                 ▼
-  ┌─────────────────────────────────────────────────────────┐
-  │  MANAGER agent (orchestration layer)                      │
-  │  • Logs the full pipeline run                             │
-  │  • Records: query, agents invoked, resources found,       │
-  │    resources generated, teacher action (download/view)    │
-  │  • Flags confidence scores below threshold for review     │
-  │  • Maintains the governance log (GOVERNANCE.md)           │
-  └─────────────────────────────────────────────────────────┘
-</pre>
-
-<div class="card">
-  <h4>Google Sheets schema for the catalogue</h4>
-  <table>
-    <tr><th>Column</th><th>Example</th><th>Source</th></tr>
-    <tr><td><code>id</code></td><td><code>RES-0047</code></td><td>Auto-generated on ingest</td></tr>
-    <tr><td><code>filename</code></td><td><code>Christmas-Long-and-Short-a-Sort.pdf</code></td><td>Filesystem</td></tr>
-    <tr><td><code>onedrive_path</code></td><td><code>Teaching Resources/xmas/ChristmasLongandShortaSort-1.pdf</code></td><td>Filesystem (relative to OneDrive root)</td></tr>
-    <tr><td><code>subject</code></td><td><code>Literacy</code></td><td>Folder + content analysis</td></tr>
-    <tr><td><code>subdomain</code></td><td><code>Phonics</code></td><td>Folder + content analysis</td></tr>
-    <tr><td><code>grade_band</code></td><td><code>1st–2nd</code></td><td>Content analysis</td></tr>
-    <tr><td><code>format</code></td><td><code>Worksheet</code></td><td>Content analysis</td></tr>
-    <tr><td><code>season</code></td><td><code>Christmas</code></td><td>Folder</td></tr>
-    <tr><td><code>curriculum_area</code></td><td><code>Primary Language</code></td><td>Reference taxonomy match</td></tr>
-    <tr><td><code>strand</code></td><td><code>Reading</code></td><td>Reference taxonomy match</td></tr>
-    <tr><td><code>outcome_code</code></td><td><code>TF4, C2</code></td><td>AI-inferred from content ↔ outcome mapping</td></tr>
-    <tr><td><code>programme</code></td><td><code>—</code></td><td>Folder or content detection</td></tr>
-    <tr><td><code>programme_ref</code></td><td><code>—</code></td><td>e.g. <code>UFLI/L54</code> if applicable</td></tr>
-    <tr><td><code>source</code></td><td><code>TPT</code></td><td>Content analysis</td></tr>
-    <tr><td><code>license</code></td><td><code>Single-classroom</code></td><td>Content analysis</td></tr>
-    <tr><td><code>ai_generated</code></td><td><code>FALSE</code></td><td>TRUE if created by Maker agent</td></tr>
-    <tr><td><code>confidence</code></td><td><code>0.85</code></td><td>Tagging confidence from AI classifier</td></tr>
-    <tr><td><code>last_verified</code></td><td><code>2026-08-08</code></td><td>Human review timestamp (governance)</td></tr>
+<div class="card" style="background:var(--accent-light);border-color:var(--accent);">
+  <h4>Status: Pre-build tests complete <span class="go">GO</span></h4>
+  <table style="margin:0;">
+    <tr><td style="border:none;padding-right:1rem;"><strong>curriculumonline.ie scraping</strong></td><td style="border:none;"><span class="go">GO</span> 91 outcome prose matches in raw HTML, no API needed</td></tr>
+    <tr><td style="border:none;padding-right:1rem;"><strong>Gemini Flash vision tags</strong></td><td style="border:none;"><span class="go">GO</span> 10/10 image-heavy PDFs correctly tagged, ~$2 for full parse</td></tr>
+    <tr><td style="border:none;padding-right:1rem;"><strong>DeepSeek text classification</strong></td><td style="border:none;"><span class="go">GO</span> ~$3 for text-rich PDFs, ~90 min, tested on 50-PDF sample</td></tr>
   </table>
 </div>
 
 
-<!-- ============================================================ -->
-<h2 id="msft-ecosystem">13. Committing to the Microsoft Ecosystem — With Cloudflare Workers</h2>
-
-<div class="phase-label">No auth. No exposed keys. No content limits. Full catalogue, every time.</div>
-
-<h3>Decisions made</h3>
-
-<table>
-  <tr><th>Decision</th><th>Choice</th><th>Rationale</th></tr>
-  <tr><td>Ecosystem</td><td><strong>Microsoft only</strong> — OneDrive + Excel Online + Graph API</td><td>Single auth surface (app-only). Catalogue and files co-located. Teacher already has a Microsoft account — but doesn't need to use it for the demo.</td></tr>
-  <tr><td>Backend</td><td><strong>Cloudflare Worker</strong> — single file, serverless proxy for all API calls and agent orchestration</td><td>Hides the LLM API key. Hides MS Graph credentials. Runs the agent pipeline server-side where it belongs. Free tier is generous (100K req/day).</td></tr>
-  <tr><td>Auth model</td><td><strong>No user auth for the demo.</strong> Worker uses app-only MS Graph credentials (client credentials flow). No MSAL.js, no login popup, no consent screens.</td><td>The teacher types a query and gets a bundle — no friction. Content is exposed via the Worker, which is acceptable for a graded project demo. Named as a production concern in Limitations.</td></tr>
-  <tr><td>Catalogue store</td><td><strong>Excel Online workbook</strong> on OneDrive, queried by the Worker via Graph API</td><td>Live, queryable, agent-writeable. The catalogue is never static — every agent interaction writes back.</td></tr>
-  <tr><td>Content scope</td><td><strong>All ~4,400 catalogue resources are bundleable.</strong> The Worker fetches any matched file from OneDrive at run time.</td><td>Zero pre-sync. Zero content limits. Every file the agent finds ends up in the zip.</td></tr>
-</table>
-
-<h3>Architecture</h3>
-
-<pre class="ascii">
-┌──────────────────────────────────────────────────────────────────┐
-│  GITHUB PAGES — static HTML + JavaScript (presentation only)     │
-│  • Query input + result display + download trigger               │
-│  • Zero secrets. Zero API keys. Zero auth.                       │
-│  • All intelligence delegated to the Worker.                     │
-└────────────────────────────┬─────────────────────────────────────┘
-                             │  HTTPS (same domain or CORS)
-                             ▼
-┌──────────────────────────────────────────────────────────────────┐
-│  CLOUDFLARE WORKER — single wrangler project, one worker.js      │
-│                                                                   │
-│  Secrets (wrangler secret put):                                   │
-│  • DEEPSEEK_API_KEY      → LLM reasoning                         │
-│  • MS_TENANT_ID           → Azure AD app-only auth                │
-│  • MS_CLIENT_ID           →   "                                  │
-│  • MS_CLIENT_SECRET       →   "                                  │
-│                                                                   │
-│  Endpoints:                                                       │
-│  ┌─────────────────────────────────────────────────────────────┐ │
-│  │  POST /api/query                                              │ │
-│  │  Body: { query, grade_band?, programme?, outcome_code? }      │ │
-│  │  Orchestrates full 5-agent pipeline:                          │ │
-│  │    Researcher → queries Excel catalogue (Graph API)           │ │
-│  │    Designer   → designs lesson plan structure for gaps        │ │
-│  │    Maker      → generates lesson plan markdown (DeepSeek)     │ │
-│  │    Communicator → prepares summary + resource file list       │ │
-│  │    Manager    → logs run, checks confidence thresholds        │ │
-│  │  Response: { summary_md, resources: [{name,path,tags}],       │ │
-│  │               generated_content: [{title,markdown}],           │ │
-│  │               gaps: [{outcome,description}], run_id }          │ │
-│  └─────────────────────────────────────────────────────────────┘ │
-│  ┌─────────────────────────────────────────────────────────────┐ │
-│  │  POST /api/bundle                                              │ │
-│  │  Body: { resource_ids, generated_content, summary_md, run_id } │ │
-│  │  → Fetches each resource file from OneDrive (Graph API)        │ │
-│  │  → Creates zip in-memory (generated + matched files + README)  │ │
-│  │  → Returns zip as application/zip blob                         │ │
-│  └─────────────────────────────────────────────────────────────┘ │
-│  ┌─────────────────────────────────────────────────────────────┐ │
-│  │  GET /api/catalogue                                            │ │
-│  │  → Returns full Excel catalogue as JSON (for browsing/debug)  │ │
-│  └─────────────────────────────────────────────────────────────┘ │
-└────────────────────────────┬─────────────────────────────────────┘
-                             │  Microsoft Graph API
-                             │  (app-only, client credentials)
-                             ▼
-┌──────────────────────────────────────────────────────────────────┐
-│  ONEDRIVE                                                         │
-│  ├─ Teaching Resources/Catalogue.xlsx  (Excel table, ~18 cols)    │
-│  └─ Teaching Resources/**/*.pdf       (all ~4,400 resource files) │
-│                                                                   │
-│  Azure AD app registration:                                       │
-│  • API Permission: Files.Read.All, Sites.Read.All (application)   │
-│  • Admin consent required (one-time)                               │
-│  • This is a one-time setup — not per-user auth                    │
-└──────────────────────────────────────────────────────────────────┘
-</pre>
-
-<h3>The "magical" bundle path — revised for Worker</h3>
-
-<pre class="ascii">
-TEACHER: "I need resources for UFLI Lesson 54, 2nd class"
-    │
-    ▼
-FRONTEND → POST /api/query { query: "UFLI Lesson 54, 2nd class" }
-    │
-    ▼
-WORKER orchestrates 5-agent pipeline (all server-side):
-    │
-    │  RESEARCHER:
-    │  • Parses query → programme=UFLI, lesson=54, stage=Stage2
-    │  • GET Excel catalogue rows → filters to programme_ref="UFLI/L54"
-    │  • Finds 3 matching resources + 1 gap
-    │  • Hands structured brief to Designer
-    │
-    │  DESIGNER:
-    │  • Designs lesson plan structure for the gap
-    │  • Specifies: objective, warm-up (catalogue #2), main (new), plenary (#1)
-    │
-    │  MAKER:
-    │  • POST DeepSeek API with structured prompt + taxonomy context
-    │  • Generates lesson plan markdown
-    │  • POST new row to Excel catalogue (ai_generated=TRUE)
-    │
-    │  COMMUNICATOR:
-    │  • Produces summary markdown + resource file list
-    │  • Adds AI disclosure + confidence scores
-    │
-    │  MANAGER:
-    │  • Logs run to Excel (audit sheet)
-    │  • Checks confidence thresholds; flags &lt;0.7 for human review
-    │
-    ▼
-FRONTEND receives JSON → renders summary in UI, shows download button
-    │
-    │  TEACHER clicks "Download Bundle"
-    │
-    ▼
-FRONTEND → POST /api/bundle { resource_ids, generated_content, summary_md }
-    │
-    ▼
-WORKER:
-    │  • Fetches each resource file from OneDrive (GET /drive/items/{id}/content)
-    │  • Creates zip in-memory:
-    │      zip.file("README.md", summary_md + AI_DISCLOSURE)
-    │      zip.file("lesson-plan-UFLI54.md", generated_markdown)
-    │      zip.file("ChristmasLongandShortaSort-1.pdf", pdfBlob1)
-    │      zip.file("UFLI 54-62 Word Work - Korotney.pdf", pdfBlob2)
-    │      zip.file("Word Mapping Templates - Christmas.pdf", pdfBlob3)
-    │  • Returns zip blob → browser downloads instantly
-    │
-    ▼
-TEACHER gets UFLI54-2ndClass.zip — every file, ready to use.
-</pre>
-
-<h3>Why this is the right architecture for CA3</h3>
-
-<div class="card">
-  <h4>Risks eliminated</h4>
-  <ul>
-    <li><strong>No LLM API key in client-side JS</strong> — key lives in Cloudflare Worker secrets, never leaves the server. Cleaner for the regulatory/ethics section (security is a trust dimension).</li>
-    <li><strong>No MSAL.js, no login popup, no consent screen</strong> — the teacher opens the page, types a query, downloads a bundle. The demo feels like a finished product, not a prototype with auth friction.</li>
-    <li><strong>No pre-sync, no content limits</strong> — every resource in the catalogue is reachable. The Worker fetches files on demand. Adding resources to OneDrive makes them instantly available.</li>
-  </ul>
-</div>
-
-<div class="card">
-  <h4>CA3 rubric wins</h4>
-  <ul>
-    <li><strong>Live data (mandatory):</strong> The Worker queries the live Excel catalogue and fetches live OneDrive files at run time — two separate live data sources, both via real API calls. Verified in submitted code (worker.js + wrangler.toml).</li>
-    <li><strong>Handoff &amp; Orchestration (25%):</strong> The Worker orchestrates all five agents in a single request. Each agent's output is the next agent's literal input. Logged and traceable via the Manager's audit sheet.</li>
-    <li><strong>Strategic Rationale:</strong> The architecture decision to use a Worker as an API proxy is defensible: it separates presentation from intelligence, secures credentials, and fits the serverless/composable pattern the module teaches. The app-only Graph auth decision shows understanding of delegated vs. application permissions — exactly the kind of specificity the rubric rewards.</li>
-    <li><strong>Regulatory/Ethics:</strong> Three separate concerns addressed by one architecture choice: (a) API key security (Worker secrets), (b) content exposure is named and scoped (demo only, production would use delegated auth), (c) the AI disclosure is embedded in every bundle README and web UI summary.</li>
-  </ul>
-</div>
-
-<div class="card">
-  <h4>One-time setup (not per-demo-run)</h4>
-  <table>
-    <tr><th>Task</th><th>Time</th><th>Notes</th></tr>
-    <tr><td>Register Azure AD app + grant Files.Read.All</td><td>30 min</td><td>One-time. Admin consent on your Microsoft account.</td></tr>
-    <tr><td>Create Cloudflare Worker project</td><td>5 min</td><td><code>npm create cloudflare@latest</code></td></tr>
-    <tr><td>Set Worker secrets (4 values)</td><td>5 min</td><td><code>wrangler secret put DEEPSEEK_API_KEY</code> etc.</td></tr>
-    <tr><td>Populate Excel catalogue (one-time script)</td><td>~3 hours</td><td>Python script: folder scan → tag extraction → write to .xlsx → upload to OneDrive</td></tr>
-    <tr><td>Deploy Worker</td><td>1 min</td><td><code>wrangler deploy</code></td></tr>
-  </table>
-</div>
-
-<h3>Scope-down decisions (unchanged)</h3>
-
-<table>
-  <tr><th>Scope-down</th><th>Impact</th></tr>
-  <tr><td>No Gaeilge</td><td>Skip ~119 files. LLMs are weak in Irish. Named as deliberate exclusion.</td></tr>
-  <tr><td>Modernised curriculum only</td><td>Language (TF codes) + Maths (PC continua) get full taxonomy. 1999 subjects get skeleton only.</td></tr>
-  <tr><td>No worksheet/image generation</td><td>Maker generates lesson plans (text). Tier 3 named as future work.</td></tr>
-  <tr><td>No curriculumonline.ie scraping</td><td>Catalogue is the teacher's OneDrive. Content discovery named as future enhancement.</td></tr>
-  <tr><td>Single-teacher, no auth</td><td>App-only Graph auth exposes all OneDrive content through the Worker. Acceptable for demo; named as production concern with delegated auth as the fix.</td></tr>
-</table>
-
-<h3>Build estimate</h3>
-
-<table>
-  <tr><th>Component</th><th>Effort</th><th>Tech</th></tr>
-  <tr><td>Static HTML page (query input + result display + download)</td><td>~2 hours</td><td>Vanilla HTML/CSS/JS</td></tr>
-  <tr><td>Cloudflare Worker (all endpoints + agent orchestration)</td><td>~6 hours</td><td>JavaScript, wrangler, MS Graph SDK, DeepSeek API</td></tr>
-  <tr><td>Excel catalogue populator (one-time Python script)</td><td>~3 hours</td><td>Python, openpyxl, pdfplumber, folder scanner</td></tr>
-  <tr><td>Agent definitions (5 markdown system prompts + handoff contracts)</td><td>~3 hours</td><td>Markdown in repo, loaded by Worker</td></tr>
-  <tr><td>Reference taxonomy JSON (Language TF codes + UFLI scope)</td><td>~3 hours</td><td>Hand-authored from curriculumonline.ie</td></tr>
-  <tr><td>Zip bundling logic (in Worker)</td><td>~2 hours</td><td>JSZip or native CompressionStreams</td></tr>
-  <tr><td>Governance, disclosure, trust artefacts</td><td>~2 hours</td><td>GOVERNANCE.md, embedded disclosures</td></tr>
-  <tr><td><strong>Total</strong></td><td><strong>~21 hours</strong></td><td>Down from 26 hours (no MSAL, cleaner separation)</td></tr>
-</table>
-
-<!-- ============================================================ -->
-<h2 id="two-teams">14. Two Agent Teams — Dev Builds, Ops Runs, Keelin Guards</h2>
-
-<div class="phase-label">11 agents, 2 teams, 1 shared consultant. Same roles, different domains, genuinely different agents.</div>
-
-<p>The module teaches that the Five Innovators — Researcher, Designer, Maker, Communicator, Manager — are <strong>roles, not interchangeable tools.</strong> Fill a role with different domain expertise and you get a genuinely different agent: different identity, different beliefs, different boundaries, different performable skills. A Researcher that researches Cloudflare API patterns is not the same agent as one that researches what phonics resources match UFLI Lesson 54. Same archetype. Different agent. Two teams.</p>
-
-<h3>Agent roster overview</h3>
-
-<table>
-  <tr><th>Agent</th><th>Development team</th><th>Operations team</th></tr>
-  <tr><td><strong>Architect</strong><br>(Researcher + Designer, merged)</td><td><span class="tag tag-green">Dev-Architect</span><br>Researches tech patterns, designs endpoint contracts, specifies data schemas, chooses libraries</td><td><span class="tag tag-amber">&mdash;</span><br>(Role split back into Researcher + Designer in Ops &mdash; the search and design tasks are heavier at run time)</td></tr>
-  <tr><td><strong>Researcher</strong></td><td><span class="tag tag-amber">&mdash;</span><br>(Merged into Dev-Architect)</td><td><span class="tag tag-green">Ops-Researcher</span><br>Queries Excel catalogue, searches curriculumonline.ie for gaps, semantic matching, curriculum mapping</td></tr>
-  <tr><td><strong>Designer</strong></td><td><span class="tag tag-amber">&mdash;</span><br>(Merged into Dev-Architect)</td><td><span class="tag tag-green">Ops-Designer</span><br>Structures lesson plans from outcome prose, selects and sequences matched resources, creates Maker specifications for gaps</td></tr>
-  <tr><td><strong>Maker</strong></td><td><span class="tag tag-green">Dev-Maker</span><br>Writes code (worker.js, index.html, taxonomy JSONs, catalogue populator). Deploys to Cloudflare.</td><td><span class="tag tag-green">Ops-Maker</span><br>Generates lesson plans (markdown) as fallback when gaps exist and no discovered content fills them. Never generates worksheets or images (Decision 5).</td></tr>
-  <tr><td><strong>Communicator</strong></td><td><span class="tag tag-green">Dev-Communicator</span><br>Produces README, GOVERNANCE.md, AI_DISCLOSURE.md, inline documentation. Honest about limitations.</td><td><span class="tag tag-green">Ops-Communicator</span><br>Produces teacher-facing summary (markdown), creates downloadable zip bundle, embeds AI disclosure in every output.</td></tr>
-  <tr><td><strong>Manager</strong></td><td><span class="tag tag-green">Dev-Manager</span><br>Prioritises build by rubric criteria. Tracks completion. Orchestrates handoffs. Produces build log.</td><td><span class="tag tag-green">Ops-Manager</span><br>Receives teacher query, classifies UX mode, routes to agents, logs session, tracks disagreements, maintains audit sheet.</td></tr>
-  <tr><td><strong>Keelin</strong> (Security/QA)</td><td colspan="2"><span class="tag tag-purple">Shared consultant</span><br>In Dev: reviews code for security (no secrets in repo, no keys in client JS), validates against rubric. In Ops: validates generated lesson plans against outcome prose, runs paired-prompt bias test, checks age-appropriateness, detects hallucinated catalogue references. Failing Keelin means the content doesn't reach the teacher.</td></tr>
-</table>
-
-
-<h3>Development team &mdash; builds the solution once</h3>
-
-<div class="phase-label">5 agents: Architect, Maker, Communicator, Manager, Keelin</div>
-
-<div class="card">
-  <h4>Dev-Architect (Researcher + Designer, merged)</h4>
-  <p><strong>Why merged:</strong> In the build phase, researching patterns and designing architecture are tightly coupled &mdash; you research an API to design against it. The boundary between "what are the options?" and "here's what we'll use" is thin enough that a single agent handles both with less handoff overhead.</p>
-  <table>
-    <tr><th>Domain expertise</th><td>Cloudflare Workers runtime, Microsoft Graph API, JSZip, wrangler CLI, Excel table schemas, DeepSeek API prompt patterns, CORS handling, environment variable management, the CA3 rubric</td></tr>
-    <tr><th>Core beliefs</th><td>Prefer documented over clever. Every endpoint contract must be testable. A design that assumes success is a design that fails silently.</td></tr>
-    <tr><th>Boundaries</th><td>Will not propose patterns it hasn't verified against live documentation. Will not design around rate limits it hasn't checked.</td></tr>
-    <tr><th>What it produces</th><td>Architecture specification: Worker endpoint contracts (request/response shapes, error codes), Excel catalogue schema, agent handoff interfaces, the full data flow diagram.</td></tr>
-  </table>
-</div>
-
-<div class="card">
-  <h4>Dev-Maker</h4>
-  <table>
-    <tr><th>Domain expertise</th><td>JavaScript (Worker runtime, Graph SDK), HTML/CSS/JS (frontend), Python (catalogue populator, pdfplumber, openpyxl), wrangler deploy, Azure AD app registration, git</td></tr>
-    <tr><th>Core beliefs</th><td>Code must be readable by the lecturer. Comments explain why, not what. Secrets live in wrangler secret put, never in source files. The frontend can be ugly; the pipeline cannot be broken.</td></tr>
-    <tr><th>Boundaries</th><td>Will not commit secrets. Will not build features outside scope (no Gaeilge, no worksheets, no multi-user). Will not deploy without Keelin's review.</td></tr>
-    <tr><th>What it produces</th><td>Deployed and tested: worker.js (all endpoints + agent orchestration), index.html (three-mode UX), catalogue_populator.py (folder scanner &rarr; tag extraction &rarr; Excel write), reference taxonomy JSONs (Language TF codes, Maths PC continua, UFLI 128 lessons), agent definition markdown files (one per agent), wrangler.toml.</td></tr>
-  </table>
-</div>
-
-<div class="card">
-  <h4>Dev-Communicator</h4>
-  <table>
-    <tr><th>Domain expertise</th><td>Technical documentation, the module's disclosure conventions (AI_DISCLOSURE.md, GOVERNANCE.md, Trust Statement &mdash; Weeks 2&ndash;3), README structure, inline code documentation (JSDoc), the CA3 rubric's documentation expectations</td></tr>
-    <tr><th>Core beliefs</th><td>Every claim in the writeup must be verifiable in the submitted code. Documentation that nobody reads is still documentation that the lecturer grades.</td></tr>
-    <tr><th>Boundaries</th><td>Will not claim a feature exists that isn't demonstrable in the running system.</td></tr>
-    <tr><th>What it produces</th><td>README.md (setup, deployment, architecture overview), GOVERNANCE.md (disclosure policy, escalation routes with named triggers and response times, review cadence with named reviewer), AI_DISCLOSURE.md (how AI was used, which agents built what, confidence disclaimers), inline JSDoc in worker.js.</td></tr>
-  </table>
-</div>
-
-<div class="card">
-  <h4>Dev-Manager</h4>
-  <table>
-    <tr><th>Domain expertise</th><td>CA3 rubric (all criteria, weightings, grade descriptors), build sequencing, dependency tracking, the module's Five Innovators framework, agent orchestration patterns</td></tr>
-    <tr><th>Core beliefs</th><td>The heaviest-weighted rubric criterion (Handoff &amp; Orchestration, 25%) is the top priority. Build the pipeline first; polish the frontend last.</td></tr>
-    <tr><th>Boundaries</th><td>Will not allocate time to anything the lecturer doesn't grade. Will not let scope creep dilute the core pipeline.</td></tr>
-    <tr><th>What it produces</th><td>Build plan with rubric coverage map: which components satisfy which criteria, dependency ordering, estimated vs. actual hours. Build log: what each agent produced, handoff timestamps, Keelin review outcomes. The build log is submitted as evidence of the agentic development process.</td></tr>
-  </table>
-</div>
-
-<h4>Development team handoffs</h4>
-
-<pre class="ascii">
-  Dev-Manager                                         Keelin
-      |                                                  ^
-      | 1. Build brief (rubric priorities, scope)        |
-      v                                                  |
-  Dev-Architect                                          |
-      |                                                  |
-      | 2. Architecture spec (endpoints, schema,         |
-      |    data flow, agent interfaces)                  |
-      v                                                  |
-  Dev-Maker ------------&gt; 4. Code + config review ------&gt;|
-      |              (secrets check, rubric validation)   |
-      | 3. Deployed system + codebase                    |
-      v                                                  |
-  Dev-Communicator                                       |
-      |                                                  |
-      | 5. Documentation (README, GOVERNANCE,            |
-      |    AI_DISCLOSURE, inline docs)                   |
-      v                                                  |
-  Dev-Manager                                            |
-      | 6. Build complete. System handed to Ops-Manager -+--&gt; Ops-Manager
-      |    Build log archived.                            |
-</pre>
-
-<div class="card">
-  <h4>Cross-team handoff &mdash; Dev &rarr; Ops</h4>
-  <p>The Dev-Manager delivers to the Ops-Manager: a deployed Cloudflare Worker with all endpoints live, an Excel catalogue on OneDrive populated and tagged, reference taxonomy JSONs in the GitHub repo, all agent definition markdown files committed, and a build log documenting what was built, by which agent, with Keelin's sign-off. The Ops-Manager now owns the running system. The Dev team's work is done &mdash; they are archived, not retired. If the rubric changes or a bug is found, Dev-Manager spins them back up.</p>
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('decisions')">Decisions (7)</button>
+  <button class="tab-btn" onclick="showTab('architecture')">Architecture</button>
+  <button class="tab-btn" onclick="showTab('agents')">Agents (11)</button>
+  <button class="tab-btn" onclick="showTab('ux')">UX Design</button>
+  <button class="tab-btn" onclick="showTab('catalogue')">Cataloguing</button>
+  <button class="tab-btn" onclick="showTab('references')">References</button>
+  <button class="tab-btn" onclick="showTab('scope')">Scope</button>
 </div>
 
 
-<h3>Operations team &mdash; runs on every teacher query</h3>
+<!-- ============================================================== -->
+<!-- TAB: DECISIONS -->
+<!-- ============================================================== -->
+<div class="tab-panel active" id="tab-decisions">
 
-<div class="phase-label">6 agents: Researcher, Designer, Maker, Communicator, Manager, Keelin</div>
+<h2>Seven Numbered Decisions</h2>
 
 <div class="card">
-  <h4>Ops-Researcher</h4>
-  <table>
-    <tr><th>Domain expertise</th><td>Irish Primary Language &amp; Maths curricula (TF codes, PC continua), UFLI scope-and-sequence (128 lessons), the Excel catalogue schema, curriculumonline.ie page structure, semantic search across resource content descriptions, the three UX modes and their query conventions</td></tr>
-    <tr><th>Core beliefs</th><td>Precision over recall. Three high-confidence matches with clear rationales are better than ten guesses. A gap honestly named is better than a match forced.</td></tr>
-    <tr><th>Boundaries</th><td>Will not infer curriculum outcomes unless the query is explicitly curriculum-directed (Guided mode). Will not fabricate catalogue entries &mdash; if a resource isn't in the Excel sheet, it doesn't exist. Will not search TPT, Twinkl, or any platform without a public API or with terms prohibiting automated access.</td></tr>
-    <tr><th>What it produces</th><td>A structured match list: for each matching catalogue resource &mdash; filename, OneDrive path, all tags, confidence score, one-line relevance rationale. A gap report: which outcome codes in the query scope have zero or low-confidence (&lt;0.6) matches. If gaps exist and mode is Guided: a curriculumonline.ie search &mdash; title, description, URL for any public NCCA resources matching the gap, with a note that the teacher must review before adding.</td></tr>
-  </table>
+  <h4>Decision 1: Deep-parse all in-scope PDFs</h4>
+  <p>Full deep parse of all ~3,300 PDFs is trivially cheap (~$6&ndash;16, ~90 min). There is no meaningful time or money saving from sampling. The catalogue is the product; it deserves honest tagging. Text-rich files → pdfplumber + DeepSeek classification. Image-heavy files → Gemini Flash vision (1 page per file for subject/format/grade; text extraction covers the rest).</p>
+  <p class="decision-made">→ Decision: Parse all PDFs in-scope. ~$6&ndash;16, ~90 minutes. Run overnight for image-heavy batch.</p>
 </div>
 
 <div class="card">
-  <h4>Ops-Designer</h4>
-  <table>
-    <tr><th>Domain expertise</th><td>Lesson planning pedagogy, the module's conversation flow anatomy (Week 6: Opener &rarr; Intent &rarr; Slots &rarr; Recovery &rarr; Closer), activity-type selection, differentiation strategies, resource sequencing, age-appropriate task design</td></tr>
-    <tr><th>Core beliefs</th><td>Every activity in a lesson plan must be traceable to either a catalogue resource, a discovered resource, or an explicit gap. A lesson plan that references a resource the teacher doesn't have is a broken promise.</td></tr>
-    <tr><th>Boundaries</th><td>Will not design an activity that requires materials outside the catalogue unless the gap is explicitly flagged and the teacher is told what's needed. Will not design for Gaeilge (Decision 3).</td></tr>
-    <tr><th>What it produces</th><td>For catalogue matches: a resource sequence &mdash; which resources to use, in what order, for which part of the lesson (warm-up, main, plenary), with a one-line justification per selection. For gaps: a Maker specification &mdash; learning objective (from outcome prose), suggested activity type (game, discussion, worksheet &mdash; described, not built), materials needed, differentiation notes, assessment check. The specification is structured enough that Maker doesn't need to invent pedagogy; it needs to write prose.</td></tr>
-  </table>
+  <h4>Decision 2: English + Maths only. Trim catalogue to match.</h4>
+  <p>Language + Maths covers both Irish curriculum taxonomy styles (coded TF outcomes vs. progression continua). Adding more subjects is rote transcription. Trim catalogue to files whose primary subject is English or Maths (~1,800&ndash;2,200 files). Cross-curricular seasonal folders (xmas, halloween, back-to-school) stay in if content is literacy/numeracy.</p>
+  <p class="decision-made">→ Decision: Reference taxonomies for Primary Language (TF codes) + Primary Maths (PC continua). Catalogue trimmed to ~1,800&ndash;2,200 English/Maths files.</p>
 </div>
 
 <div class="card">
-  <h4>Ops-Maker</h4>
-  <table>
-    <tr><th>Domain expertise</th><td>Structured markdown generation, curriculum-aligned educational prose, DeepSeek prompt composition with taxonomy context injection, the UFLI scope-and-sequence (prevents using untaught sounds in generated plans)</td></tr>
-    <tr><th>Core beliefs</th><td>The outcome prose from the curriculum is ground truth &mdash; do not embellish, do not invent outcomes. A generated plan that confuses a 2nd-class concept for a 5th-class concept is worse than no plan at all. Less is more: a focused 3-activity plan beats a sprawling 8-activity plan.</td></tr>
-    <tr><th>Boundaries</th><td>Will never generate worksheets, images, or printable activities (Decision 5). Will never generate Irish-language content (Decision 3). Will not run unless Ops-Researcher found nothing for a gap AND the teacher explicitly requested generation (search-first, generate-as-fallback &mdash; Decision 5). Will not release content to the teacher until Keelin has validated it.</td></tr>
-    <tr><th>What it produces</th><td>A generated lesson plan in structured markdown: learning objective (verbatim from outcome prose), warm-up (using a named catalogue resource), main activity (described in prose, referencing specific materials), plenary (using another catalogue resource), differentiation notes (simpler/harder variants), assessment check ("how will you know they got it?"). Every reference to a catalogue resource uses its actual filename. The plan is tagged with <code>ai_generated=TRUE, confidence=X.XX</code> and written as a new row to the Excel catalogue alongside the resources it references.</td></tr>
-  </table>
+  <h4>Decision 3: No Gaeilge</h4>
+  <p>LLMs are materially weaker in Irish. Generating Irish-language educational content is an active research problem, not a CA3 deliverable. ~119 Gaeilge files tagged from folder only, excluded from demo queries. Named as deliberate exclusion with specific reasoning in the writeup — demonstrates AI-limitation awareness.</p>
+  <p class="decision-made">→ Decision: Exclude Gaeilge from catalogue, parsing, generation, and demo.</p>
 </div>
 
 <div class="card">
-  <h4>Ops-Communicator</h4>
-  <table>
-    <tr><th>Domain expertise</th><td>Teacher-facing communication, markdown summary composition, AI disclosure conventions (Week 3), bundle packaging (zip creation via JSZip in the Worker), the three UX modes and their distinct output conventions</td></tr>
-    <tr><th>Core beliefs</th><td>The teacher must be able to trace every recommendation back to its source. AI-generated content must be visually and textually distinct from catalogue content. A bundle without a README explaining what's in it and why is a folder of random files.</td></tr>
-    <tr><th>Boundaries</th><td>Will not present AI-generated content as if it were catalogue content. Will not obscure confidence scores. Will not bundle resources the teacher explicitly excluded.</td></tr>
-    <tr><th>What it produces</th><td>(a) A markdown summary for the web UI: what was found, why each resource was selected, how they work together, gaps noted with discovered suggestions, generated plan (if applicable) with clear AI provenance badge. (b) A downloadable zip bundle containing: all teacher-selected catalogue resources (fetched from OneDrive via Graph API), any teacher-approved discovered resources, generated lesson plan (if applicable), a README.md with the full summary + AI disclosure + confidence scores + source attribution. The bundle is produced by the Worker's /api/bundle endpoint and streamed to the browser.</td></tr>
-  </table>
+  <h4>Decision 4: UFLI programme reference</h4>
+  <p>UFLI Foundations is a structured phonics programme with 128 lessons in a fixed scope-and-sequence. 24 files in the collection are already UFLI-tagged by filename. Authoring the scope-and-sequence as JSON lets the system answer "UFLI Lesson 54" queries, cross-reference to curriculum outcomes, and prevent generated plans from using untaught sounds. This is a separate reference layer from curriculum outcomes — a resource can be tagged with both.</p>
+  <p class="decision-made">→ Decision: Author full 128-lesson UFLI scope-and-sequence as JSON. Numicon and morphology taxonomies as skeletons only.</p>
 </div>
 
 <div class="card">
-  <h4>Ops-Manager</h4>
-  <table>
-    <tr><th>Domain expertise</th><td>Session orchestration, UX mode classification (Guided / Free-text / Browse), the Excel audit sheet schema, confidence thresholds, disagreement tracking, governance cadence, the module's trust calibration framework (Week 2 &mdash; Lee &amp; See, 2004)</td></tr>
-    <tr><th>Core beliefs</th><td>A disagreement is not a failure &mdash; it's catalogue maintenance. Every session must be logged: query, mode, agents invoked, resources matched, resources excluded, disagreements flagged, Keelin review outcomes, bundle delivered. Trust is earned through transparency, not claimed through assertion.</td></tr>
-    <tr><th>Boundaries</th><td>Will not silently drop disagreements &mdash; they are written to the audit sheet with timestamps. Will not route a query to Maker without first checking if Researcher found discoverable content (enforces search-first, generate-as-fallback).</td></tr>
-    <tr><th>What it produces</th><td>A session audit log written to the Excel audit sheet: session ID, timestamp, query text, UX mode, agents invoked in order, resource IDs matched, resource IDs excluded (with teacher-stated reason if provided), disagreements flagged (resource ID, flag reason, timestamp), Keelin review outcome (pass/fail/feedback), bundle delivered (file count, size). A running quality dashboard (optional extension): how often are catalogue resources accepted vs. rejected? How often is generation requested vs. discovery accepted? This is the data that drives the GOVERNANCE.md review cadence.</td></tr>
-  </table>
-</div>
-
-
-<h3>Keelin &mdash; Security &amp; QA, shared across both teams</h3>
-
-<div class="phase-label">Named after the QA agent from the project brief's strawman</div>
-
-<div class="card">
-  <h4>Dev-side: security review</h4>
-  <p>Keelin reviews every commit from Dev-Maker before it reaches deployment. Checks: no API keys in committed code, no hardcoded credentials, no secrets in client-side JavaScript, wrangler.toml correctly configured, CORS rules appropriate, Graph API scopes are minimal (Files.Read.All, Sites.Read.All &mdash; not broader). Keelin also validates the build against the CA3 rubric: does each agent have a definition file? Are handoffs documented? Is the live-data connection real (not mocked)? If Keelin fails the build, it goes back to Dev-Maker with specific remediations.</p>
+  <h4>Decision 5: Search first, generate as fallback</h4>
+  <p>Gap resolution: (1) query catalogue → (2) if gap, search curriculumonline.ie for public NCCA resources → (3) teacher reviews suggested resources, adds to catalogue → (4) only if nothing found and teacher requests: Maker generates a lesson plan. Generated content is marked with AI provenance. Teacher keeps control of what enters their catalogue.</p>
+  <p class="decision-made">→ Decision: Search-first, generate-as-fallback. Bundle = matched resources + teacher-approved discovered resources + generated lesson plan (only if gaps remain). No worksheet generation.</p>
 </div>
 
 <div class="card">
-  <h4>Ops-side: content validation</h4>
-  <p>Keelin sits between Ops-Maker and Ops-Communicator. Every generated lesson plan passes through Keelin before the teacher sees it. Checks:</p>
-  <ul>
-    <li><strong>Outcome alignment:</strong> Does the plan's learning objective match the target outcome prose? Is the activity appropriate for the specified stage?</li>
-    <li><strong>Hallucination detection:</strong> Does the plan reference a catalogue resource by filename that doesn't exist? Does it claim an outcome code that isn't in the taxonomy?</li>
-    <li><strong>Bias check (paired-prompt):</strong> If the teacher's query mentioned a protected characteristic (e.g. "EAL," "dyslexia"), Keelin runs the same generation prompt <em>without</em> that mention and compares the two outputs. If the version with the characteristic yields lower-complexity activities, Keelin flags it. This is the paired-prompt bias test from the project brief's Regulatory section.</li>
-    <li><strong>UFLI sound boundary:</strong> If the lesson plan references a phonics pattern from a later UFLI lesson than the one being taught, Keelin flags it.</li>
-    <li><strong>Age-appropriateness:</strong> Would a typical child at this stage understand the vocabulary, follow the instructions, and complete the activity in the allotted time?</li>
-  </ul>
-  <p>If Keelin passes the plan &rarr; Ops-Communicator receives it for bundling. If Keelin fails &rarr; back to Ops-Maker with the specific failure reason and a suggested fix. If Keelin fails twice &rarr; the gap is left unfilled and the teacher is told honestly that generation wasn't possible for this outcome. This is trust calibration in action (Week 2): the system knows its limits and communicates them.</p>
-</div>
-
-<h4>Operations team handoffs</h4>
-
-<pre class="ascii">
-  TEACHER QUERY
-      |
-      v
-  Ops-Manager (classifies mode: Guided / Free-text / Browse)
-      |
-      | 1. Query + mode context
-      v
-  Ops-Researcher
-      |
-      | 2. Match list + gap report + discovered resources
-      v
-  Ops-Designer
-      |
-      +--&gt; For catalogue matches: resource sequence &rarr; (5)
-      |
-      +--&gt; For gaps: Maker specification &rarr; (3)
-                |
-                v
-           Ops-Maker
-                |
-                | 3. Generated lesson plan (markdown)
-                v
-           Keelin (content validation)
-                |
-                +-- PASS --&gt; (5)
-                |
-                +-- FAIL --&gt; back to Ops-Maker with feedback
-                               (max 2 attempts)
-      |
-      | 5. All resources + validated plan
-      v
-  Ops-Communicator
-      |
-      | 6. Summary + bundle
-      v
-  Ops-Manager (logs session &rarr; audit sheet; presents output to teacher)
-      |
-      v
-  TEACHER receives summary (web UI) + download button &rarr; zip bundle
-</pre>
-
-<div class="card">
-  <h4>Conditional routing &mdash; the operational handoff is not linear</h4>
-  <table>
-    <tr><th>Condition</th><th>Route</th></tr>
-    <tr><td>Guided mode, all outcomes covered by catalogue</td><td>Researcher &rarr; Designer &rarr; Communicator. No Maker. No Keelin.</td></tr>
-    <tr><td>Guided mode, gap found, search returns results</td><td>Researcher &rarr; Designer (presents discovered suggestions alongside catalogue matches) &rarr; Communicator. Teacher reviews discovered resources. No Maker.</td></tr>
-    <tr><td>Guided mode, gap found, search empty, teacher requests generation</td><td>Researcher &rarr; Designer &rarr; Maker &rarr; Keelin &rarr; Communicator. Full pipeline.</td></tr>
-    <tr><td>Free-text mode</td><td>Researcher &rarr; Designer (no gap analysis, no curriculum mapping) &rarr; Communicator. No Maker. No Keelin.</td></tr>
-    <tr><td>Browse mode</td><td>No agents. Client-side filter only. No Worker call.</td></tr>
-  </table>
-  <p>This conditional routing is a stronger orchestration demonstration than a linear pipeline. The Ops-Manager's decision-making &mdash; which agents to invoke, when to stop &mdash; is the Handoff &amp; Orchestration criterion (25% of the grade) made visible.</p>
-</div>
-
-<!-- ============================================================ -->
-<h2 id="ux">15. UX Design — Three Entry Points, One Results Surface</h2>
-
-<div class="phase-label">Not every teacher query is a curriculum outcome lookup</div>
-
-<p>A teacher might arrive with a clear curriculum target (<em>"I'm teaching UFLI Lesson 54 next Tuesday"</em>), a vague content memory (<em>"there was that worksheet with blue balloons, phonics I think"</em>), or no specific need at all (<em>"what do I have for infants maths?"</em>). The system must handle all three without forcing curriculum mapping on every interaction. It must also let the teacher disagree with a match, alter constraints, or augment results — refinement is a first-class interaction, not an apology screen.</p>
-
-<h3>Three entry points, one destination</h3>
-
-<div class="stat-grid">
-  <div class="stat"><div class="val">1</div><div class="lbl">Guided<br>Curriculum search</div></div>
-  <div class="stat"><div class="val">2</div><div class="lbl">Free-text<br>Content search</div></div>
-  <div class="stat"><div class="val">3</div><div class="lbl">Browse<br>&amp; Explore</div></div>
-</div>
-
-<p>All three converge on the same <strong>results + refinement panel</strong>. The bundle action is always available but always explicit — the system never assumes the teacher wants a download just because they searched.</p>
-
-<div class="card">
-  <h4>Entry Point 1 — "I know my outcome"</h4>
-  <p><strong>Mode:</strong> Curriculum-directed. Structured, guided, predictable.</p>
-  <p><strong>UX:</strong> Progressive disclosure dropdowns — Subject → Strand → Stage → Outcome — with a trailing free-text field for any additional constraints (<em>"needs to work for a mixed 1st/2nd class with two EAL learners"</em>). The dropdowns are populated from the reference taxonomy JSON. As each level is selected, the next narrows to valid options.</p>
-  <p><strong>Backend behaviour:</strong> Researcher queries the Excel catalogue by <code>outcome_code</code> and <code>stage</code>. If the teacher added free-text constraints, those are layered as additional filters on the result set (format, pedagogy, grade-range). Gap detection runs against the selected outcome. Maker generates lesson plans for gaps. Bundle is offered but not pushed.</p>
-  <p><strong>Example query:</strong> Language → Reading → Stage 2 → TF5 (Phonics, word recognition, word study) → <em>"preferably a game, not a worksheet"</em></p>
+  <h4>Decision 6: App-only Graph auth for demo</h4>
+  <p>No user login. Cloudflare Worker uses Azure AD app-only credentials (client credentials flow) to access OneDrive. Zero friction for the demo. Content exposure through the Worker is acceptable for a graded project. Limitations section names delegated OAuth (MSAL.js) as the production fix with GDPR rationale.</p>
+  <p class="decision-made">→ Decision: Ship with app-only auth. No login. Document delegated auth as production path.</p>
 </div>
 
 <div class="card">
-  <h4>Entry Point 2 — "I remember a resource"</h4>
-  <p><strong>Mode:</strong> Content-directed. Free-text, fuzzy, description-based.</p>
-  <p><strong>UX:</strong> A single prominent search box with placeholder text: <em>"Describe the resource you're looking for — any detail helps."</em> No dropdowns, no taxonomy. The teacher types what they remember: colour, theme, activity type, a stray keyword from the filename, anything.</p>
-  <p><strong>Backend behaviour:</strong> The query is sent to the Worker, which runs it through the Researcher agent with a different system prompt: <em>"Match this free-text description against resource metadata (filename, content description, tags). Do not infer curriculum outcomes unless the user explicitly mentions them. Return matches ranked by relevance with a brief explanation of why each matched."</em> No gap detection runs. No lesson plans are generated. The system is in pure-retrieval mode.</p>
-  <p><strong>Example query:</strong> <em>"blue balloons, I think it was phonics, maybe CVC words"</em></p>
-</div>
-
-<div class="card">
-  <h4>Entry Point 3 — "Surprise me"</h4>
-  <p><strong>Mode:</strong> Exploratory browsing. Filterable catalogue tiles.</p>
-  <p><strong>UX:</strong> A visual grid of filter chips representing the primary tag dimensions: Subject, Grade band, Format, Season. Selecting a chip narrows the visible resources. Selecting multiple chips intersects them. Results appear below as cards (filename, format icon, key tags, a one-line content description). No taxonomy guidance, no free-text parsing — just direct catalogue exploration.</p>
-  <p><strong>Backend behaviour:</strong> The full Excel catalogue is loaded as JSON (cached client-side after first fetch). Filtering happens entirely in the browser — instant, no Worker calls. Clicking a resource card opens a detail panel with full metadata, the content description, and a "Find similar" action that switches to Entry Point 2 with that resource as the seed.</p>
-  <p><strong>Example session:</strong> Click "Maths" → Click "Infants" → Click "Game" → see 14 matching resources → tap one → "Find similar" → 8 more resources the system thinks are related.</p>
-</div>
-
-<h3>Convergence: the results + refinement panel</h3>
-
-<p>All three entry points render results into the same panel. The panel has two states: <strong>browsing</strong> (teacher is exploring, matching, refining) and <strong>committed</strong> (teacher has selected resources and is ready to bundle).</p>
-
-<div class="card">
-  <h4>Browsing state — refine, disagree, alter, augment</h4>
-  <table>
-    <tr><th>Interaction</th><th>How it works</th><th>System response</th></tr>
-    <tr>
-      <td><strong>Thumbs down a resource</strong></td>
-      <td>Teacher clicks &#x1F44E; on a result card</td>
-      <td>Resource is dimmed and moved to an "Excluded" section at the bottom. The system notes the exclusion reason implicitly (the resource's tags and the current query context) and may surface alternatives tagged similarly but not identically. Does <em>not</em> trigger a new Worker call — results are already in the browser.</td>
-    </tr>
-    <tr>
-      <td><strong>Thumbs up / "More like this"</strong></td>
-      <td>Teacher clicks &#x1F44D; or "Find similar" on a result card</td>
-      <td>The resource is promoted. The system re-ranks remaining results by tag similarity to the liked resource. Optionally triggers a new Worker call: <em>"Find resources similar to RES-0047 in your catalogue"</em> — the Researcher searches across content descriptions for semantic similarity, not just tag overlap.</td>
-    </tr>
-    <tr>
-      <td><strong>Add a constraint</strong></td>
-      <td>Teacher clicks a filter chip or types in the refinement bar: <em>"only worksheets"</em>, <em>"no seasonal content"</em>, <em>"infant level only"</em></td>
-      <td>Client-side filter applied to the current result set. The refinement bar accepts both structured chips (format, grade, pedagogy) and free-text (<em>"nothing that needs laminating"</em> — sent to the Worker for semantic interpretation against resource content descriptions).</td>
-    </tr>
-    <tr>
-      <td><strong>Disagree with a curriculum match</strong></td>
-      <td>Teacher clicks "Not for this outcome" on a result card in curriculum mode</td>
-      <td>The resource's <code>outcome_code</code> tag is flagged for human review in the Excel catalogue (the Manager logs the disagreement). The resource is removed from the current result set. This is a governance action — it improves the catalogue over time.</td>
-    </tr>
-    <tr>
-      <td><strong>Switch mode mid-session</strong></td>
-      <td>Teacher clicks "Search by curriculum" or "Search by content" tab at the top of the results panel</td>
-      <td>The current result set is preserved in a "Previous results" collapsible section. The new mode opens a fresh search context. This prevents losing work while allowing mode switching.</td>
-    </tr>
-    <tr>
-      <td><strong>Exclude a catalogue resource, request generation instead</strong></td>
-      <td>Teacher sees a matched resource, thinks it's not quite right, clicks "Generate something better"</td>
-      <td>The Maker agent receives the gap description <em>plus</em> the excluded resource as a reference: <em>"Generate a lesson plan for TF5, C2. Do NOT replicate the approach in RES-0047 (too worksheet-heavy). Prefer a game-based activity."</em> The generated plan appears in the results alongside catalogue resources, clearly marked as AI-generated.</td>
-    </tr>
-  </table>
-</div>
-
-<div class="card">
-  <h4>Committed state — bundle what matters</h4>
-  <p>When the teacher is satisfied with the selected resources (whether 1 or 20), the "Bundle &amp; Download" button becomes the terminal action. The button shows a count: <em>"Bundle 7 resources + 1 generated lesson plan"</em>.</p>
-  <p>Clicking it:</p>
-  <ol>
-    <li>The Communicator agent produces the summary markdown — explaining why each resource was selected, what it covers, and how they work together. This is the "written summary" the teacher asked for earlier.</li>
-    <li>If the session started in curriculum mode, gaps are noted: <em>"You have coverage for outcomes TF4-TF6 but TF7 (Comprehension) has no matching resources. A lesson plan has been generated. Consider adding comprehension activities to your catalogue."</em></li>
-    <li>The Worker fetches all selected files from OneDrive, bundles with generated content, adds the README + AI disclosure, and returns the zip.</li>
-    <li>The Manager logs the session: query, mode, resources selected, resources excluded, disagreements flagged, generated content produced. This is written to the Excel audit sheet.</li>
-  </ol>
-</div>
-
-<h3>Designing for disagreement</h3>
-
-<p>Disagreement is the most interesting interaction because it combines trust calibration (Week 2 — the teacher is calibrating their trust in the system's recommendations) with catalogue improvement (every disagreement makes the catalogue better for the next query).</p>
-
-<div class="card">
-  <h4>Three levels of disagreement, three system responses</h4>
-  <table>
-    <tr><th>Level</th><th>Teacher action</th><th>What the system learns</th></tr>
-    <tr>
-      <td><strong>Implicit</strong> — "This isn't right for me right now"</td>
-      <td>Thumbs down, excludes from bundle, moves on</td>
-      <td>Session-level signal only. The resource stays in the catalogue with its current tags. The Manager notes the exclusion in the audit log but does not alter the catalogue. This is a <em>context</em> signal, not a <em>quality</em> signal — the resource might be perfect for a different query.</td>
-    </tr>
-    <tr>
-      <td><strong>Explicit</strong> — "This is tagged wrong"</td>
-      <td>Clicks "Not for this outcome" or "Wrong grade band"</td>
-      <td>A flag is written to the Excel catalogue row (<code>review_flag=TRUE, review_reason="Teacher says not TF5,C2"</code>). The Manager surfaces flagged rows for periodic human review. This is a <em>quality</em> signal — the system's tagging was incorrect. The review cadence is defined in GOVERNANCE.md.</td>
-    </tr>
-    <tr>
-      <td><strong>Structured</strong> — "I need something different entirely"</td>
-      <td>Clicks "Generate something better" with a constraint</td>
-      <td>The Maker agent receives the original outcome + the teacher's constraint + the rejected resource as a negative example. The generated plan is tagged with <code>generation_trigger=teacher_rejection</code> so the Manager can track how often generation is requested vs. how often catalogue resources are accepted — a quality metric for the catalogue itself.</td>
-    </tr>
-  </table>
-</div>
-
-<h3>What the frontend looks like (rough wireframe)</h3>
-
-<pre class="ascii">
-┌──────────────────────────────────────────────────────────────────┐
-│  TEACHER RESOURCE FINDER                                         │
-│                                                                   │
-│  [I know my outcome]  [I remember a resource]  [Browse]           │
-│  ═══════════════════                                          │
-│                                                                   │
-│  Language ▼  Reading ▼  Stage 2 ▼  TF5 (Phonics) ▼              │
-│  Any other requirements?  [prefer games, EAL-friendly       ]    │
-│                                                    [Search →]    │
-│                                                                   │
-│  ─────────────────────────────────────────────────────────────── │
-│  Found 5 matching resources + 1 gap                               │
-│                                                                   │
-│  ┌─────────────────────────┐  ┌─────────────────────────┐       │
-│  │ 📄 CVC Word Sort         │  │ 🎮 UFLI 54 Word Work    │       │
-│  │ Phonics, 1st-2nd         │  │ Phonics, UFLI-aligned   │       │
-│  │ Worksheet, Christmas     │  │ Game, 1st-2nd           │       │
-│  │                          │  │                          │       │
-│  │ A cut-and-paste activity │  │ Roll-and-read game for   │       │
-│  │ sorting CVC words by     │  │ VCe a_e pattern. Pairs   │       │
-│  │ vowel sound. Festive.    │  │ well with word mat.      │       │
-│  │                          │  │                          │       │
-│  │ [👍] [👎] [More like]    │  │ [👍] [👎] [More like]    │       │
-│  │ [Not for this outcome]   │  │ [Not for this outcome]   │       │
-│  └─────────────────────────┘  └─────────────────────────┘       │
-│                                                                   │
-│  ┌─────────────────────────────────────────────────────────┐     │
-│  │ 🤖 GENERATED: Lesson Plan — VCe Word Work (TF5, C2)      │     │
-│  │ AI-generated lesson plan covering a_e pattern with game   │     │
-│  │ and worksheet components. [View inline]                   │     │
-│  │                                          [👍] [👎]        │     │
-│  └─────────────────────────────────────────────────────────┘     │
-│                                                                   │
-│  ⚠ Gap: TF7 (Comprehension) has no matching resources.            │
-│     [Generate lesson plan for this gap]                            │
-│                                                                   │
-│  ─────────────────────────────────────────────────────────────── │
-│  Refine: [+Worksheet] [+Game] [Infants only] [No seasonal]        │
-│  or type: [nothing laminated                           ]          │
-│                                                                   │
-│  [💾 Bundle 5 resources + 1 generated plan → Download]            │
-└──────────────────────────────────────────────────────────────────┘
-</pre>
-
-<div class="card">
-  <h4>Key design decisions behind the wireframe</h4>
-  <ul>
-    <li><strong>Mode tabs at the top, not buried in a menu.</strong> The three modes are fundamentally different mental models for the teacher. Making them visible as tabs signals that the system supports all three, and switching is cheap.</li>
-    <li><strong>Curriculum dropdowns only appear in curriculum mode.</strong> Content-search and browse modes don't show them — reducing cognitive load when the teacher isn't thinking in curriculum terms.</li>
-    <li><strong>AI-generated content is visually distinct</strong> (the 🤖 badge, different card border) but lives in the same results list as catalogue resources. The teacher treats them the same way — thumbs up, thumbs down, bundle or exclude. The system is transparent about provenance without segregating the experience.</li>
-    <li><strong>Gaps are called out but don't block the flow.</strong> The teacher can ignore a gap and bundle what exists, or click to generate. The system doesn't force action.</li>
-    <li><strong>The refinement bar accepts both structured chips and free-text.</strong> Structured chips (format, grade, pedagogy) are instant client-side filters. Free-text (<em>"nothing that needs laminating"</em>) is sent to the Worker for semantic interpretation — slower but handles the unpredictable stuff teachers actually say.</li>
-    <li><strong>The bundle button is always visible, always shows a count, and is always a deliberate action.</strong> No auto-download, no "you might also want..." upsells. The teacher decides when they're done.</li>
-    <li><strong>Disagreement actions are per-resource, not buried in a settings panel.</strong> This keeps the refinement loop tight — the teacher stays in the results view, making quick judgments, rather than navigating away to configure filters.</li>
-  </ul>
-</div>
-
-<h3>What this means for the agent pipeline</h3>
-
-<p>The three modes map to different Researcher agent behaviours:</p>
-
-<table>
-  <tr><th>Mode</th><th>Researcher system prompt</th><th>Excel catalogue query</th><th>Gap detection?</th><th>Maker invoked?</th></tr>
-  <tr>
-    <td><strong>Guided</strong></td>
-    <td><em>"Match resources to the specified curriculum outcome. Identify gaps. Return resources ranked by fit, with explanations. Note catalogue resources that could be adapted from adjacent outcomes."</em></td>
-    <td>Filter by <code>outcome_code</code> and <code>stage</code></td>
-    <td>Yes — against selected outcome</td>
-    <td>Yes — for any gap, and on teacher request</td>
-  </tr>
-  <tr>
-    <td><strong>Free-text</strong></td>
-    <td><em>"Match this free-text description against resource metadata and content descriptions. Do not infer curriculum outcomes. Return resources ranked by semantic similarity to the query. Explain why each matched."</em></td>
-    <td>Full catalogue scanned; Worker sends top-N rows to the LLM for semantic matching against the query</td>
-    <td>No</td>
-    <td>No — unless teacher explicitly requests generation</td>
-  </tr>
-  <tr>
-    <td><strong>Browse</strong></td>
-    <td>No Researcher call — client-side filtering only</td>
-    <td>Full catalogue loaded as JSON on first visit, cached</td>
-    <td>No</td>
-    <td>No</td>
-  </tr>
-</table>
-
-<p>The Communicator's output adapts to mode: in Guided mode, the summary is curriculum-structured (outcome → resources → gaps → lesson plan). In Free-text mode, the summary is relevance-structured (query → matches ranked → why each matched). The bundle is the same regardless of mode — a zip of selected files + README.</p>
-
-
-<!-- ============================================================ -->
-<h2 id="scope">16. Teacher's Pet — Full Vision, CA3 Scope, and the Rationale Behind Every Cut</h2>
-
-<div class="phase-label">This is a scoped example of a model that works for any info-burdened professional</div>
-
-<p>What we are building is a <strong>personal knowledge concierge</strong> — an agentic system that ingests a professional's private reference library, indexes it against external frameworks, fills gaps intelligently, and responds to queries in multiple modes (structured, fuzzy, exploratory). A teacher. A solicitor. A consultant. The domain changes; the architecture doesn't. Teacher's Pet is the scoped instance for this CA3. The full model is what sits behind it.</p>
-
-<h3>The full vision — Teacher's Pet at scale</h3>
-
-<p>In production, Teacher's Pet would serve an entire school or community of practice. Every decision below that we are <em>not</em> building for CA3 is listed here as the long-term target — so the scoping is intentional, not ignorant.</p>
-
-<table>
-  <tr><th>#</th><th>Capability</th><th>Full vision</th><th>CA3 scope</th><th>Why scoped</th></tr>
-  <tr>
-    <td><strong>V1</strong></td>
-    <td>Content sources</td>
-    <td>Personal OneDrive catalogue + web discovery from curriculumonline.ie, Scoilnet, OER Commons (with US→Irish standards mapping), PDST/Oide. Automated periodic refresh. Licence-aware ingestion chain.</td>
-    <td>Personal OneDrive catalogue only. No web discovery. No automated refresh.</td>
-    <td>Web discovery is a separate engineering problem (scraping, parsing, deduplication, licensing) that doesn't add rubric value. The live-data requirement is already satisfied by the Excel catalogue + OneDrive file fetch. One solid live-data source with real API calls beats two half-built ones.</td>
-  </tr>
-  <tr>
-    <td><strong>V2</strong></td>
-    <td>Curriculum coverage</td>
-    <td>All subjects: Primary Language (English + Gaeilge), Mathematics, SESE (Science, Geography, History), SPHE, PE, Arts Education (Visual Arts, Music, Drama). Both 1999 and modernised frameworks with full outcome-level mapping. Synthetic codes for 1999 subjects where native codes don't exist.</td>
-    <td>Primary Language (English) + Primary Mathematics. Modernised frameworks only (TF codes + PC continua). No Gaeilge. 1999 subjects get strand/stage skeleton in the taxonomy JSON but no per-outcome matching.</td>
-    <td>The richness of the rubric argument — two-regime problem, synthetic coding, gap detection — is fully demonstrable with two subjects. Adding 6 more subjects is rote transcription, not insight. The Language + Maths pair covers the two taxonomy styles (coded outcomes vs. progression continua), which is the interesting engineering contrast.</td>
-  </tr>
-  <tr>
-    <td><strong>V3</strong></td>
-    <td>Gaeilge</td>
-    <td>Full Irish-language support: catalogue tagging of Gaeilge resources, Irish-language query understanding, Gaeilge lesson plan generation, bilingual UI.</td>
-    <td>No Gaeilge. The ~119 Gaeilge files in the catalogue are tagged with subject=Gaeilge from folder name but not deep-parsed or outcome-mapped. The UI and generated content are English-only.</td>
-    <td>LLMs are materially weaker in Irish — grammatical errors, dialect mismatches, unnatural phrasing. Generating Irish-language educational content with an LLM is an active research problem, not a CA3 deliverable. Naming this as a deliberate exclusion shows domain awareness. The exclusion is itself a trust-calibration move (Week 2): don't claim capability you can't deliver.</td>
-  </tr>
-  <tr>
-    <td><strong>V4</strong></td>
-    <td>Content generation</td>
-    <td>Tier 1–4 spectrum fully implemented: gap descriptions, lesson plans, worksheets/activities (with image generation or HTML/CSS layout), auto-adaptation of existing resources to different levels. Quality-assurance agent validates all generated content against the target outcome before release.</td>
-    <td>Tier 2 only: lesson plan generation (structured markdown text). No worksheet generation. No image generation. No auto-adaptation.</td>
-    <td>Lesson plans are the sweet spot (Section 11): LLMs produce them reliably, the hallucination surface is small (outcome prose is ground truth), and a teacher can judge quality in 30 seconds. Worksheet generation requires solving layout, age-appropriateness, visual design, and image generation — four hard problems that don't prove the agent pipeline any better than lesson plans do. The pipeline is the point; the content is the demo.</td>
-  </tr>
-  <tr>
-    <td><strong>V5</strong></td>
-    <td>User model</td>
-    <td>Multi-teacher, school-wide, or community-level. Shared catalogues. Peer review of generated content. Role-based access. Usage analytics for school leadership. Collaborative filtering for resource quality.</td>
-    <td>Single teacher. No sharing. No collaboration. No analytics.</td>
-    <td>The brief explicitly scopes out multi-user features for v1. Adding them would require identity management, permissions, and shared state — all orthogonal to demonstrating the agent pipeline. The architecture supports extension (Excel Online is shareable, the Worker is stateless) but the demo doesn't build it.</td>
-  </tr>
-  <tr>
-    <td><strong>V6</strong></td>
-    <td>Auth model</td>
-    <td>Delegated OAuth: teacher signs in with Microsoft account. MSAL.js in the frontend. Graph API calls are user-delegated. Each teacher sees only their own OneDrive content. No content exposure. GDPR-compliant by design.</td>
-    <td>No user auth. Worker uses app-only MS Graph credentials. Content is exposed through the Worker. Acceptable for a single-teacher graded demo; unacceptable for production.</td>
-    <td>Adding MSAL.js adds friction (login popup, consent screen, token management) and development time (~2 hours) that doesn't improve the rubric argument. The app-only pattern proves the Graph API integration just as well. The Limitations section names delegated auth as the production fix and explains why it matters (GDPR, content isolation, audit trails).</td>
-  </tr>
-  <tr>
-    <td><strong>V7</strong></td>
-    <td>Catalogue tagging depth</td>
-    <td>Every resource deep-parsed: text extraction for text-rich PDFs, Gemini Flash vision for image-heavy PDFs, Tesseract/Marker OCR for borderline cases. Full multi-dimension tagging (18 columns). Confidence scores on every tag. Human-in-the-loop review for low-confidence tags on a governance cadence.</td>
-    <td>Folder+filename fast pass for all resources. Deep content parse (pdfplumber text extraction + DeepSeek classification) for a representative sample (~100–200 files, targeting the Language + UFLI subset). Vision pass for a smaller sample (~20–30 image-heavy files) to demonstrate the pipeline. Remaining resources tagged from folder structure only, with the <code>confidence</code> column reflecting the difference.</td>
-    <td>The tagging exploration (Sections 3–6) proved that full deep parse is trivially cheap (~$5 API, ~90 min compute) but the CA3 rubric values demonstrated architecture over catalogue completeness. A representative sample shows the pipeline works. The confidence column honestly communicates coverage. The full parse is named as a one-time production run.</td>
-  </tr>
-  <tr>
-    <td><strong>V8</strong></td>
-    <td>Programme support</td>
-    <td>UFLI, Numicon, Jolly Phonics, Heggerty, Sounds-Write, Treasa Bowe Spelling, Lyn Stone Spelling for Life, school-specific schemes. Scope-and-sequence taxonomies for all. Teacher can add custom programme structures.</td>
-    <td>UFLI only. The 24 UFLI files are the strongest programme signal in the collection. Numicon and morphology plan taxonomies are authored as JSON skeletons but not wired into the demo's active matching.</td>
-    <td>One well-integrated programme reference proves the pattern more convincingly than five shallowly-integrated ones. UFLI was chosen because (a) it has the most files, (b) its scope-and-sequence is well-documented and easy to author as JSON, (c) its lesson-based structure maps cleanly to outcome codes.</td>
-  </tr>
-  <tr>
-    <td><strong>V9</strong></td>
-    <td>UI polish</td>
-    <td>Responsive design for mobile/tablet. Accessibility (WCAG 2.1 AA). Teacher-customisable tag dimensions. Saved queries and bundles. Offline support for browse mode. Print-friendly resource cards.</td>
-    <td>Single-page desktop web app. Functional, not beautiful. The three-mode interaction model works end-to-end but without responsive design, offline support, or teacher customisation.</td>
-    <td>UI polish doesn't demonstrate agent architecture. The wireframe (Section 14) shows the interaction model clearly; the working demo proves the pipeline. The visual design can be basic HTML/CSS — the lecturer grades the agents, not the CSS.</td>
-  </tr>
-  <tr>
-    <td><strong>V10</strong></td>
-    <td>Governance &amp; trust automation</td>
-    <td>Automated bias testing (paired-prompt comparison from the brief). Periodic catalogue quality audits. Drift detection on generated content. Escalation workflows. Teacher confidence calibration dashboards. Full audit trail with searchable logs.</td>
-    <td>Manual artefacts: GOVERNANCE.md covering disclosure, escalation, and review cadence. AI_DISCLOSURE.md embedded in every bundle README. Disagreement flags written to Excel (manual review). Paired-prompt bias test run once with screenshots in the writeup. Manager logs session data to an audit sheet but no automated analysis.</td>
-    <td>The brief asks for governance practice, not governance automation. A well-written GOVERNANCE.md that names triggers, routes, response times, and review cadences — and is actually referenced by the Manager agent's code — demonstrates the principle better than a half-built automated system. The paired-prompt test (Section "Regulatory and Ethical Considerations" in the brief) is a one-time artefact, not a recurring process.</td>
-  </tr>
-</table>
-
-<h3>Seven numbered decisions — push back on any of them</h3>
-
-<div class="card">
-  <h4>Decision 1: Parse depth — how much of the catalogue gets deep-parsed?</h4>
-  <p>The tagging exploration (Sections 3–6) proved that full deep parse of all ~3,300 PDFs is trivially cheap: ~$5–16 total API spend, ~90 minutes processing time. The cost argument for an optimised sample no longer applies — there is no meaningful time or money saving from skipping files. The catalogue is the product; an honest catalogue needs honest tagging.</p>
-  <p>For text-rich PDFs (~70%): pdfplumber text extraction → DeepSeek classification → 6–8 structured tags per file. For image-heavy PDFs (~30%): Gemini Flash vision → direct tag inference from visual content. This catches activity type, grade band, and pedagogical intent that text extraction alone misses from worksheets, craft templates, and posters.</p>
-  <p class="decision-made">→ Decision: Deep-parse all PDFs in-scope. Text-rich via DeepSeek (~$3). Image-heavy via Gemini Flash vision (~$3–13). The <code>confidence</code> column still records parse method: 0.9 = content-parsed, 0.5 = folder-only (for non-PDF files). Total: ~$6–16, ~90 minutes.</p>
-</div>
-
-<div class="card">
-  <h4>Decision 2: Subject scope — which subjects, and should we trim the catalogue?</h4>
-  <p>The Irish primary curriculum spans Language (English + Gaeilge), Mathematics, SESE (Science, Geography, History), SPHE, PE, and Arts Education. Building outcome-level mapping for all of them is rote transcription, not engineering insight. The two-regime problem — coded outcomes (TF codes) vs. progression continua (PC1–PC12) — is fully demonstrable with just Language + Maths. Adding more subjects proves endurance, not understanding.</p>
-  <p>If we scope the <em>reference taxonomy</em> to English + Maths, should we also trim the <em>catalogue</em> to only those subjects? There is a strong argument for yes: a catalogue of 4,400 files with only ~1,800 actually mapped to outcomes creates a misleading demo (most queries return zero results because the files exist but aren't mapped). A trimmed catalogue of ~1,800 English + Maths files where every file has deep tags and outcome mapping tells a cleaner story. The brief itself says <em>"It also will target a limited content catalogue, aiming to establish credibility rather than delivering a broad solution."</em></p>
-  <p>Note: some folders are cross-curricular. A Christmas phonics worksheet lives in <code>xmas/</code> but is literacy content. The trim should be by <em>inferred subject</em> (from content analysis), not by folder path. Seasonal folders, back-to-school packs, and fun-stuff resources that are fundamentally literacy or numeracy stay in scope.</p>
-  <p class="decision-made">→ Decision: Scope reference taxonomies to Primary Language (English, TF codes) + Primary Mathematics (PC continua). Trim the catalogue to files whose content infers English or Maths as primary subject. Others tagged from folder only and excluded from demo queries. Estimated catalogue size after trim: ~1,800–2,200 files.</p>
-</div>
-
-<div class="card">
-  <h4>Decision 3: No Gaeilge — exclusion as domain awareness</h4>
-  <p>LLMs are materially weaker in Irish — grammatical errors, dialect mismatches, unnatural phrasing. Generating Irish-language educational content with an LLM is an active research problem, not a CA3 deliverable. The ~119 Gaeilge files in the catalogue are tagged as subject=Gaeilge from folder name and excluded from the trimmed catalogue per Decision 2. Naming this as a deliberate exclusion with the specific reasoning demonstrates you understand AI limitations, not that you forgot about Gaeilge. The exclusion is itself a trust-calibration move (Week 2 — Lee &amp; See, 2004): don't claim capability you can't deliver.</p>
-  <p class="decision-made">→ Decision: Exclude Gaeilge from the trimmed catalogue, outcome mapping, deep parsing, and demo queries. Name the reasoning explicitly in the writeup.</p>
-</div>
-
-<div class="card">
-  <h4>Decision 4: UFLI programme reference — what it is and why it matters</h4>
-  <p><strong>What UFLI is:</strong> UFLI Foundations is a structured phonics programme from the University of Florida Literacy Institute. It has 128 lessons in a specific scope-and-sequence — Lesson 1 starts with short 'a' CVC words, Lesson 54 introduces the VCe a_e pattern ("cake," "gate"), and so on through affixes and advanced word study by Lesson 128. Each lesson is a known, fixed point on a progression.</p>
-  <p><strong>Why it matters for Teacher's Pet:</strong> The teacher's collection contains 24 UFLI-aligned resources (worksheets, word-work mats, decodable passages, games). Many are already filename-tagged with lesson numbers (e.g. "UFLI 54-62 Word Work - Korotney.pdf"). If we author the UFLI scope-and-sequence as a JSON taxonomy — 128 entries, each with lesson number, focus description, and which sounds are in play — the system can:</p>
-  <ul>
-    <li>Respond to the query <em>"I need resources for UFLI Lesson 54"</em> by matching <code>programme_ref="UFLI/L54"</code> in the catalogue</li>
-    <li>Know that Lesson 54 = VCe a_e pattern and cross-reference it to the Language Curriculum outcome TF4 (Phonics/word recognition) at Stage 2</li>
-    <li>Prevent generated lesson plans from accidentally using sounds from later, untaught lessons (a real risk with LLM generation)</li>
-    <li>Suggest adjacent-lesson resources as fallbacks: <em>"No resources for Lesson 54, but you have 3 resources for Lessons 53 and 55 that target similar patterns"</em></li>
-  </ul>
-  <p>This is a separate reference layer from curriculum outcomes. A resource can be tagged to both: <code>outcome_code=TF4,C2</code> AND <code>programme_ref=UFLI/L54</code>. The teacher can search by either.</p>
-  <p class="decision-made">→ Decision: Author the full UFLI Foundations scope-and-sequence (128 lessons) as a JSON taxonomy. Map the 24 UFLI-aligned resources by lesson number. Numicon and morphology plan taxonomies stay as JSON skeletons — not wired into active demo matching.</p>
-</div>
-
-<div class="card">
-  <h4>Decision 5: Gap filling — search first, generate as fallback</h4>
-  <p>The original design had Maker generating lesson plans for every curriculum gap. A better model respects teacher agency: the system should first try to <em>find</em> existing content (from trusted public sources), suggest it to the teacher for review, and only generate new content as a fallback when nothing is found.</p>
-  <p><strong>Revised gap-flow:</strong></p>
-  <ol>
-    <li><strong>Catalogue match:</strong> Query the Excel catalogue for resources matching the outcome. These go straight into the bundle.</li>
-    <li><strong>Gap identified:</strong> An outcome has zero or low-confidence matches.</li>
-    <li><strong>Search for existing content:</strong> The Researcher agent queries curriculumonline.ie (one strand, one stage — narrow scope per Section 11) for public NCCA resources matching the gap. Returns titles, descriptions, and URLs.</li>
-    <li><strong>Teacher reviews:</strong> Results shown as <em>"Found 3 public resources for this gap. Review and add to catalogue?"</em> Teacher clicks to add → new row written to Excel → resource added to bundle. Teacher can also reject ("not what I need").</li>
-    <li><strong>Generate as fallback:</strong> If teacher rejects the suggested resources, or if nothing was found, the Maker agent generates a lesson plan (text-only markdown). This is the safety net, not the first resort.</li>
-  </ol>
-  <p>This design is stronger than the original for three reasons: (a) it keeps the teacher in control of what enters their catalogue, (b) discovered content is NCCA-vetted so quality is higher than AI generation, (c) the search-first-then-generate flow is a more interesting agent orchestration to demonstrate — it involves conditional branching (Researcher → if found, Communicator presents; if not, Maker generates) rather than a linear pipeline.</p>
-  <p class="decision-made">→ Decision: Gap resolution is search-first, generate-as-fallback. Bundle contains: matched catalogue resources + teacher-approved discovered resources + generated lesson plan (only if gaps remain after discovery). Teacher reviews all additions before they enter the catalogue.</p>
-</div>
-
-<div class="card">
-  <h4>Decision 6: App-only Graph auth for the demo; name delegated auth as production fix</h4>
-  <p>The demo needs zero friction to feel magical. A login popup kills the illusion. The Limitations section explains exactly what changes for production (MSAL.js, delegated permissions, content isolation) and why it matters (GDPR Art 5 data minimisation, Art 32 security). The lecturer sees you know the right answer even if you're not building it.</p>
-  <p class="decision-made">→ Decision: Ship the demo with app-only Graph auth in the Worker. No user login. Document delegated auth as the production path in Limitations.</p>
-</div>
-
-<div class="card">
-  <h4>Decision 7: Parse all, not a sample</h4>
-  <p>Covered by Decision 1 above. No separate sample-based approach.</p>
+  <h4>Decision 7: Parse all (see Decision 1)</h4>
   <p class="decision-made">→ Decision: See Decision 1.</p>
 </div>
 
-<h3>The model behind Teacher's Pet</h3>
-
-<div class="card">
-  <h4>What generalises</h4>
-  <p>Swap the domain and the architecture holds:</p>
-  <table>
-    <tr><th>Teacher's Pet component</th><th>Generalised equivalent</th></tr>
-    <tr><td>Irish Primary Curriculum + UFLI scope</td><td>Any professional reference framework (legal precedent taxonomy, medical guideline hierarchy, engineering standards catalogue, consulting methodology library)</td></tr>
-    <tr><td>~4,400 teaching resources on OneDrive</td><td>Any professional's private reference collection (case files, research papers, project templates, client deliverables, technical specs)</td></tr>
-    <tr><td>Three entry modes (guided, fuzzy, browse)</td><td>Same three modes for any domain: structured lookup by framework code, free-text recall ("that deck with the blue slide about retention"), exploratory browsing</td></tr>
-    <tr><td>Lesson plan generation for gaps</td><td>Brief generation, proposal drafting, research synthesis, code scaffolding — any structured professional output where the framework provides ground truth and the model fills structure</td></tr>
-    <tr><td>Disagreement → catalogue improvement</td><td>Every professional knowledge system degrades without maintenance. Disagreement as a first-class interaction keeps the system honest over time</td></tr>
-    <tr><td>Static frontend + Worker backend + file store</td><td>Identical architecture for any personal knowledge concierge. The Worker is the AI orchestration layer; the file store is whatever the professional already uses</td></tr>
-  </table>
-  <p>Teacher's Pet is the scoped instance. The generalised model is a <strong>personal knowledge concierge</strong> — an agentic system that indexes a professional's private library against their domain's reference frameworks and fills gaps intelligently. The CA3 build proves the architecture. The consultancy application is a different domain string, same codebase.</p>
 </div>
 
 
-<!-- ============================================================ -->
-<h2 id="summary">17. Summary of the Journey</h2>
+<!-- ============================================================== -->
+<!-- TAB: ARCHITECTURE -->
+<!-- ============================================================== -->
+<div class="tab-panel" id="tab-architecture">
+
+<h2>Run-Time Architecture</h2>
+
+<pre class="ascii">
+┌──────────────────────────────────────────────────────────────────┐
+│  GITHUB PAGES — static HTML + JS (presentation only)             │
+│  Zero secrets. Zero auth. All intelligence in the Worker.        │
+└────────────────────────────┬─────────────────────────────────────┘
+                             │  HTTPS
+                             ▼
+┌──────────────────────────────────────────────────────────────────┐
+│  CLOUDFLARE WORKER — serverless API layer                        │
+│  Secrets: DEEPSEEK_API_KEY, MS_TENANT_ID, MS_CLIENT_ID,          │
+│           MS_CLIENT_SECRET, GEMINI_API_KEY                        │
+│                                                                   │
+│  POST /api/query     → 5-agent pipeline (Researcher → Designer   │
+│                          → Maker → Communicator → Manager)        │
+│  POST /api/bundle    → Fetch files from OneDrive, zip in-memory, │
+│                          return download                          │
+│  GET  /api/catalogue → Full catalogue as JSON                    │
+└────────────────────────────┬─────────────────────────────────────┘
+                             │  Microsoft Graph API (app-only)
+                             ▼
+┌──────────────────────────────────────────────────────────────────┐
+│  ONEDRIVE — Teaching Resources/                                  │
+│  ├─ Catalogue.xlsx        (live operational catalogue)            │
+│  ├─ Catalogue_raw.json    (immutable parse archive)               │
+│  └─ *.pdf                 (~1,800 in-scope resource files)        │
+└──────────────────────────────────────────────────────────────────┘
+</pre>
+
+<div class="card">
+  <h4>Catalogue persistence — append, never rebuild</h4>
+  <table>
+    <tr><th>File</th><th>Purpose</th><th>Update model</th></tr>
+    <tr><td><strong>Catalogue.xlsx</strong></td><td>Live operational catalogue. Agents read/write at run time via Graph API. 18 columns.</td><td>Append-only. New content → new row. Existing rows updated only by human disagreement flags.</td></tr>
+    <tr><td><strong>Catalogue_raw.json</strong></td><td>Immutable archive of raw parse results (extracted text, Gemini tags, DeepSeek tags, confidence, timestamps).</td><td>Write-once per file. Never modified. If tagging improves, re-parse and compare — never overwrite.</td></tr>
+  </table>
+  <p>The parse pipeline is <strong>idempotent by file path</strong>: before parsing, check Catalogue.xlsx for an existing row with that OneDrive path. Found → skip. Not found → parse → append. Adding 50 new files next month runs the same script, skips 1,800 existing rows, parses 50 new ones. No rebuild.</p>
+</div>
+
+<div class="card">
+  <h4>Key technology decisions</h4>
+  <table>
+    <tr><th>Layer</th><th>Choice</th><th>Why</th></tr>
+    <tr><td>Frontend</td><td>Static HTML/CSS/JS on GitHub Pages</td><td>Free hosting, no server, instant deploys</td></tr>
+    <tr><td>API / agents</td><td>Cloudflare Worker (single file)</td><td>Hides all API keys in secrets. Free tier (100K req/day). Serverless.</td></tr>
+    <tr><td>LLM reasoning</td><td>DeepSeek (chat)</td><td>Cheap ($0.14/M input), good at structured tag output</td></tr>
+    <tr><td>Vision tags</td><td>Gemini Flash (latest)</td><td>$0.075/1K images, excellent at worksheet understanding</td></tr>
+    <tr><td>Catalogue</td><td>Excel Online on OneDrive</td><td>Teacher can browse/edit directly. Graph API for programmatic access. Single ecosystem.</td></tr>
+    <tr><td>File storage</td><td>OneDrive (teacher's personal)</td><td>Files stay where they are. Graph API fetches on demand for bundle creation.</td></tr>
+    <tr><td>Auth</td><td>Azure AD app-only (demo)</td><td>Zero friction. No login popup. Named as demo-only; delegated auth is the production path.</td></tr>
+    <tr><td>Zip bundling</td><td>JSZip in Worker</td><td>In-memory zip creation, streamed to browser. Files fetched from OneDrive at bundle time.</td></tr>
+  </table>
+</div>
+
+</div>
+
+
+<!-- ============================================================== -->
+<!-- TAB: AGENTS -->
+<!-- ============================================================== -->
+<div class="tab-panel" id="tab-agents">
+
+<h2>Two Agent Teams — Dev Builds, Ops Runs, Keelin Guards</h2>
+<p>11 agents across 2 teams + 1 shared consultant. The Five Innovators are roles, not interchangeable tools. Fill a role with different domain expertise and you get a genuinely different agent.</p>
+
+<h3>Development Team (5 agents — builds once)</h3>
 
 <table>
-  <tr><th>Phase</th><th>What we learned</th><th>Key metric</th></tr>
+  <tr><th>Agent</th><th>Domain</th><th>Produces</th></tr>
   <tr>
-    <td>Folder-level categorisation</td>
-    <td>The teacher's own folder structure is a strong but incomplete taxonomy</td>
-    <td>3–4 tags/file, 30s total</td>
+    <td><strong>Dev-Architect</strong><br>(Researcher+Designer merged)</td>
+    <td>Cloudflare Workers, Graph API, wrangler, CA3 rubric</td>
+    <td>Architecture spec (endpoint contracts, Excel schema, handoff interfaces, data flow)</td>
   </tr>
+  <tr><td><strong>Dev-Maker</strong></td><td>JS, Python, HTML/CSS, wrangler deploy, Azure AD</td><td>Deployed code: worker.js, index.html, catalogue_populator.py, taxonomy JSONs, agent .md files, wrangler.toml</td></tr>
+  <tr><td><strong>Dev-Communicator</strong></td><td>Technical docs, disclosure conventions, module rubrics</td><td>README.md, GOVERNANCE.md, AI_DISCLOSURE.md, inline docs</td></tr>
+  <tr><td><strong>Dev-Manager</strong></td><td>Rubric criteria, build sequencing, dependency tracking</td><td>Build plan + rubric coverage map + build log (evidence for AI Acknowledgement)</td></tr>
+</table>
+
+<h4>Dev handoffs</h4>
+<pre class="ascii">
+  Dev-Manager → Dev-Architect → Dev-Maker → Keelin (security review)
+                                                ↓
+  Dev-Communicator ← Dev-Maker ← (pass/fail)
+        ↓
+  Dev-Manager (archive build log, hand system to Ops-Manager)
+</pre>
+
+<h3>Operations Team (6 agents — runs on every query)</h3>
+
+<table>
+  <tr><th>Agent</th><th>Domain</th><th>Produces</th><th>Key boundary</th></tr>
   <tr>
-    <td>Content-level experiment</td>
-    <td>Reading files triples tag depth; image-heavy worksheets hit a hard ceiling</td>
-    <td>6–8 tags/file, 1.43s/file</td>
+    <td><strong>Ops-Researcher</strong></td>
+    <td>Irish curricula, UFLI scope, Excel schema, curriculumonline.ie, semantic search</td>
+    <td>Match list + gap report + discovered resources. Each match has confidence score + rationale.</td>
+    <td>Will not fabricate catalogue entries. Will not search TPT/Twinkl.</td>
   </tr>
-  <tr>
-    <td>Quantification</td>
-    <td>Full deep parse is trivially cheap ($4.85); the bottleneck is image extraction, not text</td>
-    <td>90 min processing, ~$5 API</td>
+  <tr><td><strong>Ops-Designer</strong></td>
+    <td>Lesson planning pedagogy, activity sequencing, differentiation</td>
+    <td>Resource sequence (which resources, what order, which lesson phase) + Maker spec for gaps</td>
+    <td>Every activity must reference a real catalogue resource or an explicit gap.</td>
   </tr>
-  <tr>
-    <td>Image problem</td>
-    <td>30% of PDFs are image-heavy. OCR is slow; vision LLMs are fast, cheap, and capture pedagogy</td>
-    <td>Gemini Flash: $2.50–12.50 for all 996</td>
+  <tr><td><strong>Ops-Maker</strong></td>
+    <td>Markdown generation, curriculum-aligned prose, DeepSeek prompts with taxonomy context</td>
+    <td>Generated lesson plan (markdown) — only as fallback. References real catalogue resources by filename.</td>
+    <td>Never generates worksheets or images. Never generates Gaeilge. Must pass Keelin before release.</td>
   </tr>
-  <tr>
-    <td>Recommended hybrid</td>
-    <td>Text → DeepSeek for 70%; images → Gemini Flash vision for 30%</td>
-    <td>~$6–16 total, ~100 min processing</td>
+  <tr><td><strong>Ops-Communicator</strong></td>
+    <td>Teacher comms, markdown summaries, AI disclosure, bundle packaging</td>
+    <td>Markdown summary for web UI + downloadable zip bundle (resources + plan + README with disclosure)</td>
+    <td>AI-generated and catalogue content visually distinct. Confidence scores visible.</td>
   </tr>
-  <tr>
-    <td>Reference taxonomies</td>
-    <td>Curriculum outcomes are the search dimension teachers actually use; no public API exists so taxonomies must be hand-authored (~5 hrs). Two-regime problem (1999 vs. new framework) requires synthetic codes for older subjects. UFLI scope &amp; sequence maps directly to 24 existing files.</td>
-    <td>~120 Language outcomes, 128 UFLI lessons, 6 synthetic subjects</td>
-  </tr>
-  <tr>
-    <td>Gap detection</td>
-    <td>Curriculum-to-resource mapping creates a natural pipeline: Researcher finds gaps → Maker generates content → QA validates. Maps directly to rubric criteria (Handoff, Strategic Rationale, Live Data).</td>
-    <td>Every uncatalogued outcome triggers Maker agent</td>
-  </tr>
-  <tr>
-    <td>Gap filling strategy</td>
-    <td>Four-tier spectrum from gap description (safe, quick) through lesson plan generation (sweet spot for CA3) to worksheet generation (ambitious). Lesson plans are the best CA3 target: LLMs do structured text well, low hallucination surface, teacher can judge quality in 30 seconds. Gaeilge generation is explicitly excluded — LLMs are too weak in Irish.</td>
-    <td>Tier 2 (lesson plans) recommended for demo</td>
-  </tr>
-  <tr>
-    <td>Content discovery online</td>
-    <td>Most sources lack APIs. curriculumonline.ie is scrapable and directly curriculum-aligned. OER Commons has a real API but uses US Common Core standards — mapping US→Irish standards is the interesting engineering challenge. TPT/Twinkl are out of scope (no API, terms prohibit). Recommended: narrow scraping proof-of-concept from curriculumonline.ie + name OER Commons standards-mapping as future work.</td>
-    <td>One strand, one stage for demo; OER Commons for "Limitations &amp; Future" section</td>
-  </tr>
-  <tr>
-    <td>Run-time architecture</td>
-    <td><strong>Microsoft ecosystem + Cloudflare Worker:</strong> Static GitHub Pages frontend (zero secrets, zero auth). Cloudflare Worker as the API layer: orchestrates all 5 agents server-side, queries Excel Online catalogue (Graph API, app-only auth), fetches OneDrive files on demand, creates zip bundles in-memory. No user auth — teacher opens page, types query, downloads bundle. All credentials in Worker secrets. ~21 hours build time.</td>
-    <td>GitHub Pages → Worker → Graph API → OneDrive; ~21 hours</td>
-  </tr>
-  <tr>
-    <td>Scope-down decisions</td>
-    <td>No Gaeilge. Modernised curriculum only (Language + Maths with codes; 1999 subjects skeleton only). Lesson plans only (no worksheet generation). No curriculumonline.ie scraping. Single-teacher, no user auth (content exposed through Worker — acceptable for demo). Effort redirected to making the query→bundle path work end-to-end for the full catalogue.</td>
-    <td>~3 hours taxonomy authoring (was ~5)</td>
-  </tr>
-  <tr>
-    <td>UX &amp; interaction model</td>
-    <td>Three entry points converging on one results panel: (1) Guided curriculum search with progressive dropdowns, (2) Free-text content search for "blue balloons" queries, (3) Browse &amp; explore with filter chips. Disagreement is first-class: thumbs up/down per resource, "Not for this outcome" flags improve the catalogue, "Generate something better" triggers Maker with the rejected resource as a negative example. Bundle is always explicit and deliberate — the teacher decides when they're done. AI-generated content is visually distinct but lives alongside catalogue resources.</td>
-    <td>3 modes, 1 results panel, 6 refinement interactions</td>
+  <tr><td><strong>Ops-Manager</strong></td>
+    <td>Session orchestration, UX mode classification, audit logging, governance cadence</td>
+    <td>Session audit log in Excel: query, mode, agents invoked, matches, exclusions, disagreements, Keelin outcomes, bundle delivered</td>
+    <td>Will not silently drop disagreements. Enforces search-first, generate-as-fallback.</td>
   </tr>
 </table>
 
-<p>The exploration moved from <em>"can we just use folder names?"</em> (yes, mostly) to <em>"what does reading the files add?"</em> (a lot, but with a hard ceiling) to <em>"how do we break through that ceiling?"</em> (vision LLMs) to <em>"what dimension are teachers actually searching on?"</em> (curriculum outcomes) to <em>"what do we do when the catalogue comes up empty?"</em> (describe, generate, discover) to <em>"how does the teacher actually interact with this?"</em> (three modes, one surface, disagreement as a feature) to <em>"what exactly are we building, and why not the rest?"</em> (10 scoped capabilities, 7 numbered decisions). <strong>Teacher's Pet</strong> is the scoped CA3 instance of a generalisable model: a personal knowledge concierge that works for any info-burdened professional. The CA3 build proves the agent pipeline; the full vision proves you understand what sits behind it. Both are what the rubric rewards.</p>
+<h4>Ops handoffs (conditional — not linear)</h4>
+<pre class="ascii">
+  Teacher query → Ops-Manager (classify mode) → Ops-Researcher → Ops-Designer
+                                                                      |
+                    ┌─ All outcomes covered: ──→ Ops-Communicator ──→ Ops-Manager → Teacher
+                    │
+                    ├─ Gap + search found: ──→ Ops-Communicator (with discovered suggestions)
+                    │                             Teacher reviews → adds to bundle
+                    │
+                    └─ Gap + search empty + teacher requests generation:
+                         Ops-Maker → Keelin (validate) → Ops-Communicator
+                                      │                    (pass)
+                                      └── FAIL → back to Ops-Maker (max 2 attempts)
+                                                  → if still fail: gap left honestly unfilled
+
+  Free-text mode: Researcher → Designer → Communicator (no Maker, no Keelin, no gap analysis)
+  Browse mode:    Client-side only. No Worker call.
+</pre>
+
+<h3>Keelin — Shared Consultant (Security &amp; QA)</h3>
+
+<table>
+  <tr><th>Side</th><th>Role</th><th>Checks</th></tr>
+  <tr>
+    <td><strong>Dev</strong></td><td>Security review before deployment</td>
+    <td>No secrets in repo, no keys in client JS, CORS correct, Graph scopes minimal, rubric validation</td>
+  </tr>
+  <tr>
+    <td><strong>Ops</strong></td><td>Content validation before teacher sees output</td>
+    <td>Outcome alignment, hallucination detection (does plan reference non-existent catalogue files?), paired-prompt bias test (if query mentioned EAL/dyslexia — same prompt minus characteristic → compare complexity), UFLI sound boundary (no untaught sounds), age-appropriateness</td>
+  </tr>
+</table>
+<p>Failing Keelin means content doesn't reach the teacher. Max 2 Maker attempts. After 2 failures, the gap is left unfilled and the teacher is told honestly. This is trust calibration (Week 2: Lee &amp; See, 2004) — the system knows its limits and communicates them.</p>
+
+<p><strong>Cross-team handoff:</strong> Dev-Manager delivers deployed Worker + populated catalogue + taxonomy JSONs + agent definitions + signed-off build log → Ops-Manager takes ownership. Dev team archived, not retired; spun back up if rubric changes or bugs found.</p>
+
+</div>
 
 
-<hr>
-<p style="font-size:0.8rem; color: var(--muted);">
-  Design document for <a href="https://github.com/danmkelly/CustEngageCA3" style="color:var(--accent);">github.com/danmkelly/CustEngageCA3</a> — CA3 Final Project, H9CEAI Customer Engagement &amp; AI, NCI PGDip/MSc AI for Business.
+<!-- ============================================================== -->
+<!-- TAB: UX DESIGN -->
+<!-- ============================================================== -->
+<div class="tab-panel" id="tab-ux">
+
+<h2>Three Entry Points, One Results Surface</h2>
+
+<div class="stat-grid">
+  <div class="stat"><div class="val">1</div><div class="lbl">Guided — "I know my outcome"</div></div>
+  <div class="stat"><div class="val">2</div><div class="lbl">Free-text — "I remember a resource"</div></div>
+  <div class="stat"><div class="val">3</div><div class="lbl">Browse — "Surprise me"</div></div>
+</div>
+
+<table>
+  <tr><th>Mode</th><th>UX</th><th>Backend</th><th>Gap detection?</th><th>Maker invoked?</th></tr>
+  <tr>
+    <td><strong>Guided</strong></td>
+    <td>Progressive dropdowns: Subject → Strand → Stage → Outcome + free-text constraints</td>
+    <td>Researcher queries Excel by outcome_code + stage. Full pipeline with gap analysis and search-first discovery.</td>
+    <td>Yes</td>
+    <td>Only as fallback (Decision 5)</td>
+  </tr>
+  <tr>
+    <td><strong>Free-text</strong></td>
+    <td>Single search box. Any description: "blue balloons phonics"</td>
+    <td>Researcher runs semantic search against content descriptions. No curriculum inference unless user mentions outcomes explicitly.</td>
+    <td>No</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><strong>Browse</strong></td>
+    <td>Filter chips: Subject, Grade, Format, Season. Intersect to narrow.</td>
+    <td>Full catalogue JSON cached client-side. Filtering in-browser. Instant. No Worker call.</td>
+    <td>No</td>
+    <td>No</td>
+  </tr>
+</table>
+
+<h3>Refinement — disagreement is first-class</h3>
+<table>
+  <tr><th>Interaction</th><th>System response</th></tr>
+  <tr><td><strong>Thumbs down</strong> a resource</td><td>Dimmed, moved to "Excluded." Session-level signal only — doesn't alter catalogue tags.</td></tr>
+  <tr><td><strong>"Not for this outcome"</strong></td><td>Writes review_flag to Excel row. Manager surfaces for periodic human review. Catalogue improvement over time.</td></tr>
+  <tr><td><strong>"Generate something better"</strong></td><td>Maker receives outcome + rejected resource as negative example + teacher constraint. Generates plan that doesn't replicate the rejected approach.</td></tr>
+  <tr><td><strong>"More like this"</strong></td><td>Re-ranks results by tag similarity. Optional Worker call for semantic similarity across content descriptions.</td></tr>
+  <tr><td><strong>Add constraint</strong> (chips or free-text)</td><td>Structured chips = instant client-side filter. Free-text ("nothing laminated") = sent to Worker for semantic interpretation.</td></tr>
+</table>
+
+<h3>Bundle — the terminal action</h3>
+<p>Always visible, always explicit. Shows count: <em>"Bundle 7 resources + 1 generated lesson plan."</em> Clicking it: Communicator produces summary markdown → Worker fetches files from OneDrive → zips with generated content + README with AI disclosure → streams download. Teacher decides when they're done.</p>
+
+</div>
+
+
+<!-- ============================================================== -->
+<!-- TAB: CATALOGUING -->
+<!-- ============================================================== -->
+<div class="tab-panel" id="tab-catalogue">
+
+<h2>Cataloguing Pipeline</h2>
+
+<h3>Three passes, one catalogue</h3>
+
+<table>
+  <tr><th>Pass</th><th>Files</th><th>Method</th><th>Cost</th><th>Time</th><th>Output</th></tr>
+  <tr>
+    <td><strong>1. Folder + filename</strong></td>
+    <td>All ~4,400</td>
+    <td>Folder path → subject, subdomain, season. Filename parsing.</td>
+    <td>Free</td>
+    <td>~30s</td>
+    <td>3–4 tags: subject, subdomain, season, grade hints</td>
+  </tr>
+  <tr>
+    <td><strong>2. Text extraction</strong></td>
+    <td>~2,300 text-rich</td>
+    <td>pdfplumber → DeepSeek classification → structured tags</td>
+    <td>~$3</td>
+    <td>~90 min</td>
+    <td>6–8 tags: + format, activity_type, pedagogy, source, license, grade_band (refined)</td>
+  </tr>
+  <tr>
+    <td><strong>3. Vision</strong></td>
+    <td>~1,000 image-heavy (&lt;500 chars)</td>
+    <td>pymupdf → page 1 PNG → Gemini Flash → tags</td>
+    <td>~$2</td>
+    <td>~100 min (overnight)</td>
+    <td>+ format, activity_type, grade_band (visual inference from worksheet images)</td>
+  </tr>
+  <tr>
+    <td><strong>4. Curriculum mapping</strong></td>
+    <td>All in-scope</td>
+    <td>DeepSeek: resource tags + extracted text → match against taxonomy JSON</td>
+    <td>~$2</td>
+    <td>~30 min</td>
+    <td>outcome_code, programme_ref, confidence</td>
+  </tr>
+</table>
+
+<div class="card">
+  <h4>18-column Excel schema</h4>
+  <table>
+    <tr><th>Column</th><th>Example</th><th>Source</th></tr>
+    <tr><td>id</td><td>RES-0047</td><td>Auto-generated</td></tr>
+    <tr><td>filename</td><td>ChristmasLongandShortaSort-1.pdf</td><td>Filesystem</td></tr>
+    <tr><td>onedrive_path</td><td>Teaching Resources/xmas/ChristmasLongandShortaSort-1.pdf</td><td>Filesystem</td></tr>
+    <tr><td>subject</td><td>Literacy</td><td>Content analysis</td></tr>
+    <tr><td>subdomain</td><td>Phonics</td><td>Content analysis</td></tr>
+    <tr><td>grade_band</td><td>1st-2nd</td><td>Content analysis</td></tr>
+    <tr><td>format</td><td>Worksheet</td><td>Content analysis</td></tr>
+    <tr><td>activity_type</td><td>Cut-and-paste, Sorting</td><td>Content analysis</td></tr>
+    <tr><td>season</td><td>Christmas</td><td>Folder</td></tr>
+    <tr><td>pedagogy</td><td>Independent, SOR-aligned</td><td>Content analysis</td></tr>
+    <tr><td>curriculum_area</td><td>Primary Language</td><td>Reference taxonomy match</td></tr>
+    <tr><td>strand</td><td>Reading</td><td>Reference taxonomy match</td></tr>
+    <tr><td>outcome_code</td><td>TF4, C2</td><td>AI-inferred mapping</td></tr>
+    <tr><td>programme</td><td>UFLI</td><td>Folder + content</td></tr>
+    <tr><td>programme_ref</td><td>UFLI/L54</td><td>AI-inferred mapping</td></tr>
+    <tr><td>source</td><td>TPT</td><td>Content analysis</td></tr>
+    <tr><td>license</td><td>Single-classroom</td><td>Content analysis</td></tr>
+    <tr><td>confidence</td><td>0.92</td><td>Aggregated from parse passes</td></tr>
+    <tr><td>ai_generated</td><td>FALSE</td><td>TRUE if created by Ops-Maker</td></tr>
+  </table>
+</div>
+
+<h3>Test results</h3>
+
+<table>
+  <tr><th>Test</th><th>Sample</th><th>Result</th><th>Cost projection</th></tr>
+  <tr>
+    <td>pdfplumber text extraction</td>
+    <td>50 random PDFs</td>
+    <td>Avg 4,652 chars, 30% image-heavy (&lt;500 chars), 1.43s/file</td>
+    <td>~79 min for 3,300 PDFs</td>
+  </tr>
+  <tr>
+    <td>DeepSeek tag classification</td>
+    <td>Extrapolated</td>
+    <td>~$0.06/file for structured tag JSON</td>
+    <td>~$3 for 2,300 text-rich PDFs</td>
+  </tr>
+  <tr>
+    <td>Gemini Flash vision</td>
+    <td>10 image-heavy PDFs</td>
+    <td><span class="go">10/10 correct</span> — subject, grade, format, activity type all accurate. 6.2s/image.</td>
+    <td>~$2 for 1,000 PDFs (1 page each)</td>
+  </tr>
+  <tr>
+    <td>curriculumonline.ie scraping</td>
+    <td>Reading strand page</td>
+    <td><span class="go">200 OK, 317 KB, 91 outcome prose matches</span> — content is server-side rendered, no API needed</td>
+    <td>N/A</td>
+  </tr>
+</table>
+
+</div>
+
+
+<!-- ============================================================== -->
+<!-- TAB: REFERENCES -->
+<!-- ============================================================== -->
+<div class="tab-panel" id="tab-references">
+
+<h2>Reference Taxonomies — Tying Resources to Outcomes</h2>
+
+<p>Resources get tagged not just by what they <em>are</em> but by what curriculum outcome they <em>serve</em>. This unlocks the two capabilities the brief requires: outcome-to-resource mapping, and gap detection.</p>
+
+<h3>Two regimes, one system</h3>
+
+<table>
+  <tr><th>Regime</th><th>Subjects</th><th>Outcome format</th><th>CA3 scope</th></tr>
+  <tr>
+    <td><strong>New framework</strong> (with codes)</td>
+    <td>Primary Language (2019), Primary Maths (2023)</td>
+    <td>TF codes (Language), Progression Continua PC1–PC12 (Maths)</td>
+    <td><span class="tag tag-green">Full outcome mapping</span></td>
+  </tr>
+  <tr>
+    <td><strong>1999 curriculum</strong> (prose only)</td>
+    <td>SESE, SPHE, PE, Arts</td>
+    <td>No outcome codes. Strand/unit prose per class band.</td>
+    <td><span class="tag tag-amber">Skeleton only</span> (synthetic strand/stage codes, no outcome matching)</td>
+  </tr>
+</table>
+
+<h4>Example: Language Curriculum TF codes</h4>
+<pre>Strand: Reading → Element: Understanding → Outcome 7: Purpose, genre, and voice
+Stage 1 (Infants): "show understanding through body language, facial expression..."
+Stage 2 (1st–2nd): "identify the purpose, genre, and voice of a text..."
+Stage 3 (3rd–4th): "compare and contrast the purpose, genre, and voice..."
+Stage 4 (5th–6th): "evaluate how purpose, genre, and voice shape meaning..."
+→ Code: TF7, C3 = Purpose/genre/voice, Stage 3 (3rd–4th class)</pre>
+
+<h4>Example: UFLI programme reference</h4>
+<pre>Lesson 54: VCe a_e pattern ("cake", "gate", "same")
+Cross-reference: Primary Language → Reading → TF4 (Phonics/word recognition) → Stage 2
+Query: "UFLI Lesson 54, 2nd class" → matches programme_ref="UFLI/L54" + grade_band="1st-2nd"
+Guard: generated plans must not use sounds from lessons > 54</pre>
+
+<div class="card">
+  <h4>Gap detection engine</h4>
+  <p>Iterate all curriculum outcomes → query catalogue for each → any outcome with zero resources above confidence threshold is a gap → triggers Ops-Researcher to search curriculumonline.ie → if found, suggest to teacher → if not and teacher requests: Ops-Maker generates lesson plan. This is the core agent handoff chain that maps to 25% of the grade.</p>
+</div>
+
+<div class="card">
+  <h4>Taxonomy authoring — one-time, ~3 hours</h4>
+  <table>
+    <tr><th>Taxonomy</th><th>Effort</th><th>Output</th></tr>
+    <tr><td>Language TF codes (12 outcomes × 3 strands × 4 stages)</td><td>~2 hours</td><td>taxonomy_language.json</td></tr>
+    <tr><td>Maths PC continua (5 strands, 12 continua)</td><td>~30 min</td><td>taxonomy_maths.json</td></tr>
+    <tr><td>UFLI scope-and-sequence (128 lessons)</td><td>~1 hour</td><td>taxonomy_ufli.json</td></tr>
+    <tr><td>1999 subjects (skeleton strand/stage)</td><td>~30 min</td><td>taxonomy_1999_skeleton.json</td></tr>
+  </table>
+  <p>No public API or structured data export exists from the NCCA. Taxonomies must be hand-authored from curriculumonline.ie web pages. One-time cost. Static, version-controlled JSON in the repo.</p>
+</div>
+
+</div>
+
+
+<!-- ============================================================== -->
+<!-- TAB: SCOPE -->
+<!-- ============================================================== -->
+<div class="tab-panel" id="tab-scope">
+
+<h2>Full Vision vs. CA3 Scope</h2>
+
+<p>Teacher's Pet is the scoped CA3 instance of a generalisable model: a <strong>personal knowledge concierge</strong> that indexes a professional's private library against their domain's reference frameworks and fills gaps intelligently.</p>
+
+<div class="card">
+  <h4>What generalises</h4>
+  <table>
+    <tr><th>Teacher's Pet</th><th>Generalised equivalent</th></tr>
+    <tr><td>Irish Primary Curriculum + UFLI</td><td>Any professional reference framework</td></tr>
+    <tr><td>~1,800 teaching resources on OneDrive</td><td>Any professional's private reference collection</td></tr>
+    <tr><td>Three entry modes</td><td>Structured lookup, free-text recall, exploratory browsing — same for any domain</td></tr>
+    <tr><td>Lesson plan generation for gaps</td><td>Brief generation, proposal drafting, research synthesis — any structured professional output</td></tr>
+    <tr><td>Disagreement → catalogue improvement</td><td>Every knowledge system degrades without maintenance</td></tr>
+  </table>
+</div>
+
+<h3>10 scoped capabilities</h3>
+
+<table>
+  <tr><th>#</th><th>Capability</th><th>Full vision</th><th>CA3 scope</th></tr>
+  <tr><td>V1</td><td>Content sources</td><td>OneDrive + web discovery (curriculumonline.ie, Scoilnet, OER Commons)</td><td>OneDrive catalogue only. curriculumonline.ie scraping for gap search (narrow POC).</td></tr>
+  <tr><td>V2</td><td>Curriculum coverage</td><td>All subjects, both frameworks</td><td>English + Maths (modernised only). 1999 subjects skeleton only.</td></tr>
+  <tr><td>V3</td><td>Gaeilge</td><td>Full Irish-language support</td><td>Excluded. Tagged from folder only. Named as deliberate exclusion.</td></tr>
+  <tr><td>V4</td><td>Content generation</td><td>Tiers 1–4 (gap descriptions through worksheet generation)</td><td>Tier 2 only: lesson plan markdown. No worksheets, no images.</td></tr>
+  <tr><td>V5</td><td>User model</td><td>Multi-teacher, school-wide, collaborative</td><td>Single teacher. Architecture supports extension.</td></tr>
+  <tr><td>V6</td><td>Auth</td><td>Delegated OAuth (MSAL.js)</td><td>App-only Graph auth. Named as demo-only; delegated auth as production fix.</td></tr>
+  <tr><td>V7</td><td>Catalogue tagging</td><td>All files deep-parsed, all 18 columns populated</td><td>All in-scope files deep-parsed. Full catalogue (Decisions 1, 2).</td></tr>
+  <tr><td>V8</td><td>Programme support</td><td>UFLI, Numicon, Jolly Phonics, Heggerty, school-specific</td><td>UFLI only. Others as skeletons.</td></tr>
+  <tr><td>V9</td><td>UI polish</td><td>Responsive, accessible, offline support</td><td>Functional desktop web app. Ugly is fine; broken pipeline is not.</td></tr>
+  <tr><td>V10</td><td>Governance</td><td>Automated bias testing, periodic audits, drift detection</td><td>Manual artefacts: GOVERNANCE.md, AI_DISCLOSURE.md, paired-prompt test (once), Manager audit sheet.</td></tr>
+</table>
+
+<h3>Build estimate</h3>
+<table>
+  <tr><th>Component</th><th>Hours</th></tr>
+  <tr><td>Reference taxonomy JSONs (Language, Maths, UFLI)</td><td>~3</td></tr>
+  <tr><td>Excel catalogue populator (Python: folder scan → parse → write)</td><td>~3</td></tr>
+  <tr><td>Cloudflare Worker (3 endpoints + agent orchestration + Graph + LLM + zip)</td><td>~6</td></tr>
+  <tr><td>Static frontend (3-mode UX, results panel, refinement controls, download)</td><td>~2</td></tr>
+  <tr><td>Agent definition markdown files (11 agents)</td><td>~3</td></tr>
+  <tr><td>Governance, disclosure, trust artefacts</td><td>~2</td></tr>
+  <tr><td><strong>Total</strong></td><td><strong>~19 hours</strong></td></tr>
+</table>
+
+</div>
+
+
+<!-- ============================================================== -->
+<!-- DESIGN JOURNEY (collapsed) -->
+<!-- ============================================================== -->
+<details style="margin-top:3rem;">
+<summary><strong>Design Journey Log</strong> — how we got here (click to expand)</summary>
+<div style="padding-top:1rem;">
+
+<h3>Phase 1: Folder-Level Categorisation</h3>
+<p>First pass treated the teacher's own folder structure as the taxonomy. Result: 3–4 tags per file in 30 seconds. But missed format, grade band, pedagogy, source, licensing, and cross-cutting resources (a Christmas phonics worksheet in <code>xmas/</code> not <code>phonics/</code>).</p>
+
+<h3>Phase 2: Content-Level Experiment</h3>
+<p>Tested 3 PDFs in <code>fall resources literacy numeracy</code>. Content extraction tripled tags (3 → 6–8 per file). Discovered two were identical duplicates. But 9 of 14 pages in one file yielded zero extractable text — the hard ceiling: image-heavy worksheets.</p>
+
+<h3>Phase 3: Quantifying Approaches</h3>
+<p>Benchmarked on 50 random PDFs. Full deep parse: ~90 min, ~$5 API. Optimised (gaps only): ~10–15 min, ~$0.55. 30% of PDFs image-heavy (&lt;500 chars), 48% text-rich (&gt;2,000 chars). The cost argument for sampling collapsed — $5 is trivially cheap.</p>
+
+<h3>Phase 4: Image-Heavy PDF Problem</h3>
+<p>Explored four solutions: Tesseract OCR (free, 14+ hours), Azure Document Intelligence (~$37), Marker (free, GPU-recommended, 14+ hours), Vision LLMs (Gemini Flash ~$2–12.50, captures pedagogical intent directly from the visual layout). Vision LLMs won on cost, speed, and quality of tag inference.</p>
+
+<h3>Phase 5: Reference Taxonomies</h3>
+<p>Discovered two-regime problem: modernised curriculum has outcome codes (TF, PC); 1999 curriculum doesn't. No public API from NCCA — taxonomies must be hand-authored. Jolly Phonics absent from collection despite being Ireland's dominant programme; UFLI is the teacher's chosen method (24 files).</p>
+
+<h3>Phase 6: Gap Filling Strategy</h3>
+<p>Evolved from "generate for every gap" → "search first, generate as fallback." Teacher keeps control of what enters their catalogue. curriculumonline.ie scraping tested and confirmed viable (91 outcome prose matches in raw HTML).</p>
+
+<h3>Phase 7: Architecture Decisions</h3>
+<p>Google Sheets → Excel Online (MS ecosystem). Client-side JSZip → Cloudflare Worker server-side (no exposed keys). MSAL.js auth → app-only Graph auth (no friction for demo, delegated auth as production fix). Pre-sync subset → all files bundleable (zero content limits).</p>
+
+<h3>Phase 8: Two Teams</h3>
+<p>Dev team builds once (Architect, Maker, Communicator, Manager). Ops team runs on query (Researcher, Designer, Maker, Communicator, Manager). Keelin shared as security/QA consultant. 11 agents across 6 role types prove the module's argument that agents are domain-specific, not generic.</p>
+
+<h3>Phase 9: UX &amp; Interaction</h3>
+<p>Three entry points (Guided, Free-text, Browse) converging on one results+refinement panel. Disagreement as first-class interaction: thumbs down (session-level), "Not for this outcome" (catalogue improvement), "Generate something better" (Maker with negative example). Bundle always explicit and deliberate.</p>
+
+<h3>Phase 10: Tests Passed</h3>
+<p>curriculumonline.ie scraping: <span class="go">GO</span>. Gemini Flash vision: <span class="go">GO</span> (10/10 image-heavy PDFs correctly tagged, ~$2 for full parse). DeepSeek text classification: <span class="go">GO</span> (~$3, ~90 min). All blocking unknowns resolved. Ready to build.</p>
+
+</div>
+</details>
+
+
+<hr style="margin-top:2rem;">
+<p style="font-size:0.75rem; color: var(--muted);">
+  Design document for <a href="https://github.com/danmkelly/CustEngageCA3" style="color:var(--accent);">github.com/danmkelly/CustEngageCA3</a> &mdash; CA3 Final Project, H9CEAI Customer Engagement &amp; AI, NCI PGDip/MSc AI for Business.
 </p>
 
+<script>
+function showTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
 </body>
 </html>
