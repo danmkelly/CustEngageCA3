@@ -386,6 +386,7 @@ body {
    CONFIGURATION
    ═══════════════════════════════════════════════ */
 var WORKER_URL = 'https://teachers-pet.{worker-subdomain}.workers.dev';
+var TAXONOMY_BASE = 'https://raw.githubusercontent.com/danmkelly/CustEngageCA3/main/taxonomy';
 
 /* ═══════════════════════════════════════════════
    APPLICATION STATE
@@ -420,12 +421,23 @@ function objHas(o, k) { return o.hasOwnProperty(k); }
    ═══════════════════════════════════════════════ */
 function loadTaxonomy(name, cb) {
   var xhr = new XMLHttpRequest();
-  xhr.open('GET', WORKER_URL + '/taxonomy/' + name + '.json');
+  xhr.open('GET', TAXONOMY_BASE + '/' + name + '.json');
   xhr.onload = function() {
     if (xhr.status === 200) {
       try { cb(null, JSON.parse(xhr.responseText)); } catch(e) { cb(e); }
     } else {
-      cb(new Error('Failed to load ' + name + ' taxonomy (' + xhr.status + ')'));
+      // Fallback to Worker if GitHub fails
+      var xhr2 = new XMLHttpRequest();
+      xhr2.open('GET', WORKER_URL + '/api/taxonomy/' + name);
+      xhr2.onload = function() {
+        if (xhr2.status === 200) {
+          try { cb(null, JSON.parse(xhr2.responseText)); } catch(e) { cb(e); }
+        } else {
+          cb(new Error('Failed to load ' + name + ' taxonomy (' + xhr.status + '/' + xhr2.status + ')'));
+        }
+      };
+      xhr2.onerror = function() { cb(new Error('Network error loading ' + name + ' taxonomy')); };
+      xhr2.send();
     }
   };
   xhr.onerror = function() { cb(new Error('Network error loading ' + name + ' taxonomy')); };

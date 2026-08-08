@@ -18,6 +18,7 @@
 // ============================================================================
 
 import JSZip from "jszip";
+import { LANGUAGE_TAXONOMY, MATHS_TAXONOMY, UFLI_TAXONOMY } from "./taxonomy-data.js";
 
 // --------------------------------------------------------------------------
 // CONFIGURATION
@@ -1299,6 +1300,36 @@ async function handleBundle(request, env) {
 // keys). Truncates extracted_text_sample to 200 chars to keep response size
 // manageable for the UI.
 
+// ============================================================================
+// TAXONOMY SERVING — serves the static taxonomy JSON files
+// ============================================================================
+
+/** In-memory cache of taxonomy files loaded at cold-start */
+var taxonomyCache = null;
+
+async function loadTaxonomyCache(env) {
+  if (taxonomyCache) return taxonomyCache;
+  taxonomyCache = {
+    language: LANGUAGE_TAXONOMY,
+    maths: MATHS_TAXONOMY,
+    ufli: UFLI_TAXONOMY,
+  };
+  return taxonomyCache;
+}
+
+async function handleTaxonomy(request, env, name) {
+  try {
+    var cache = await loadTaxonomyCache(env);
+    var data = cache[name];
+    if (!data) {
+      return jsonResponse({ error: "Taxonomy not found: " + name }, 404);
+    }
+    return jsonResponse(data);
+  } catch (err) {
+    return jsonResponse({ error: "Failed to load taxonomy", detail: err.message }, 500);
+  }
+}
+
 async function handleCatalogue(request, env) {
   try {
     var catalogue = await fetchCatalogue(env);
@@ -1369,7 +1400,7 @@ export default {
           endpoints: [
             "POST /api/query",
             "POST /api/bundle",
-            "GET /api/catalogue",
+            "GET /api/catalogue", "GET /api/taxonomy/:name",
           ],
         },
         404
