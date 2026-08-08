@@ -1200,124 +1200,236 @@ TEACHER gets UFLI54-2ndClass.zip — every file, ready to use.
 </table>
 
 <!-- ============================================================ -->
-<h2 id="two-teams">14. Two Agent Teams — Build vs. Operate</h2>
+<h2 id="two-teams">14. Two Agent Teams — Dev Builds, Ops Runs, Keelin Guards</h2>
 
-<div class="phase-label">Why the same agent archetype produces genuinely different agents in different contexts</div>
+<div class="phase-label">11 agents, 2 teams, 1 shared consultant. Same roles, different domains, genuinely different agents.</div>
 
-<p>The project brief proposes two distinct agent teams: one to <strong>develop</strong> the solution, one to <strong>operate</strong> it. At first glance this looked like over-engineering for a CA3 demo — the build work (populate catalogue, author taxonomies, deploy Worker) seemed like deterministic setup, not agentic work. But the split is correct, and the reasoning sits at the heart of the module's own teaching.</p>
+<p>The module teaches that the Five Innovators — Researcher, Designer, Maker, Communicator, Manager — are <strong>roles, not interchangeable tools.</strong> Fill a role with different domain expertise and you get a genuinely different agent: different identity, different beliefs, different boundaries, different performable skills. A Researcher that researches Cloudflare API patterns is not the same agent as one that researches what phonics resources match UFLI Lesson 54. Same archetype. Different agent. Two teams.</p>
 
-<div class="card">
-  <h4>The module's agent template says: agents are domain-specific, not generic</h4>
-  <p>From Week 4's recurring class exercise: an agent is defined as a single markdown file with a <strong>clear identity, a specific team role, 4–6 core beliefs, a communication style, explicit boundaries, and at least one performable skill.</strong> The Five Innovators — Researcher, Designer, Maker, Communicator, Manager — are <em>roles</em>, not interchangeable tools. The same role filled with different domain expertise produces a genuinely different agent.</p>
-  <p>A Researcher that researches Cloudflare Worker patterns, Graph API endpoints, and JSZip library options has fundamentally different domain expertise, beliefs, boundaries, and performable skills than a Researcher that queries an Excel catalogue for UFLI-aligned phonics resources. Same role. Different agent. Different system prompt. Different output. This is exactly what the module teaches — the agent is the role plus the domain, not the role alone.</p>
-</div>
-
-<h3>Development team — builds the solution once</h3>
+<h3>Agent roster overview</h3>
 
 <table>
-  <tr><th>Agent</th><th>Domain expertise</th><th>What it produces</th><th>Key belief / boundary</th></tr>
-  <tr>
-    <td><strong>Dev-Researcher</strong></td>
-    <td>Cloudflare Workers, Microsoft Graph API, JSZip, MSAL patterns, wrangler CLI, Excel table schemas, curriculum taxonomy formats, DeepSeek API prompt engineering</td>
-    <td>Architecture research: API endpoint designs, library comparisons, schema proposals. "Here are three ways to structure the Worker endpoints. Option B handles CORS best. Here's why."</td>
-    <td>Prefers documented over clever. Cites sources. Will not invent API behaviours — tests against live docs.</td>
-  </tr>
-  <tr>
-    <td><strong>Dev-Designer</strong></td>
-    <td>System architecture, data flow, agent handoff contracts, error handling patterns, the Five Innovators framework</td>
-    <td>Architecture specification: Worker endpoint contracts, Excel schema design, agent handoff interfaces, error handling strategy. "The query endpoint returns this JSON shape. The bundle endpoint expects this input. The catalogue endpoint returns this."</td>
-    <td>Designs for failure first. Every handoff has a timeout, a fallback, and a log entry. Will not design a flow that assumes success.</td>
-  </tr>
-  <tr>
-    <td><strong>Dev-Maker</strong></td>
-    <td>JavaScript (Worker runtime), HTML/CSS/JS (frontend), Python (catalogue populator), wrangler deploy, Azure AD app registration</td>
-    <td>Deployed code: worker.js, index.html, catalogue_populator.py, reference taxonomy JSONs, agent definition markdown files, wrangler.toml. Working, tested, deployed.</td>
-    <td>Code must be readable by the lecturer. Comments explain why, not what. Will not commit secrets — uses wrangler secret put.</td>
-  </tr>
-  <tr>
-    <td><strong>Dev-Communicator</strong></td>
-    <td>Technical documentation, the module's disclosure conventions (AI_DISCLOSURE.md, GOVERNANCE.md), README structure, inline code documentation</td>
-    <td>Project documentation: README.md, GOVERNANCE.md, AI_DISCLOSURE.md, inline JSDoc in worker.js, deployment instructions. Clear, complete, honest about limitations.</td>
-    <td>Every claim about what the system does must be verifiable in the submitted code. Will not claim a feature that isn't demonstrable.</td>
-  </tr>
-  <tr>
-    <td><strong>Dev-Manager</strong></td>
-    <td>Project orchestration, the CA3 rubric, module assessment criteria, build sequencing, dependency tracking</td>
-    <td>Build plan + progress tracking: what order to build components, which dependencies block which tasks, rubric coverage checklist. "We have 21 hours estimated. Handoffs are 25% of the grade — build them first. The frontend can be ugly; the pipeline cannot be broken."</td>
-    <td>Ruthlessly prioritises rubric criteria. Will not let the team spend time on things the lecturer doesn't grade.</td>
-  </tr>
+  <tr><th>Agent</th><th>Development team</th><th>Operations team</th></tr>
+  <tr><td><strong>Architect</strong><br>(Researcher + Designer, merged)</td><td><span class="tag tag-green">Dev-Architect</span><br>Researches tech patterns, designs endpoint contracts, specifies data schemas, chooses libraries</td><td><span class="tag tag-amber">&mdash;</span><br>(Role split back into Researcher + Designer in Ops &mdash; the search and design tasks are heavier at run time)</td></tr>
+  <tr><td><strong>Researcher</strong></td><td><span class="tag tag-amber">&mdash;</span><br>(Merged into Dev-Architect)</td><td><span class="tag tag-green">Ops-Researcher</span><br>Queries Excel catalogue, searches curriculumonline.ie for gaps, semantic matching, curriculum mapping</td></tr>
+  <tr><td><strong>Designer</strong></td><td><span class="tag tag-amber">&mdash;</span><br>(Merged into Dev-Architect)</td><td><span class="tag tag-green">Ops-Designer</span><br>Structures lesson plans from outcome prose, selects and sequences matched resources, creates Maker specifications for gaps</td></tr>
+  <tr><td><strong>Maker</strong></td><td><span class="tag tag-green">Dev-Maker</span><br>Writes code (worker.js, index.html, taxonomy JSONs, catalogue populator). Deploys to Cloudflare.</td><td><span class="tag tag-green">Ops-Maker</span><br>Generates lesson plans (markdown) as fallback when gaps exist and no discovered content fills them. Never generates worksheets or images (Decision 5).</td></tr>
+  <tr><td><strong>Communicator</strong></td><td><span class="tag tag-green">Dev-Communicator</span><br>Produces README, GOVERNANCE.md, AI_DISCLOSURE.md, inline documentation. Honest about limitations.</td><td><span class="tag tag-green">Ops-Communicator</span><br>Produces teacher-facing summary (markdown), creates downloadable zip bundle, embeds AI disclosure in every output.</td></tr>
+  <tr><td><strong>Manager</strong></td><td><span class="tag tag-green">Dev-Manager</span><br>Prioritises build by rubric criteria. Tracks completion. Orchestrates handoffs. Produces build log.</td><td><span class="tag tag-green">Ops-Manager</span><br>Receives teacher query, classifies UX mode, routes to agents, logs session, tracks disagreements, maintains audit sheet.</td></tr>
+  <tr><td><strong>Keelin</strong> (Security/QA)</td><td colspan="2"><span class="tag tag-purple">Shared consultant</span><br>In Dev: reviews code for security (no secrets in repo, no keys in client JS), validates against rubric. In Ops: validates generated lesson plans against outcome prose, runs paired-prompt bias test, checks age-appropriateness, detects hallucinated catalogue references. Failing Keelin means the content doesn't reach the teacher.</td></tr>
 </table>
 
-<div class="card">
-  <h4>Development team meta-design note</h4>
-  <p>The development team is itself an example of AI-assisted development — exactly what the CA3 AI Acknowledgement Supplement asks you to document. The submitted code can include the dev-team agent definitions and a dev-Manager log showing which agents contributed what. This turns a compliance checklist (the AI acknowledgment) into evidence of the agentic approach. Meta, but legitimate — the module teaches that agent pipelines are how work gets done.</p>
-</div>
 
-<h3>Operations team — runs on every teacher query</h3>
+<h3>Development team &mdash; builds the solution once</h3>
 
-<table>
-  <tr><th>Agent</th><th>Domain expertise</th><th>What it produces</th><th>Key belief / boundary</th></tr>
-  <tr>
-    <td><strong>Ops-Researcher</strong></td>
-    <td>Irish Primary Language &amp; Maths curricula, UFLI scope-and-sequence, the Excel catalogue schema, curriculumonline.ie structure, semantic search across resource content descriptions</td>
-    <td>Resource match list + gap report: which catalogue resources match the query, which outcome codes are uncovered, what's available on curriculumonline.ie for the gaps. Each match has a confidence score and a one-line rationale.</td>
-    <td>Prefers precision over recall. Three high-confidence matches are better than ten guesses. Will not infer curriculum outcomes unless the query is curriculum-directed — respects the three UX modes.</td>
-  </tr>
-  <tr>
-    <td><strong>Ops-Designer</strong></td>
-    <td>Lesson planning pedagogy, the module's conversation flow anatomy (Opener/Intent/Slots/Recovery/Closer — Week 6), activity-type selection, differentiation strategies, resource sequencing</td>
-    <td>Lesson plan structure: learning objective (from outcome prose), warm-up activity (from a matched catalogue resource), main activity (new design or discovered resource), plenary (from another catalogue resource), differentiation notes, assessment check. This is a structured specification, not the plan itself — the Maker writes the prose.</td>
-    <td>Every activity must be traceable to either a catalogue resource, a discovered resource, or an explicit gap. Will not design an activity that assumes resources the teacher doesn't have.</td>
-  </tr>
-  <tr>
-    <td><strong>Ops-Maker</strong></td>
-    <td>Structured markdown generation, curriculum-aligned educational content, DeepSeek prompt composition with taxonomy context injection</td>
-    <td>Generated lesson plan (markdown) — only when Ops-Researcher found nothing for a gap and the teacher requested generation. The plan references specific catalogue resources (file names, how to use them) and the curriculum outcome it serves.</td>
-    <td>Never generates worksheets, images, or printable activities (Decision 5). Never generates Irish-language content (Decision 3). The outcome prose is ground truth — do not embellish it. Generated content is always marked with provenance and confidence.</td>
-  </tr>
-  <tr>
-    <td><strong>Ops-Communicator</strong></td>
-    <td>Teacher-facing communication, markdown summary composition, AI disclosure conventions, bundle packaging (zip creation), the three UX modes and their output conventions</td>
-    <td>Teacher-facing output: (a) a markdown summary explaining what was found, why each resource was selected, and how they work together; (b) a downloadable zip bundle containing matched resources + any teacher-approved discovered resources + generated lesson plan (if applicable) + README with AI disclosure; (c) gap notes if any outcomes are uncovered.</td>
-    <td>Always discloses what is catalogue content vs. discovered content vs. AI-generated. Confidence scores visible. The teacher must be able to trace every recommendation back to its source.</td>
-  </tr>
-  <tr>
-    <td><strong>Ops-Manager</strong></td>
-    <td>Session logging, Excel audit sheet, confidence thresholds, disagreement tracking, governance cadence, the module's trust calibration framework (Week 2)</td>
-    <td>Session audit log: query, mode, agents invoked, resources matched/excluded, disagreements flagged, generated content produced, bundle delivered. Writes to a dedicated audit sheet in the Excel catalogue. Maintains GOVERNANCE.md review cadence.</td>
-    <td>If confidence on any match is below 0.7, flag for human review and note it in the output. A disagreement is not a failure — it's catalogue maintenance. Will not silently drop disagreements; they are written to the audit sheet with timestamps.</td>
-  </tr>
-</table>
-
-<h3>Consultant agents — shared across both teams</h3>
-
-<table>
-  <tr><th>Agent</th><th>Domain expertise</th><th>When invoked</th><th>What it produces</th></tr>
-  <tr>
-    <td><strong>QA / Review</strong></td>
-    <td>Curriculum outcome validation, hallucination detection, bias testing (paired-prompt), age-appropriateness assessment, the module's trust and ethics frameworks</td>
-    <td>Sits between Ops-Maker and Ops-Communicator. Runs on every generated lesson plan before the teacher sees it. Also available to Dev-Maker for code review against the rubric.</td>
-    <td>Validation report: pass/fail per outcome check, bias flag (was content complexity reduced because a protected characteristic was mentioned?), age-appropriateness score, hallucination check (does the plan claim to use a resource that doesn't exist in the catalogue?). If fail → back to Ops-Maker with specific feedback.</td>
-  </tr>
-</table>
-
-<h3>Why two teams is the right design for CA3</h3>
+<div class="phase-label">5 agents: Architect, Maker, Communicator, Manager, Keelin</div>
 
 <div class="card">
-  <h4>It proves the module's core teaching about agents</h4>
-  <p>The module's agent persona template (Week 4) says: define each agent with a <strong>clear identity, specific role, core beliefs, communication style, explicit boundaries, and at least one performable skill.</strong> Two teams with 11 agents across 6 role-types proves this comprehensively. Each agent's markdown definition file demonstrates a different combination of role + domain. The lecturer can read them side-by-side and see that Dev-Researcher and Ops-Researcher are genuinely different agents despite sharing a role name — exactly the point the module makes about differentiated agent design.</p>
+  <h4>Dev-Architect (Researcher + Designer, merged)</h4>
+  <p><strong>Why merged:</strong> In the build phase, researching patterns and designing architecture are tightly coupled &mdash; you research an API to design against it. The boundary between "what are the options?" and "here's what we'll use" is thin enough that a single agent handles both with less handoff overhead.</p>
+  <table>
+    <tr><th>Domain expertise</th><td>Cloudflare Workers runtime, Microsoft Graph API, JSZip, wrangler CLI, Excel table schemas, DeepSeek API prompt patterns, CORS handling, environment variable management, the CA3 rubric</td></tr>
+    <tr><th>Core beliefs</th><td>Prefer documented over clever. Every endpoint contract must be testable. A design that assumes success is a design that fails silently.</td></tr>
+    <tr><th>Boundaries</th><td>Will not propose patterns it hasn't verified against live documentation. Will not design around rate limits it hasn't checked.</td></tr>
+    <tr><th>What it produces</th><td>Architecture specification: Worker endpoint contracts (request/response shapes, error codes), Excel catalogue schema, agent handoff interfaces, the full data flow diagram.</td></tr>
+  </table>
 </div>
 
 <div class="card">
-  <h4>It creates a meta-handoff between teams</h4>
-  <p>The development team's output (deployed Worker, taxonomy JSONs, Excel schema, agent definitions) is the operational team's input. This is a handoff at the system-design level, not just the query level. The Dev-Manager's build log shows what was built and why. The Ops-Manager's audit log shows it being used. Two separate Manager audit trails, two separate orchestrations, one system.</p>
+  <h4>Dev-Maker</h4>
+  <table>
+    <tr><th>Domain expertise</th><td>JavaScript (Worker runtime, Graph SDK), HTML/CSS/JS (frontend), Python (catalogue populator, pdfplumber, openpyxl), wrangler deploy, Azure AD app registration, git</td></tr>
+    <tr><th>Core beliefs</th><td>Code must be readable by the lecturer. Comments explain why, not what. Secrets live in wrangler secret put, never in source files. The frontend can be ugly; the pipeline cannot be broken.</td></tr>
+    <tr><th>Boundaries</th><td>Will not commit secrets. Will not build features outside scope (no Gaeilge, no worksheets, no multi-user). Will not deploy without Keelin's review.</td></tr>
+    <tr><th>What it produces</th><td>Deployed and tested: worker.js (all endpoints + agent orchestration), index.html (three-mode UX), catalogue_populator.py (folder scanner &rarr; tag extraction &rarr; Excel write), reference taxonomy JSONs (Language TF codes, Maths PC continua, UFLI 128 lessons), agent definition markdown files (one per agent), wrangler.toml.</td></tr>
+  </table>
 </div>
 
 <div class="card">
-  <h4>It turns the AI Acknowledgement Supplement into evidence</h4>
-  <p>The docx's AI Acknowledgement Supplement asks you to document how AI was used in creating the assignment. The development team is the answer: five agents collaborated to design, code, document, and deploy Teacher's Pet. The Dev-Manager's build log and the individual agent definition files are the evidence. This transforms a compliance requirement into a demonstration of the very agentic approach the assignment is about.</p>
+  <h4>Dev-Communicator</h4>
+  <table>
+    <tr><th>Domain expertise</th><td>Technical documentation, the module's disclosure conventions (AI_DISCLOSURE.md, GOVERNANCE.md, Trust Statement &mdash; Weeks 2&ndash;3), README structure, inline code documentation (JSDoc), the CA3 rubric's documentation expectations</td></tr>
+    <tr><th>Core beliefs</th><td>Every claim in the writeup must be verifiable in the submitted code. Documentation that nobody reads is still documentation that the lecturer grades.</td></tr>
+    <tr><th>Boundaries</th><td>Will not claim a feature exists that isn't demonstrable in the running system.</td></tr>
+    <tr><th>What it produces</th><td>README.md (setup, deployment, architecture overview), GOVERNANCE.md (disclosure policy, escalation routes with named triggers and response times, review cadence with named reviewer), AI_DISCLOSURE.md (how AI was used, which agents built what, confidence disclaimers), inline JSDoc in worker.js.</td></tr>
+  </table>
 </div>
 
+<div class="card">
+  <h4>Dev-Manager</h4>
+  <table>
+    <tr><th>Domain expertise</th><td>CA3 rubric (all criteria, weightings, grade descriptors), build sequencing, dependency tracking, the module's Five Innovators framework, agent orchestration patterns</td></tr>
+    <tr><th>Core beliefs</th><td>The heaviest-weighted rubric criterion (Handoff &amp; Orchestration, 25%) is the top priority. Build the pipeline first; polish the frontend last.</td></tr>
+    <tr><th>Boundaries</th><td>Will not allocate time to anything the lecturer doesn't grade. Will not let scope creep dilute the core pipeline.</td></tr>
+    <tr><th>What it produces</th><td>Build plan with rubric coverage map: which components satisfy which criteria, dependency ordering, estimated vs. actual hours. Build log: what each agent produced, handoff timestamps, Keelin review outcomes. The build log is submitted as evidence of the agentic development process.</td></tr>
+  </table>
+</div>
+
+<h4>Development team handoffs</h4>
+
+<pre class="ascii">
+  Dev-Manager                                         Keelin
+      |                                                  ^
+      | 1. Build brief (rubric priorities, scope)        |
+      v                                                  |
+  Dev-Architect                                          |
+      |                                                  |
+      | 2. Architecture spec (endpoints, schema,         |
+      |    data flow, agent interfaces)                  |
+      v                                                  |
+  Dev-Maker ------------&gt; 4. Code + config review ------&gt;|
+      |              (secrets check, rubric validation)   |
+      | 3. Deployed system + codebase                    |
+      v                                                  |
+  Dev-Communicator                                       |
+      |                                                  |
+      | 5. Documentation (README, GOVERNANCE,            |
+      |    AI_DISCLOSURE, inline docs)                   |
+      v                                                  |
+  Dev-Manager                                            |
+      | 6. Build complete. System handed to Ops-Manager -+--&gt; Ops-Manager
+      |    Build log archived.                            |
+</pre>
+
+<div class="card">
+  <h4>Cross-team handoff &mdash; Dev &rarr; Ops</h4>
+  <p>The Dev-Manager delivers to the Ops-Manager: a deployed Cloudflare Worker with all endpoints live, an Excel catalogue on OneDrive populated and tagged, reference taxonomy JSONs in the GitHub repo, all agent definition markdown files committed, and a build log documenting what was built, by which agent, with Keelin's sign-off. The Ops-Manager now owns the running system. The Dev team's work is done &mdash; they are archived, not retired. If the rubric changes or a bug is found, Dev-Manager spins them back up.</p>
+</div>
+
+
+<h3>Operations team &mdash; runs on every teacher query</h3>
+
+<div class="phase-label">6 agents: Researcher, Designer, Maker, Communicator, Manager, Keelin</div>
+
+<div class="card">
+  <h4>Ops-Researcher</h4>
+  <table>
+    <tr><th>Domain expertise</th><td>Irish Primary Language &amp; Maths curricula (TF codes, PC continua), UFLI scope-and-sequence (128 lessons), the Excel catalogue schema, curriculumonline.ie page structure, semantic search across resource content descriptions, the three UX modes and their query conventions</td></tr>
+    <tr><th>Core beliefs</th><td>Precision over recall. Three high-confidence matches with clear rationales are better than ten guesses. A gap honestly named is better than a match forced.</td></tr>
+    <tr><th>Boundaries</th><td>Will not infer curriculum outcomes unless the query is explicitly curriculum-directed (Guided mode). Will not fabricate catalogue entries &mdash; if a resource isn't in the Excel sheet, it doesn't exist. Will not search TPT, Twinkl, or any platform without a public API or with terms prohibiting automated access.</td></tr>
+    <tr><th>What it produces</th><td>A structured match list: for each matching catalogue resource &mdash; filename, OneDrive path, all tags, confidence score, one-line relevance rationale. A gap report: which outcome codes in the query scope have zero or low-confidence (&lt;0.6) matches. If gaps exist and mode is Guided: a curriculumonline.ie search &mdash; title, description, URL for any public NCCA resources matching the gap, with a note that the teacher must review before adding.</td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h4>Ops-Designer</h4>
+  <table>
+    <tr><th>Domain expertise</th><td>Lesson planning pedagogy, the module's conversation flow anatomy (Week 6: Opener &rarr; Intent &rarr; Slots &rarr; Recovery &rarr; Closer), activity-type selection, differentiation strategies, resource sequencing, age-appropriate task design</td></tr>
+    <tr><th>Core beliefs</th><td>Every activity in a lesson plan must be traceable to either a catalogue resource, a discovered resource, or an explicit gap. A lesson plan that references a resource the teacher doesn't have is a broken promise.</td></tr>
+    <tr><th>Boundaries</th><td>Will not design an activity that requires materials outside the catalogue unless the gap is explicitly flagged and the teacher is told what's needed. Will not design for Gaeilge (Decision 3).</td></tr>
+    <tr><th>What it produces</th><td>For catalogue matches: a resource sequence &mdash; which resources to use, in what order, for which part of the lesson (warm-up, main, plenary), with a one-line justification per selection. For gaps: a Maker specification &mdash; learning objective (from outcome prose), suggested activity type (game, discussion, worksheet &mdash; described, not built), materials needed, differentiation notes, assessment check. The specification is structured enough that Maker doesn't need to invent pedagogy; it needs to write prose.</td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h4>Ops-Maker</h4>
+  <table>
+    <tr><th>Domain expertise</th><td>Structured markdown generation, curriculum-aligned educational prose, DeepSeek prompt composition with taxonomy context injection, the UFLI scope-and-sequence (prevents using untaught sounds in generated plans)</td></tr>
+    <tr><th>Core beliefs</th><td>The outcome prose from the curriculum is ground truth &mdash; do not embellish, do not invent outcomes. A generated plan that confuses a 2nd-class concept for a 5th-class concept is worse than no plan at all. Less is more: a focused 3-activity plan beats a sprawling 8-activity plan.</td></tr>
+    <tr><th>Boundaries</th><td>Will never generate worksheets, images, or printable activities (Decision 5). Will never generate Irish-language content (Decision 3). Will not run unless Ops-Researcher found nothing for a gap AND the teacher explicitly requested generation (search-first, generate-as-fallback &mdash; Decision 5). Will not release content to the teacher until Keelin has validated it.</td></tr>
+    <tr><th>What it produces</th><td>A generated lesson plan in structured markdown: learning objective (verbatim from outcome prose), warm-up (using a named catalogue resource), main activity (described in prose, referencing specific materials), plenary (using another catalogue resource), differentiation notes (simpler/harder variants), assessment check ("how will you know they got it?"). Every reference to a catalogue resource uses its actual filename. The plan is tagged with <code>ai_generated=TRUE, confidence=X.XX</code> and written as a new row to the Excel catalogue alongside the resources it references.</td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h4>Ops-Communicator</h4>
+  <table>
+    <tr><th>Domain expertise</th><td>Teacher-facing communication, markdown summary composition, AI disclosure conventions (Week 3), bundle packaging (zip creation via JSZip in the Worker), the three UX modes and their distinct output conventions</td></tr>
+    <tr><th>Core beliefs</th><td>The teacher must be able to trace every recommendation back to its source. AI-generated content must be visually and textually distinct from catalogue content. A bundle without a README explaining what's in it and why is a folder of random files.</td></tr>
+    <tr><th>Boundaries</th><td>Will not present AI-generated content as if it were catalogue content. Will not obscure confidence scores. Will not bundle resources the teacher explicitly excluded.</td></tr>
+    <tr><th>What it produces</th><td>(a) A markdown summary for the web UI: what was found, why each resource was selected, how they work together, gaps noted with discovered suggestions, generated plan (if applicable) with clear AI provenance badge. (b) A downloadable zip bundle containing: all teacher-selected catalogue resources (fetched from OneDrive via Graph API), any teacher-approved discovered resources, generated lesson plan (if applicable), a README.md with the full summary + AI disclosure + confidence scores + source attribution. The bundle is produced by the Worker's /api/bundle endpoint and streamed to the browser.</td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h4>Ops-Manager</h4>
+  <table>
+    <tr><th>Domain expertise</th><td>Session orchestration, UX mode classification (Guided / Free-text / Browse), the Excel audit sheet schema, confidence thresholds, disagreement tracking, governance cadence, the module's trust calibration framework (Week 2 &mdash; Lee &amp; See, 2004)</td></tr>
+    <tr><th>Core beliefs</th><td>A disagreement is not a failure &mdash; it's catalogue maintenance. Every session must be logged: query, mode, agents invoked, resources matched, resources excluded, disagreements flagged, Keelin review outcomes, bundle delivered. Trust is earned through transparency, not claimed through assertion.</td></tr>
+    <tr><th>Boundaries</th><td>Will not silently drop disagreements &mdash; they are written to the audit sheet with timestamps. Will not route a query to Maker without first checking if Researcher found discoverable content (enforces search-first, generate-as-fallback).</td></tr>
+    <tr><th>What it produces</th><td>A session audit log written to the Excel audit sheet: session ID, timestamp, query text, UX mode, agents invoked in order, resource IDs matched, resource IDs excluded (with teacher-stated reason if provided), disagreements flagged (resource ID, flag reason, timestamp), Keelin review outcome (pass/fail/feedback), bundle delivered (file count, size). A running quality dashboard (optional extension): how often are catalogue resources accepted vs. rejected? How often is generation requested vs. discovery accepted? This is the data that drives the GOVERNANCE.md review cadence.</td></tr>
+  </table>
+</div>
+
+
+<h3>Keelin &mdash; Security &amp; QA, shared across both teams</h3>
+
+<div class="phase-label">Named after the QA agent from the project brief's strawman</div>
+
+<div class="card">
+  <h4>Dev-side: security review</h4>
+  <p>Keelin reviews every commit from Dev-Maker before it reaches deployment. Checks: no API keys in committed code, no hardcoded credentials, no secrets in client-side JavaScript, wrangler.toml correctly configured, CORS rules appropriate, Graph API scopes are minimal (Files.Read.All, Sites.Read.All &mdash; not broader). Keelin also validates the build against the CA3 rubric: does each agent have a definition file? Are handoffs documented? Is the live-data connection real (not mocked)? If Keelin fails the build, it goes back to Dev-Maker with specific remediations.</p>
+</div>
+
+<div class="card">
+  <h4>Ops-side: content validation</h4>
+  <p>Keelin sits between Ops-Maker and Ops-Communicator. Every generated lesson plan passes through Keelin before the teacher sees it. Checks:</p>
+  <ul>
+    <li><strong>Outcome alignment:</strong> Does the plan's learning objective match the target outcome prose? Is the activity appropriate for the specified stage?</li>
+    <li><strong>Hallucination detection:</strong> Does the plan reference a catalogue resource by filename that doesn't exist? Does it claim an outcome code that isn't in the taxonomy?</li>
+    <li><strong>Bias check (paired-prompt):</strong> If the teacher's query mentioned a protected characteristic (e.g. "EAL," "dyslexia"), Keelin runs the same generation prompt <em>without</em> that mention and compares the two outputs. If the version with the characteristic yields lower-complexity activities, Keelin flags it. This is the paired-prompt bias test from the project brief's Regulatory section.</li>
+    <li><strong>UFLI sound boundary:</strong> If the lesson plan references a phonics pattern from a later UFLI lesson than the one being taught, Keelin flags it.</li>
+    <li><strong>Age-appropriateness:</strong> Would a typical child at this stage understand the vocabulary, follow the instructions, and complete the activity in the allotted time?</li>
+  </ul>
+  <p>If Keelin passes the plan &rarr; Ops-Communicator receives it for bundling. If Keelin fails &rarr; back to Ops-Maker with the specific failure reason and a suggested fix. If Keelin fails twice &rarr; the gap is left unfilled and the teacher is told honestly that generation wasn't possible for this outcome. This is trust calibration in action (Week 2): the system knows its limits and communicates them.</p>
+</div>
+
+<h4>Operations team handoffs</h4>
+
+<pre class="ascii">
+  TEACHER QUERY
+      |
+      v
+  Ops-Manager (classifies mode: Guided / Free-text / Browse)
+      |
+      | 1. Query + mode context
+      v
+  Ops-Researcher
+      |
+      | 2. Match list + gap report + discovered resources
+      v
+  Ops-Designer
+      |
+      +--&gt; For catalogue matches: resource sequence &rarr; (5)
+      |
+      +--&gt; For gaps: Maker specification &rarr; (3)
+                |
+                v
+           Ops-Maker
+                |
+                | 3. Generated lesson plan (markdown)
+                v
+           Keelin (content validation)
+                |
+                +-- PASS --&gt; (5)
+                |
+                +-- FAIL --&gt; back to Ops-Maker with feedback
+                               (max 2 attempts)
+      |
+      | 5. All resources + validated plan
+      v
+  Ops-Communicator
+      |
+      | 6. Summary + bundle
+      v
+  Ops-Manager (logs session &rarr; audit sheet; presents output to teacher)
+      |
+      v
+  TEACHER receives summary (web UI) + download button &rarr; zip bundle
+</pre>
+
+<div class="card">
+  <h4>Conditional routing &mdash; the operational handoff is not linear</h4>
+  <table>
+    <tr><th>Condition</th><th>Route</th></tr>
+    <tr><td>Guided mode, all outcomes covered by catalogue</td><td>Researcher &rarr; Designer &rarr; Communicator. No Maker. No Keelin.</td></tr>
+    <tr><td>Guided mode, gap found, search returns results</td><td>Researcher &rarr; Designer (presents discovered suggestions alongside catalogue matches) &rarr; Communicator. Teacher reviews discovered resources. No Maker.</td></tr>
+    <tr><td>Guided mode, gap found, search empty, teacher requests generation</td><td>Researcher &rarr; Designer &rarr; Maker &rarr; Keelin &rarr; Communicator. Full pipeline.</td></tr>
+    <tr><td>Free-text mode</td><td>Researcher &rarr; Designer (no gap analysis, no curriculum mapping) &rarr; Communicator. No Maker. No Keelin.</td></tr>
+    <tr><td>Browse mode</td><td>No agents. Client-side filter only. No Worker call.</td></tr>
+  </table>
+  <p>This conditional routing is a stronger orchestration demonstration than a linear pipeline. The Ops-Manager's decision-making &mdash; which agents to invoke, when to stop &mdash; is the Handoff &amp; Orchestration criterion (25% of the grade) made visible.</p>
+</div>
 
 <!-- ============================================================ -->
 <h2 id="ux">15. UX Design — Three Entry Points, One Results Surface</h2>
