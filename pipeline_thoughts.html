@@ -118,6 +118,7 @@
   <a href="#references">References</a>
   <a href="#gapfilling">Gap Filling</a>
   <a href="#architecture">Architecture</a>
+  <a href="#msft-ecosystem">MS Ecosystem</a>
 </div>
 
 
@@ -1003,7 +1004,156 @@ It uses the Word Mapping template from your catalogue + a new vocabulary-in-cont
 
 
 <!-- ============================================================ -->
-<h2 id="summary">13. Summary of the Journey</h2>
+<h2 id="msft-ecosystem">13. Committing to the Microsoft Ecosystem — The "Magical" Bundle Path</h2>
+
+<div class="phase-label">Single ecosystem, zero content limits, client-side end-to-end</div>
+
+<h3>Decisions made</h3>
+
+<table>
+  <tr><th>Decision</th><th>Choice</th><th>Rationale</th></tr>
+  <tr><td>Ecosystem</td><td><strong>Microsoft only</strong> — OneDrive + Excel Online + Graph API</td><td>Single auth surface. Catalogue and files co-located. Teacher already has a Microsoft account. One less platform to reason about in the regulatory section.</td></tr>
+  <tr><td>Catalogue store</td><td><strong>Excel Online workbook</strong> on OneDrive, accessed via Microsoft Graph API</td><td>Live, queryable, agent-writeable. Free. Same API surface as file access — one SDK, two purposes.</td></tr>
+  <tr><td>Content scope</td><td><strong>All catalogue resources are bundleable.</strong> No pre-sync, no demo subset. Every matched file is fetchable at run time.</td><td>Scoping down happens elsewhere (no Gaeilge, modernised curriculum subjects only). The bundle path must work for the full catalogue.</td></tr>
+  <tr><td>Bundle delivery</td><td><strong>Client-side zip creation</strong> via JSZip. Files fetched as blobs from OneDrive via Graph API, zipped in the browser, triggered as download. No server.</td><td>"Magical" = teacher queries, hits download, gets every matched file + generated content + README in one zip. No manifest-then-hunt-through-folders.</td></tr>
+</table>
+
+<h3>Architecture — single static page, no backend</h3>
+
+<pre class="ascii">
+┌────────────────────────────────────────────────────────────────────┐
+│  GITHUB PAGES — static HTML + JavaScript                           │
+│                                                                     │
+│  ┌───────────────────────────────────────────────────────────────┐ │
+│  │  msal.js         →  Microsoft OAuth (popup, one-click)         │ │
+│  │  @microsoft/mgt  →  Microsoft Graph Toolkit (optional UI)      │ │
+│  │  jszip           →  Client-side zip creation                   │ │
+│  │  filesaver.js    →  Trigger browser download                   │ │
+│  │  marked.js       →  Render markdown summaries                  │ │
+│  │  deepseek/chosen →  LLM API calls for agent reasoning          │ │
+│  │  LLM API                                                       │ │
+│  └───────────────────────────────────────────────────────────────┘ │
+│                                                                     │
+│  User flow:                                                         │
+│  1. Teacher opens page → clicks "Sign in with Microsoft"            │
+│  2. MSAL popup → consent for Files.ReadWrite, Sites.ReadWrite       │
+│  3. Token stored in session → all subsequent calls use it            │
+│  4. Teacher types query → agent pipeline runs → download button      │
+│  5. Click download → JSZip bundles files → browser saves zip         │
+└────────────────────────────────────────────────────────────────────┘
+         │                              │
+         │  Microsoft Graph API          │  LLM API
+         │  (authenticated)              │  (API key, see note below)
+         ▼                              ▼
+┌─────────────────────┐     ┌──────────────────────┐
+│  OneDrive            │     │  DeepSeek / chosen    │
+│  ├─ Excel catalogue  │     │  LLM (agent prompts)  │
+│  └─ Resource files   │     └──────────────────────┘
+│     (all ~4,400)     │
+└─────────────────────┘
+</pre>
+
+<div class="card">
+  <h4>Excel Online as the live catalogue — Graph API queries</h4>
+  <p>The catalogue is an Excel table (not a range) stored as <code>Teaching Resources/Catalogue.xlsx</code> on OneDrive. Tables give you structured access: named columns, typed data, filterable rows.</p>
+  <pre>// Researcher agent: query catalogue for UFLI Lesson 54 resources
+GET /me/drive/root:/Teaching Resources/Catalogue.xlsx:/workbook/tables/Catalogue/rows
+
+// Response: all rows as JSON with column names preserved
+// Agent filters client-side by programme_ref="UFLI/L54" and grade_band="1st-2nd"
+
+// Maker agent: add a generated lesson plan to the catalogue
+POST /me/drive/root:/Teaching Resources/Catalogue.xlsx:/workbook/tables/Catalogue/rows
+Body: { values: [["RES-0234", "GEN-LP-UFLI54-2nd.md", "generated/...", "Literacy", ...]] }
+
+// Communicator agent: fetch matched files for bundling
+GET /me/drive/root:/Teaching Resources/xmas/ChristmasLongandShortaSort-1.pdf
+// → binary blob → added to JSZip</pre>
+  <p>Filtering happens client-side — the Graph API returns all rows (or a reasonable subset), and the agent filters in JavaScript. This avoids complex OData queries and keeps the agent logic testable.</p>
+</div>
+
+<div class="card">
+  <h4>LLM API key — the one credential that can't live in client-side JS</h4>
+  <p>A static GitHub Pages site has no server. If the LLM API key is in the JavaScript bundle, anyone can extract it with DevTools. For a CA3 demo this is <strong>probably fine</strong> — it's a graded project, not a public service, and the usage is negligible ($0.55–$5). But there are better options:</p>
+  <table>
+    <tr><th>Option</th><th>Effort</th><th>Security</th><th>CA3 fit</th></tr>
+    <tr><td><strong>Embed key in JS</strong> (simplest)</td><td>None</td><td>None — visible in browser</td><td>Acceptable for a graded demo. Add a note in Limitations about production hardening.</td></tr>
+    <tr><td><strong>Cloudflare Worker proxy</strong></td><td>1–2 hours</td><td>Good — key lives in Worker secrets</td><td>Tight. Cloudflare Workers free tier is generous. Single file, single endpoint. Fits the "serverless" pattern taught in the module.</td></tr>
+    <tr><td><strong>GitHub Actions pre-run</strong></td><td>Medium</td><td>Good — key in repo secrets</td><td>Awkward for interactive queries. Agents run on push, not on user request. Doesn't feel "magical."</td></tr>
+    <tr><td><strong>OAuth-restricted endpoint</strong></td><td>High</td><td>Best</td><td>Over-engineered for CA3. Requires user management, rate limiting, auth server.</td></tr>
+  </table>
+  <p><strong>Recommendation:</strong> embed the key for the demo, flag in Limitations. If time permits, add the Cloudflare Worker proxy — it's one file, fits the module's serverless pattern, and shows production-awareness.</p>
+</div>
+
+<h3>The "magical" bundle path — step by step</h3>
+
+<pre class="ascii">
+TEACHER: "I need resources for UFLI Lesson 54, 2nd class"  [types in web UI]
+    │
+    ▼
+RESEARCHER queries Excel catalogue → finds 3 matching resources
+    │  ChristmasLongandShortaSort-1.pdf  (phonics, seasonal)
+    │  UFLI 54-62 Word Work - Korotney.pdf (phonics, UFLI-aligned)
+    │  Word Mapping Templates - Christmas.pdf (adaptable)
+    │  GAP: no dedicated VCe word-work worksheet at Stage 2
+    │
+    ▼
+MAKER generates lesson plan (markdown) for the gap
+    │  Writes new row to Excel catalogue (ai_generated=TRUE)
+    │
+    ▼
+COMMUNICATOR prepares the bundle:
+    │
+    ├─► Fetches 3 matched PDFs from OneDrive (Graph API blob download)
+    ├─► Bundles generated lesson plan (markdown → string in memory)
+    ├─► Generates README.md (summary of what's in the bundle + why)
+    ├─► Creates JSZip: zip.file() for each item
+    ├─► Triggers browser download: zip.generateAsync({type:"blob"}) → saveAs(blob, "UFLI54-2ndClass.zip")
+    │
+    ▼
+TEACHER clicks download → browser saves zip instantly
+    │
+    Contents of UFLI54-2ndClass.zip:
+    ├── README.md                     (summary + AI disclosure)
+    ├── lesson-plan-UFLI54.md         (generated lesson plan)
+    ├── ChristmasLongandShortaSort-1.pdf
+    ├── UFLI 54-62 Word Work - Korotney.pdf
+    └── Word Mapping Templates - Christmas.pdf
+</pre>
+
+<p><strong>Why this feels magical:</strong> the teacher types a natural-language query, sees a structured summary of what matches and why, clicks one button, and gets a folder-ready zip with <em>every matched file + generated content + explanation</em>. The files are the real files from their OneDrive — not links, not manifests, not "find this yourself." The system reads the catalogue live, fetches the files live, and packages them live. No pre-processing, no content limits, no "only 20 files work."</p>
+
+<h3>Scope-down decisions (where we save effort)</h3>
+
+<table>
+  <tr><th>Scope-down</th><th>Impact</th></tr>
+  <tr><td><strong>No Gaeilge</strong></td><td>Skip ~119 files from tagging. Skip Irish-language taxonomy authoring. LLMs are weak in Irish anyway — this is the right call. Named as deliberate exclusion with pedagogical reasoning in the writeup.</td></tr>
+  <tr><td><strong>Modernised curriculum only</strong></td><td>Only Primary Language (TF codes) and Primary Mathematics (PC continua) get full taxonomy authoring. The 1999 subjects (SESE, SPHE, PE, Arts) get a skeleton strand/stage structure but no per-outcome matching. ~5 hours of taxonomy work → ~3 hours.</td></tr>
+  <tr><td><strong>No worksheet/image generation</strong></td><td>Maker generates lesson plans (text) only. Tier 3 (worksheet generation) is named as future work. This removes the entire image-generation risk surface.</td></tr>
+  <tr><td><strong>No curriculumonline.ie scraping</strong> (for now)</td><td>The catalogue is the teacher's existing OneDrive collection. Content discovery is named as a future enhancement in the Limitations section. Live data is satisfied by the Excel catalogue itself — scraping a second source adds complexity without adding rubric value.</td></tr>
+  <tr><td><strong>No multi-user or collaboration</strong></td><td>Single-teacher scope as per the brief. The architecture supports extension (Excel Online is inherently shareable) but the demo doesn't build it.</td></tr>
+</table>
+
+<h3>What's left to build for the demo</h3>
+
+<table>
+  <tr><th>Component</th><th>Effort</th><th>Tech</th></tr>
+  <tr><td>Static HTML page with query input + result panel</td><td>~2 hours</td><td>Vanilla HTML/CSS/JS or lightweight framework</td></tr>
+  <tr><td>MSAL.js integration (sign-in, token management)</td><td>~2 hours</td><td>@azure/msal-browser</td></tr>
+  <tr><td>Excel catalogue builder (one-time script to populate from folder scan)</td><td>~3 hours</td><td>Python script → writes to .xlsx via openpyxl → upload to OneDrive</td></tr>
+  <tr><td>Agent definitions (5 markdown files: system prompts, personalities, handoff contracts)</td><td>~3 hours</td><td>Markdown in repo, loaded at page init</td></tr>
+  <tr><td>Agent orchestration JS (query → Researcher → Designer → Maker → Communicator → Manager)</td><td>~4 hours</td><td>Vanilla JS, async/await pipeline</td></tr>
+  <tr><td>Graph API integration (Excel read/write, OneDrive file fetch)</td><td>~3 hours</td><td>@microsoft/microsoft-graph-client</td></tr>
+  <tr><td>LLM integration (DeepSeek API calls with structured prompts)</td><td>~2 hours</td><td>fetch() → DeepSeek API, JSON response parsing</td></tr>
+  <tr><td>Bundle creation + download (JSZip, markdown rendering)</td><td>~2 hours</td><td>jszip, file-saver, marked</td></tr>
+  <tr><td>Reference taxonomy JSON (Language TF codes + UFLI scope)</td><td>~3 hours</td><td>Hand-authored JSON from curriculumonline.ie + UFLI materials</td></tr>
+  <tr><td>Governance, disclosure, trust artefacts</td><td>~2 hours</td><td>GOVERNANCE.md, AI_DISCLOSURE.md, inline disclosures in Communicator output</td></tr>
+  <tr><td><strong>Total</strong></td><td><strong>~26 hours</strong></td><td>Comfortably within the module's directed build time</td></tr>
+</table>
+
+
+<!-- ============================================================ -->
+<h2 id="summary">14. Summary of the Journey</h2>
 
 <table>
   <tr><th>Phase</th><th>What we learned</th><th>Key metric</th></tr>
@@ -1054,8 +1204,13 @@ It uses the Word Mapping template from your catalogue + a new vocabulary-in-cont
   </tr>
   <tr>
     <td>Run-time architecture</td>
-    <td>Decouple catalogue (Google Sheet, live API, satisfies dynamic data req) from files (OneDrive, pre-synced subset in repo for demo). End-user deliverable: Communicator produces (a) markdown summary with resource rationale, (b) downloadable zip bundle of matched + generated content. Teacher also has direct Sheet access for browsing/auditing — trust calibration via transparency.</td>
-    <td>Google Sheets API = live data source; ~15-column schema; demo uses 10–20 pre-synced files</td>
+    <td><strong>Microsoft ecosystem:</strong> Excel Online on OneDrive as the live catalogue (Graph API for read/write), same OneDrive for resource file storage (Graph API blob fetch). Client-side zip bundling via JSZip — teacher gets every matched file + generated content + README in one download, no pre-sync, no content limits. All static GitHub Pages frontend; no backend server. LLM API key embedded (CA3 demo) or proxied via Cloudflare Worker (production path).</td>
+    <td>Static page + MSAL.js + Graph API + JSZip; ~26 hours build time</td>
+  </tr>
+  <tr>
+    <td>Scope-down decisions</td>
+    <td>No Gaeilge. Modernised curriculum only (Language + Maths with codes; 1999 subjects skeleton only). Lesson plans only (no worksheet generation). No curriculumonline.ie scraping. Single-teacher. Effort redirected to making the query→bundle path work end-to-end for the full catalogue.</td>
+    <td>~3 hours taxonomy authoring (was ~5)</td>
   </tr>
 </table>
 
