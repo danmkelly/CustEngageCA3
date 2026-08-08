@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teacher's Pet — Resource Discovery for Irish Primary Teachers</title>
+<style>
+:root {
+  --bg: #f8f9fb;
+  --surface: #ffffff;
+  --border: #e2e5ea;
+  --text: #1a1d23;
+  --text-muted: #6b7280;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-light: #eef2ff;
+  --success: #16a34a;
+  --success-light: #f0fdf4;
+  --warning: #d97706;
+  --warning-light: #fffbeb;
+  --danger: #dc2626;
+  --danger-light: #fef2f2;
+  --purple: #7c3aed;
+  --purple-light: #f5f3ff;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-lg: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* ── Header ── */
+.header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow-sm);
+}
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.header-brand .icon { font-size: 1.5rem; }
+.header-actions { display: flex; gap: 12px; align-items: center; }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 16px; border-radius: var(--radius);
+  font-size: 0.875rem; font-weight: 600; font-family: var(--font);
+  cursor: pointer; border: 1px solid transparent;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-secondary { background: var(--surface); color: var(--text); border-color: var(--border); }
+.btn-secondary:hover { background: var(--bg); }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-danger:hover { background: #b91c1c; }
+.btn-success { background: var(--success); color: #fff; }
+.btn-ghost { background: transparent; color: var(--text-muted); border-color: transparent; }
+.btn-ghost:hover { background: var(--bg); color: var(--text); }
+.btn-sm { padding: 4px 10px; font-size: 0.8rem; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.bundle-badge {
+  background: var(--accent); color: #fff;
+  border-radius: 999px; padding: 2px 8px; font-size: 0.75rem;
+  font-weight: 700; min-width: 20px; text-align: center;
+}
+
+/* ── Tabs ── */
+.tab-bar {
+  display: flex; gap: 0;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+}
+.tab {
+  padding: 12px 20px; font-size: 0.9rem; font-weight: 600;
+  cursor: pointer; border: none; background: none; font-family: var(--font);
+  color: var(--text-muted); border-bottom: 3px solid transparent;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tab-subtitle { font-weight: 400; font-size: 0.75rem; color: var(--text-muted); display: block; }
+
+/* ── Layout ── */
+.main { max-width: 1280px; margin: 0 auto; padding: 24px; }
+.mode-panel { margin-bottom: 24px; }
+.results-area { min-height: 200px; }
+
+/* ── Guided Mode ── */
+.guided-form { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+.guided-form .field { display: flex; flex-direction: column; gap: 4px; min-width: 160px; }
+.guided-form label { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.guided-form select, .guided-form input {
+  padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius);
+  font-size: 0.875rem; font-family: var(--font); background: var(--surface);
+  color: var(--text); min-width: 160px;
+}
+.guided-form select:focus, .guided-form input:focus {
+  outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light);
+}
+.guided-form select:disabled { background: var(--bg); color: var(--text-muted); cursor: not-allowed; }
+.constraints-field { flex: 1; min-width: 240px; }
+
+/* ── Freetext Mode ── */
+.freetext-form { display: flex; gap: 8px; }
+.freetext-form input {
+  flex: 1; padding: 12px 16px; border: 2px solid var(--border); border-radius: var(--radius-lg);
+  font-size: 1rem; font-family: var(--font); background: var(--surface); color: var(--text);
+}
+.freetext-form input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
+.freetext-form button { padding: 12px 24px; font-size: 1rem; }
+
+/* ── Browse Mode ── */
+.chip-group { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.chip-group-label { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 6px 12px; border-radius: 999px;
+  font-size: 0.8rem; font-weight: 500; cursor: pointer;
+  border: 1px solid var(--border); background: var(--surface);
+  color: var(--text); transition: all 0.12s ease;
+  font-family: var(--font);
+}
+.chip:hover { border-color: var(--accent); color: var(--accent); }
+.chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* ── Results ── */
+.results-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.results-header h2 { font-size: 1rem; font-weight: 600; }
+
+.results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: 16px; box-shadow: var(--shadow); border-left: 4px solid var(--border); transition: box-shadow 0.15s;
+  position: relative;
+}
+.card:hover { box-shadow: var(--shadow-lg); }
+.card.ai-generated { border-left-color: var(--purple); }
+.card.dimmed { opacity: 0.4; filter: grayscale(0.6); }
+.card.selected { box-shadow: 0 0 0 2px var(--accent); border-color: var(--accent); }
+.card.selected::after { content: '✓'; position: absolute; top: 8px; right: 12px; color: var(--accent); font-weight: 700; font-size: 1.1rem; }
+
+.card-filename { font-weight: 700; font-size: 0.9rem; margin-bottom: 8px; color: var(--text); word-break: break-word; }
+.card-description { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px; line-height: 1.4; }
+
+.card-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.badge {
+  display: inline-flex; align-items: center;
+  padding: 2px 8px; border-radius: 999px;
+  font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em;
+}
+.badge-subject { background: var(--accent-light); color: var(--accent); }
+.badge-grade { background: var(--success-light); color: var(--success); }
+.badge-format { background: var(--warning-light); color: var(--warning); }
+.badge-ai { background: var(--purple-light); color: var(--purple); }
+.badge-confidence { background: var(--bg); color: var(--text-muted); }
+
+.card-confidence { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 10px; }
+
+.card-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.card-actions button {
+  padding: 4px 10px; font-size: 0.75rem; border-radius: var(--radius);
+  border: 1px solid var(--border); background: var(--surface);
+  cursor: pointer; font-family: var(--font); color: var(--text-muted);
+  transition: all 0.1s ease;
+}
+.card-actions button:hover { border-color: var(--accent); color: var(--accent); }
+.card-actions button.thumbs-up:hover { border-color: var(--success); color: var(--success); }
+.card-actions button.thumbs-down:hover { border-color: var(--danger); color: var(--danger); }
+.card-actions button.flag:hover { border-color: var(--warning); color: var(--warning); }
+.card-actions button.similar:hover { border-color: var(--purple); color: var(--purple); }
+.card-actions button.thumbs-up.active { background: var(--success); color: #fff; border-color: var(--success); }
+.card-actions button.thumbs-down.active { background: var(--danger); color: #fff; border-color: var(--danger); }
+
+/* ── Refinement Bar ── */
+.refinement-bar {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: 12px 16px; margin-bottom: 16px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+}
+.refinement-bar label { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
+.refinement-bar .chip-group { margin-bottom: 0; }
+.refinement-bar input {
+  flex: 1; padding: 6px 12px; border: 1px solid var(--border); border-radius: var(--radius);
+  font-size: 0.85rem; font-family: var(--font); min-width: 180px;
+}
+.refinement-bar input:focus { outline: none; border-color: var(--accent); }
+
+/* ── Gaps Section ── */
+.gaps-section { margin-bottom: 20px; }
+.gap-card {
+  background: var(--warning-light); border: 1px solid var(--warning); border-radius: var(--radius-lg);
+  padding: 14px 18px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+.gap-card .gap-icon { font-size: 1.2rem; }
+.gap-card .gap-text { flex: 1; font-size: 0.9rem; font-weight: 500; min-width: 200px; }
+.gap-card .gap-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ── Exclusion Section ── */
+.exclusion-section { margin-top: 24px; }
+.exclusion-section h3 { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 10px; }
+
+/* ── Loading / Empty / Error ── */
+.loading-spinner {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 40px; color: var(--text-muted); font-size: 0.9rem;
+}
+.spinner {
+  width: 24px; height: 24px; border: 3px solid var(--border); border-top-color: var(--accent);
+  border-radius: 50%; animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.empty-state { text-align: center; padding: 48px 24px; color: var(--text-muted); }
+.empty-state .empty-icon { font-size: 2.5rem; margin-bottom: 12px; }
+.empty-state p { font-size: 0.95rem; max-width: 500px; margin: 0 auto; }
+
+.error-banner {
+  background: var(--danger-light); border: 1px solid var(--danger); border-radius: var(--radius);
+  padding: 12px 18px; margin-bottom: 16px; color: var(--danger); font-size: 0.875rem; font-weight: 500;
+}
+
+/* ── Suggestion Cards ── */
+.suggestion-card {
+  background: var(--success-light); border: 1px solid var(--success); border-radius: var(--radius);
+  padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  margin-bottom: 8px; flex-wrap: wrap;
+}
+.suggestion-card .sugg-text { font-size: 0.85rem; flex: 1; min-width: 200px; }
+
+/* ── Download Progress ── */
+.download-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+  display: flex; align-items: center; justify-content: center; z-index: 200;
+}
+.download-dialog {
+  background: var(--surface); border-radius: var(--radius-lg); padding: 32px 40px;
+  text-align: center; box-shadow: var(--shadow-lg);
+}
+.download-dialog .spinner { width: 36px; height: 36px; margin: 0 auto 16px; }
+.download-dialog p { font-size: 0.95rem; color: var(--text); }
+
+/* ── Utility ── */
+.hidden { display: none !important; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+.divider { width: 1px; height: 20px; background: var(--border); margin: 0 8px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-brand">
+    <span class="icon">📚</span>
+    <span>Teacher's Pet</span>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-primary" id="bundleBtn" disabled onclick="triggerBundle()">
+      📦 Bundle & Download
+      <span class="bundle-badge" id="bundleCount" style="display:none">0</span>
+    </button>
+  </div>
+</div>
+
+<div class="tab-bar">
+  <button class="tab active" data-tab="guided" onclick="switchTab('guided')">
+    🎯 I know my outcome
+    <span class="tab-subtitle">Guided search</span>
+  </button>
+  <button class="tab" data-tab="freetext" onclick="switchTab('freetext')">
+    🔍 I remember a resource
+    <span class="tab-subtitle">Free-text search</span>
+  </button>
+  <button class="tab" data-tab="browse" onclick="switchTab('browse')">
+    ✨ Surprise me
+    <span class="tab-subtitle">Browse catalogue</span>
+  </button>
+</div>
+
+<main class="main">
+  <!-- Guided Mode Panel -->
+  <div class="mode-panel" id="panel-guided">
+    <form class="guided-form" onsubmit="return guidedSearch(event)">
+      <div class="field">
+        <label for="gSubject">Subject</label>
+        <select id="gSubject" onchange="onGuidedSubjectChange()">
+          <option value="">— Select —</option>
+          <option value="Language">Language (Primary Language Curriculum)</option>
+          <option value="Maths">Maths (Primary Maths Curriculum)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="gStrand">Strand</label>
+        <select id="gStrand" disabled onchange="onGuidedStrandChange()">
+          <option value="">— Select subject first —</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="gStage">Stage</label>
+        <select id="gStage" disabled onchange="onGuidedStageChange()">
+          <option value="">— Select strand first —</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="gOutcome">Outcome</label>
+        <select id="gOutcome" disabled>
+          <option value="">— Select stage first —</option>
+        </select>
+      </div>
+      <div class="field constraints-field">
+        <label for="gConstraints">Additional constraints / preferences</label>
+        <input type="text" id="gConstraints" placeholder="e.g. prefer games, EAL-friendly, group work">
+      </div>
+      <button type="submit" class="btn btn-primary" id="gSearchBtn" disabled>
+        🔎 Search
+      </button>
+    </form>
+  </div>
+
+  <!-- Freetext Mode Panel -->
+  <div class="mode-panel hidden" id="panel-freetext">
+    <form class="freetext-form" onsubmit="return freetextSearch(event)">
+      <input type="text" id="ftQuery" placeholder="Describe the resource you're looking for — any detail helps" autocomplete="off">
+      <button type="submit" class="btn btn-primary">🔎 Search</button>
+    </form>
+  </div>
+
+  <!-- Browse Mode Panel -->
+  <div class="mode-panel hidden" id="panel-browse">
+    <div class="chip-group-label">Subject</div>
+    <div class="chip-group" id="browseSubjectChips"></div>
+    <div class="chip-group-label">Grade band</div>
+    <div class="chip-group" id="browseGradeChips"></div>
+    <div class="chip-group-label">Format</div>
+    <div class="chip-group" id="browseFormatChips"></div>
+    <div class="chip-group-label">Season</div>
+    <div class="chip-group" id="browseSeasonChips"></div>
+  </div>
+
+  <!-- Results Area -->
+  <div class="results-area" id="resultsArea">
+    <div class="empty-state" id="emptyState">
+      <div class="empty-icon">🔎</div>
+      <p>Select a mode above and run a search to find resources.</p>
+    </div>
+    <div id="resultsContainer" class="hidden"></div>
+  </div>
+</main>
+
+<div class="download-overlay hidden" id="downloadOverlay">
+  <div class="download-dialog">
+    <div class="spinner"></div>
+    <p>Preparing your bundle...</p>
+    <p style="font-size:0.8rem;color:var(--text-muted)">This may take a moment</p>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════
+   CONFIGURATION
+   ═══════════════════════════════════════════════ */
+var WORKER_URL = 'https://teachers-pet.dan-m-kelly.workers.dev';
+var TAXONOMY_BASE = 'https://raw.githubusercontent.com/danmkelly/CustEngageCA3/main/taxonomy';
+
+/* ═══════════════════════════════════════════════
+   APPLICATION STATE
+   ═══════════════════════════════════════════════ */
+var state = {
+  activeMode: 'guided',
+  taxonomies: { language: null, maths: null },
+  catalogue: [],
+  results: [],
+  gaps: [],
+  selectedIds: {},
+  excludedIds: {},
+  thumbsUp: {},
+  thumbsDown: {},
+  flaggedIds: {},
+  aiGenerated: [],
+  loading: { taxonomy: false, catalogue: false, search: false, bundle: false, generate: false },
+  guidedSelections: { subject: '', strand: '', stage: '', outcome: '' },
+  browseFilters: { subject: {}, grade: {}, format: {}, season: {} },
+  refinementText: '',
+  refinementChips: {},
+  lastQuery: null,
+};
+
+function objSize(o) { var n = 0; for (var k in o) { if (o.hasOwnProperty(k)) n++; } return n; }
+function objKeys(o) { var a = []; for (var k in o) { if (o.hasOwnProperty(k)) a.push(k); } return a; }
+function objValues(o) { var a = []; for (var k in o) { if (o.hasOwnProperty(k)) a.push(o[k]); } return a; }
+function objHas(o, k) { return o.hasOwnProperty(k); }
+
+/* ═══════════════════════════════════════════════
+   TAXONOMY LOADERS
+   ═══════════════════════════════════════════════ */
+function loadTaxonomy(name, cb) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', TAXONOMY_BASE + '/' + name + '.json');
+  xhr.onload = function() {
+    if (xhr.status === 200) {
+      try { cb(null, JSON.parse(xhr.responseText)); } catch(e) { cb(e); }
+    } else {
+      // Fallback to Worker if GitHub fails
+      var xhr2 = new XMLHttpRequest();
+      xhr2.open('GET', WORKER_URL + '/api/taxonomy/' + name);
+      xhr2.onload = function() {
+        if (xhr2.status === 200) {
+          try { cb(null, JSON.parse(xhr2.responseText)); } catch(e) { cb(e); }
+        } else {
+          cb(new Error('Failed to load ' + name + ' taxonomy (' + xhr.status + '/' + xhr2.status + ')'));
+        }
+      };
+      xhr2.onerror = function() { cb(new Error('Network error loading ' + name + ' taxonomy')); };
+      xhr2.send();
+    }
+  };
+  xhr.onerror = function() { cb(new Error('Network error loading ' + name + ' taxonomy')); };
+  xhr.send();
+}
+
+function initTaxonomies() {
+  state.loading.taxonomy = true;
+  var loaded = 0;
+  function checkDone() {
+    loaded++;
+    if (loaded === 2) {
+      state.loading.taxonomy = false;
+      populateGuidedDropdowns();
+    }
+  }
+  loadTaxonomy('language', function(err, data) {
+    if (err) { showError('Could not load curriculum taxonomies: ' + err.message); checkDone(); return; }
+    state.taxonomies.language = data;
+    checkDone();
+  });
+  loadTaxonomy('maths', function(err, data) {
+    if (err) { showError('Could not load curriculum taxonomies: ' + err.message); checkDone(); return; }
+    state.taxonomies.maths = data;
+    checkDone();
+  });
+}
+
+/* ═══════════════════════════════════════════════
+   GUIDED MODE DROPDOWNS
+   ═══════════════════════════════════════════════ */
+function populateGuidedDropdowns() {
+  var lang = state.taxonomies.language;
+  var maths = state.taxonomies.maths;
+  if (!lang || !maths) return;
+
+  var strandsBySubject = {};
+  strandsBySubject['Language'] = Object.keys(lang.strands);
+  strandsBySubject['Maths'] = Object.keys(maths.strands);
+
+  var subjectEl = document.getElementById('gSubject');
+  var strandEl = document.getElementById('gStrand');
+  var stageEl = document.getElementById('gStage');
+  var outEl = document.getElementById('gOutcome');
+
+  subjectEl.addEventListener('change', function() {
+    var val = subjectEl.value;
+    state.guidedSelections.subject = val;
+    state.guidedSelections.strand = '';
+    state.guidedSelections.stage = '';
+    state.guidedSelections.outcome = '';
+
+    strandEl.innerHTML = '<option value="">— Select strand —</option>';
+    strandEl.disabled = !val;
+
+    if (val && strandsBySubject[val]) {
+      strandsBySubject[val].forEach(function(s) {
+        var opt = document.createElement('option');
+        opt.value = s;
+        opt.textContent = s;
+        strandEl.appendChild(opt);
+      });
+    }
+
+    stageEl.innerHTML = '<option value="">— Select strand first —</option>';
+    stageEl.disabled = true;
+    outEl.innerHTML = '<option value="">— Select stage first —</option>';
+    outEl.disabled = true;
+    updateGuidedSearchBtn();
+  });
+
+  strandEl.addEventListener('change', function() {
+    var val = strandEl.value;
+    state.guidedSelections.strand = val;
+    state.guidedSelections.stage = '';
+    state.guidedSelections.outcome = '';
+
+    stageEl.innerHTML = '<option value="">— Select stage —</option>';
+    stageEl.disabled = !val;
+    outEl.innerHTML = '<option value="">— Select stage first —</option>';
+    outEl.disabled = true;
+
+    if (!val) { updateGuidedSearchBtn(); return; }
+
+    var subj = state.guidedSelections.subject;
+    var stages = subj === 'Language' ? state.taxonomies.language._stages : state.taxonomies.maths._stages;
+    var codes = Object.keys(stages);
+    for (var i = 0; i < codes.length; i++) {
+      var code = codes[i];
+      var opt = document.createElement('option');
+      opt.value = code;
+      opt.textContent = code + ': ' + stages[code];
+      stageEl.appendChild(opt);
+    }
+
+    updateGuidedSearchBtn();
+  });
+
+  stageEl.addEventListener('change', function() {
+    var val = stageEl.value;
+    state.guidedSelections.stage = val;
+    state.guidedSelections.outcome = '';
+
+    outEl.innerHTML = '<option value="">— Select outcome —</option>';
+    outEl.disabled = !val;
+    if (!val) { updateGuidedSearchBtn(); return; }
+
+    var subj = state.guidedSelections.subject;
+    var strand = state.guidedSelections.strand;
+
+    if (subj === 'Language') {
+      var strandObj = state.taxonomies.language.strands[strand];
+      if (strandObj && strandObj.elements) {
+        var elemNames = Object.keys(strandObj.elements);
+        for (var ei = 0; ei < elemNames.length; ei++) {
+          var elemName = elemNames[ei];
+          var elemData = strandObj.elements[elemName];
+          if (elemData.outcomes) {
+            for (var oi = 0; oi < elemData.outcomes.length; oi++) {
+              var o = elemData.outcomes[oi];
+              var opt = document.createElement('option');
+              opt.value = JSON.stringify({ code: o.code, element: elemName, label: o.label });
+              opt.textContent = o.code + ': ' + o.label + ' (' + elemName + ')';
+              outEl.appendChild(opt);
+            }
+          }
+        }
+      }
+    } else if (subj === 'Maths') {
+      var strandObjM = state.taxonomies.maths.strands[strand];
+      if (strandObjM && strandObjM.strand_units) {
+        for (var ui = 0; ui < strandObjM.strand_units.length; ui++) {
+          var u = strandObjM.strand_units[ui];
+          var opt = document.createElement('option');
+          opt.value = JSON.stringify({ code: u.id, name: u.name });
+          opt.textContent = u.id + ': ' + u.name;
+          outEl.appendChild(opt);
+        }
+      }
+    }
+    updateGuidedSearchBtn();
+  });
+
+  outEl.addEventListener('change', function() {
+    state.guidedSelections.outcome = outEl.value;
+    updateGuidedSearchBtn();
+  });
+}
+
+function updateGuidedSearchBtn() {
+  var s = state.guidedSelections;
+  document.getElementById('gSearchBtn').disabled = !(s.subject && s.strand && s.stage && s.outcome);
+}
+
+/* ═══════════════════════════════════════════════
+   TAB SWITCHING
+   ═══════════════════════════════════════════════ */
+function switchTab(mode) {
+  state.activeMode = mode;
+  var tabs = document.querySelectorAll('.tab');
+  for (var i = 0; i < tabs.length; i++) { tabs[i].classList.toggle('active', tabs[i].getAttribute('data-tab') === mode); }
+  var panels = document.querySelectorAll('.mode-panel');
+  for (var j = 0; j < panels.length; j++) { panels[j].classList.add('hidden'); }
+  document.getElementById('panel-' + mode).classList.remove('hidden');
+
+  if (mode === 'browse' && state.catalogue.length === 0) {
+    loadCatalogue();
+  }
+  if (mode === 'browse') {
+    renderBrowseResults();
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   CATALOGUE LOADER
+   ═══════════════════════════════════════════════ */
+function loadCatalogue() {
+  if (state.catalogue.length > 0) return;
+  state.loading.catalogue = true;
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', WORKER_URL + '/api/catalogue');
+  xhr.onload = function() {
+    if (xhr.status === 200) {
+      try {
+        state.catalogue = JSON.parse(xhr.responseText);
+        buildBrowseChips();
+      } catch(e) { showError('Could not parse catalogue data'); }
+    } else {
+      showError('Could not load resource catalogue (' + xhr.status + ')');
+    }
+    state.loading.catalogue = false;
+  };
+  xhr.onerror = function() { showError('Network error loading catalogue'); state.loading.catalogue = false; };
+  xhr.send();
+}
+
+/* ═══════════════════════════════════════════════
+   BROWSE CHIPS
+   ═══════════════════════════════════════════════ */
+function buildBrowseChips() {
+  var subjects = [{ key: 'Literacy', label: 'Literacy' }, { key: 'Maths', label: 'Maths' }];
+  var grades = [{ key: 'Infants', label: 'Infants' }, { key: '1st-2nd', label: '1st\u20132nd' }, { key: '3rd-4th', label: '3rd\u20134th' }, { key: '5th-6th', label: '5th\u20136th' }];
+  var formats = [{ key: 'Worksheet', label: 'Worksheet' }, { key: 'Game', label: 'Game' }, { key: 'Poster', label: 'Poster' }, { key: 'Activity', label: 'Activity' }, { key: 'Flashcards', label: 'Flashcards' }, { key: 'Assessment', label: 'Assessment' }, { key: 'Lesson_Plan', label: 'Lesson Plan' }, { key: 'Other', label: 'Other' }];
+  var seasons = [{ key: 'Christmas', label: 'Christmas' }, { key: 'Halloween', label: 'Halloween' }, { key: 'Easter', label: 'Easter' }, { key: 'St_Patricks', label: "St Patrick's" }, { key: 'Valentines', label: "Valentine's" }, { key: 'Spring', label: 'Spring' }, { key: 'Summer', label: 'Summer' }, { key: 'Back_to_School', label: 'Back to School' }, { key: 'End_of_Year', label: 'End of Year' }];
+
+  renderChipGroup('browseSubjectChips', subjects, 'subject');
+  renderChipGroup('browseGradeChips', grades, 'grade');
+  renderChipGroup('browseFormatChips', formats, 'format');
+  renderChipGroup('browseSeasonChips', seasons, 'season');
+}
+
+function renderChipGroup(containerId, chips, category) {
+  var container = document.getElementById(containerId);
+  container.innerHTML = '';
+  for (var i = 0; i < chips.length; i++) {
+    var chip = chips[i];
+    var el = document.createElement('span');
+    el.className = 'chip';
+    el.textContent = chip.label;
+    el.setAttribute('data-key', chip.key);
+    el.addEventListener('click', (function(cat, key) {
+      return function() {
+        this.classList.toggle('active');
+        if (this.classList.contains('active')) {
+          state.browseFilters[cat][key] = true;
+        } else {
+          delete state.browseFilters[cat][key];
+        }
+        renderBrowseResults();
+      };
+    })(category, chip.key));
+    container.appendChild(el);
+  }
+}
+
+function renderBrowseResults() {
+  if (state.activeMode !== 'browse') return;
+
+  var allEmpty = objSize(state.browseFilters.subject) === 0 &&
+                 objSize(state.browseFilters.grade) === 0 &&
+                 objSize(state.browseFilters.format) === 0 &&
+                 objSize(state.browseFilters.season) === 0;
+
+  if (allEmpty) {
+    document.getElementById('emptyState').classList.remove('hidden');
+    document.getElementById('resultsContainer').classList.add('hidden');
+    return;
+  }
+
+  var filtered = state.catalogue.filter(function(item) {
+    if (objSize(state.browseFilters.subject) > 0 && !objHas(state.browseFilters.subject, item.subject)) return false;
+    if (objSize(state.browseFilters.grade) > 0 && !objHas(state.browseFilters.grade, item.grade_band)) return false;
+    if (objSize(state.browseFilters.format) > 0 && !objHas(state.browseFilters.format, item.format)) return false;
+    if (objSize(state.browseFilters.season) > 0 && !objHas(state.browseFilters.season, item.season)) return false;
+    return true;
+  });
+
+  state.results = filtered;
+  state.gaps = [];
+  renderResults();
+}
+
+/* ═══════════════════════════════════════════════
+   SEARCH FUNCTIONS
+   ═══════════════════════════════════════════════ */
+function guidedSearch(e) {
+  e.preventDefault();
+  var s = state.guidedSelections;
+  var outcomeData;
+  try { outcomeData = JSON.parse(s.outcome); } catch(ex) { showError('Please select a valid outcome.'); return false; }
+  state.lastQuery = {
+    type: 'guided',
+    query: [s.subject, s.strand, outcomeData.code, (outcomeData.label || outcomeData.name)].filter(Boolean).join(' — '),
+    subject: s.subject,
+    strand: s.strand,
+    stage: s.stage,
+    outcome_code: outcomeData.code,
+    outcome_label: outcomeData.label || outcomeData.name,
+    element: outcomeData.element || null,
+    constraints: document.getElementById('gConstraints').value || null,
+  };
+  performSearch();
+  return false;
+}
+
+function freetextSearch(e) {
+  e.preventDefault();
+  var query = document.getElementById('ftQuery').value.trim();
+  if (!query) return false;
+  state.lastQuery = { type: 'freetext', query: query };
+  performSearch();
+  return false;
+}
+
+function performSearch() {
+  state.loading.search = true;
+  setSearchLoading(true);
+  clearExclusions();
+
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', WORKER_URL + '/api/query');
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  xhr.onload = function() {
+    state.loading.search = false;
+    setSearchLoading(false);
+    if (xhr.status === 200) {
+      try {
+        var data = JSON.parse(xhr.responseText);
+        state.results = data.results || [];
+        state.gaps = data.gaps || [];
+        renderResults();
+      } catch(e) { showError('Invalid response from server'); }
+    } else {
+      showError('Search failed (' + xhr.status + ')');
+    }
+  };
+  xhr.onerror = function() { state.loading.search = false; setSearchLoading(false); showError('Network error during search'); };
+  xhr.send(JSON.stringify(state.lastQuery));
+}
+
+function setSearchLoading(loading) {
+  var btn = document.getElementById('gSearchBtn');
+  if (btn) { btn.disabled = loading; btn.textContent = loading ? 'Searching...' : 'Search'; }
+  var ftBtn = document.querySelector('#panel-freetext button[type="submit"]');
+  if (ftBtn) { ftBtn.disabled = loading; ftBtn.textContent = loading ? 'Searching...' : 'Search'; }
+}
+
+function clearExclusions() {
+  state.excludedIds = {};
+  state.thumbsDown = {};
+  state.flaggedIds = {};
+}
+
+/* ═══════════════════════════════════════════════
+   EVENT DELEGATION
+   ═══════════════════════════════════════════════ */
+function handleResultClick(e) {
+  var target = e.target;
+  while (target && target !== document.getElementById('resultsContainer')) {
+    if (target.hasAttribute && target.hasAttribute('data-action')) {
+      var action = target.getAttribute('data-action');
+      var id = target.getAttribute('data-id');
+      if (action === 'thumbs-up') toggleThumbsUp(id);
+      else if (action === 'thumbs-down') toggleThumbsDown(id);
+      else if (action === 'flag') flagForReview(id);
+      else if (action === 'similar') findSimilar(id);
+      else if (action === 'select') toggleSelect(id);
+      else if (action === 'search-curriculum') {
+        var c = target.getAttribute('data-code');
+        var l = target.getAttribute('data-label');
+        var s = target.getAttribute('data-stage');
+        searchCurriculumOnline(c, l, s);
+      }
+      else if (action === 'generate-lesson') {
+        var gc = target.getAttribute('data-code');
+        var gl = target.getAttribute('data-label');
+        var gs = target.getAttribute('data-stage');
+        generateLessonPlan(gc, gl, gs, target);
+      }
+      else if (action === 'refinement-chip') {
+        var key = target.getAttribute('data-key');
+        target.classList.toggle('active');
+        if (target.classList.contains('active')) {
+          state.refinementChips[key] = true;
+        } else {
+          delete state.refinementChips[key];
+        }
+        applyRefinements();
+      }
+      else if (action === 'dismiss-suggestion') {
+        var sid = target.getAttribute('data-sid');
+        var el = document.getElementById(sid);
+        if (el) el.remove();
+      }
+      e.preventDefault();
+      return;
+    }
+    target = target.parentElement;
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   RESULTS RENDERING
+   ═══════════════════════════════════════════════ */
+function renderResults() {
+  var emptyEl = document.getElementById('emptyState');
+  var container = document.getElementById('resultsContainer');
+
+  var hasResults = state.results.length > 0;
+  var hasGaps = state.gaps.length > 0;
+  var hasExcluded = objSize(state.excludedIds) > 0;
+
+  if (!hasResults && !hasGaps && !hasExcluded) {
+    emptyEl.classList.remove('hidden');
+    container.classList.add('hidden');
+    return;
+  }
+
+  emptyEl.classList.add('hidden');
+  container.classList.remove('hidden');
+
+  var parts = [];
+
+  var resultsCount = 0;
+  for (var ri = 0; ri < state.results.length; ri++) {
+    var rr = state.results[ri];
+    if (!objHas(state.excludedIds, rr.id || rr.filename)) resultsCount++;
+  }
+  parts.push('<div class="results-header"><h2>' + resultsCount + ' resource' + (resultsCount !== 1 ? 's' : '') + ' found</h2></div>');
+
+  parts.push(renderRefinementBar());
+
+  if (hasGaps) {
+    parts.push('<div class="gaps-section">');
+    for (var gi = 0; gi < state.gaps.length; gi++) {
+      var gap = state.gaps[gi];
+      var gCode = gap.code || gap.id || '';
+      var gLabel = gap.label || gap.name || '';
+      var gStage = gap.stage || '';
+      parts.push(
+        '<div class="gap-card" style="margin-bottom:10px">' +
+        '<span class="gap-icon">&#9888;</span>' +
+        '<span class="gap-text">No resources found for <strong>' + esc(gCode) + ' (' + esc(gLabel) + ', ' + esc(gStage) + ')</strong></span>' +
+        '<span class="gap-actions">' +
+        '<button class="btn btn-secondary btn-sm" data-action="search-curriculum" data-code="' + esc(gCode) + '" data-label="' + esc(gLabel) + '" data-stage="' + esc(gStage) + '">Search curriculumonline.ie</button>' +
+        '<button class="btn btn-secondary btn-sm" data-action="generate-lesson" data-code="' + esc(gCode) + '" data-label="' + esc(gLabel) + '" data-stage="' + esc(gStage) + '">Generate lesson plan</button>' +
+        '</span>' +
+        '</div>'
+      );
+    }
+    parts.push('</div>');
+  }
+
+  parts.push('<div class="results-grid">');
+
+  for (var vi = 0; vi < state.results.length; vi++) {
+    var r = state.results[vi];
+    if (!objHas(state.excludedIds, r.id || r.filename)) {
+      parts.push(renderResultCardHTML(r, false));
+    }
+  }
+
+  parts.push('</div>');
+
+  if (hasExcluded) {
+    parts.push('<div class="exclusion-section" id="exclusionContainer"><h3>Excluded / Flagged Resources</h3><div class="results-grid" id="exclusionItems">');
+    var exclIds = objKeys(state.excludedIds);
+    for (var ei = 0; ei < exclIds.length; ei++) {
+      var id = exclIds[ei];
+      for (var ej = 0; ej < state.results.length; ej++) {
+        var rr2 = state.results[ej];
+        if ((rr2.id || rr2.filename) === id) {
+          parts.push(renderResultCardHTML(rr2, true));
+          break;
+        }
+      }
+    }
+    parts.push('</div></div>');
+  }
+
+  container.innerHTML = parts.join('');
+
+  setupRefinementListeners();
+  updateBundleCount();
+}
+
+function renderResultCardHTML(r, dimmed) {
+  var id = r.id || r.filename;
+  var isAi = r.ai_generated === true;
+  var isSelected = objHas(state.selectedIds, id);
+
+  var classes = 'card';
+  if (isAi) classes += ' ai-generated';
+  if (dimmed) classes += ' dimmed';
+  if (isSelected) classes += ' selected';
+
+  var desc = r.extracted_text_sample
+    ? r.extracted_text_sample.substring(0, 140)
+    : (r.description || 'No description available.');
+
+  var badges = '';
+  if (isAi) badges += '<span class="badge badge-ai">AI Generated</span>';
+  if (r.subject) badges += '<span class="badge badge-subject">' + esc(r.subject) + '</span>';
+  if (r.grade_band) badges += '<span class="badge badge-grade">' + esc(r.grade_band) + '</span>';
+  if (r.format) badges += '<span class="badge badge-format">' + esc(r.format) + '</span>';
+  if (r.confidence != null) badges += '<span class="badge badge-confidence">' + Math.round(r.confidence * 100) + '% match</span>';
+
+  var tuClass = objHas(state.thumbsUp, id) ? ' active' : '';
+  var tdClass = objHas(state.thumbsDown, id) ? ' active' : '';
+  var selStyle = isSelected ? 'style="background:var(--accent);color:#fff;border-color:var(--accent)"' : '';
+  var selText = isSelected ? 'Selected' : '+ Add to bundle';
+
+  return '<div class="' + classes + '" data-id="' + esc(id) + '">' +
+    '<div class="card-filename">' + esc(r.filename || 'Untitled Resource') + '</div>' +
+    '<div class="card-description">' + esc(desc) + '</div>' +
+    '<div class="card-badges">' + badges + '</div>' +
+    '<div class="card-actions">' +
+    '<button class="thumbs-up' + tuClass + '" data-action="thumbs-up" data-id="' + esc(id) + '" title="Good match">Like</button>' +
+    '<button class="thumbs-down' + tdClass + '" data-action="thumbs-down" data-id="' + esc(id) + '" title="Not relevant">Dislike</button>' +
+    '<button class="flag" data-action="flag" data-id="' + esc(id) + '" title="Not for this outcome">Review</button>' +
+    '<button class="similar" data-action="similar" data-id="' + esc(id) + '" title="More like this">More like this</button>' +
+    '<button class="btn-sm" data-action="select" data-id="' + esc(id) + '" ' + selStyle + '>' + selText + '</button>' +
+    '</div>' +
+    '</div>';
+}
+
+function renderRefinementBar() {
+  return '<div class="refinement-bar" id="refinementBar">' +
+    '<label>Refine:</label>' +
+    '<div class="chip-group" id="refinementChips">' +
+    '<span class="chip" data-action="refinement-chip" data-key="Worksheet">Worksheet</span>' +
+    '<span class="chip" data-action="refinement-chip" data-key="Game">Game</span>' +
+    '<span class="chip" data-action="refinement-chip" data-key="Activity">Activity</span>' +
+    '<span class="chip" data-action="refinement-chip" data-key="Poster">Poster</span>' +
+    '<span class="chip" data-action="refinement-chip" data-key="Flashcards">Flashcards</span>' +
+    '<span class="chip" data-action="refinement-chip" data-key="Infants">Infants</span>' +
+    '<span class="chip" data-action="refinement-chip" data-key="1st-2nd">1st-2nd</span>' +
+    '<span class="chip" data-action="refinement-chip" data-key="3rd-4th">3rd-4th</span>' +
+    '<span class="chip" data-action="refinement-chip" data-key="5th-6th">5th-6th</span>' +
+    '<span class="chip" data-action="refinement-chip" data-key="Christmas">Christmas</span>' +
+    '<span class="chip" data-action="refinement-chip" data-key="Halloween">Halloween</span>' +
+    '<span class="chip" data-action="refinement-chip" data-key="Easter">Easter</span>' +
+    '</div>' +
+    '<input type="text" id="refinementTextInput" placeholder="Filter by keyword...">' +
+    '</div>';
+}
+
+function setupRefinementListeners() {
+  var input = document.getElementById('refinementTextInput');
+  if (input) {
+    input.value = state.refinementText;
+    var replaceInput = input.cloneNode(true);
+    input.parentNode.replaceChild(replaceInput, input);
+    replaceInput.addEventListener('input', function() {
+      state.refinementText = replaceInput.value;
+      debounceRefinement();
+    });
+  }
+
+  var keys = objKeys(state.refinementChips);
+  var chips = document.querySelectorAll('#refinementChips .chip');
+  for (var i = 0; i < chips.length; i++) {
+    var chip = chips[i];
+    var key = chip.getAttribute('data-key');
+    if (objHas(state.refinementChips, key)) {
+      chip.classList.add('active');
+    } else {
+      chip.classList.remove('active');
+    }
+  }
+}
+
+var refinementTimer;
+function debounceRefinement() {
+  clearTimeout(refinementTimer);
+  refinementTimer = setTimeout(applyRefinements, 300);
+}
+
+function applyRefinements() {
+  var hasChips = objSize(state.refinementChips) > 0;
+  var hasText = state.refinementText.trim().length > 0;
+
+  if (state.activeMode === 'browse') {
+    renderBrowseResults();
+    return;
+  }
+
+  if (!hasChips && !hasText) {
+    renderResults();
+    return;
+  }
+
+  if (hasText) {
+    state.loading.search = true;
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', WORKER_URL + '/api/query');
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onload = function() {
+      state.loading.search = false;
+      if (xhr.status === 200) {
+        try {
+          var data = JSON.parse(xhr.responseText);
+          state.results = data.results || [];
+        } catch(e) {}
+      }
+      renderResults();
+    };
+    xhr.onerror = function() { state.loading.search = false; renderResults(); };
+    xhr.send(JSON.stringify({
+      type: 'refine',
+      base_query: state.lastQuery,
+      refinement_text: state.refinementText.trim(),
+      refinement_chips: objKeys(state.refinementChips),
+    }));
+  } else {
+    renderResults();
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   CARD ACTIONS
+   ═══════════════════════════════════════════════ */
+function toggleSelect(id) {
+  if (objHas(state.selectedIds, id)) {
+    delete state.selectedIds[id];
+  } else {
+    state.selectedIds[id] = true;
+  }
+  updateBundleCount();
+  renderResults();
+}
+
+function toggleThumbsUp(id) {
+  if (objHas(state.thumbsUp, id)) {
+    delete state.thumbsUp[id];
+  } else {
+    state.thumbsUp[id] = true;
+    delete state.thumbsDown[id];
+  }
+  renderResults();
+}
+
+function toggleThumbsDown(id) {
+  if (objHas(state.thumbsDown, id)) {
+    delete state.thumbsDown[id];
+    delete state.excludedIds[id];
+  } else {
+    state.thumbsDown[id] = true;
+    state.excludedIds[id] = true;
+    delete state.thumbsUp[id];
+    delete state.selectedIds[id];
+  }
+  updateBundleCount();
+  renderResults();
+}
+
+function flagForReview(id) {
+  state.flaggedIds[id] = true;
+  state.excludedIds[id] = true;
+  delete state.selectedIds[id];
+  updateBundleCount();
+  renderResults();
+}
+
+function findSimilar(id) {
+  state.loading.search = true;
+  setSearchLoading(true);
+  var r = null;
+  for (var i = 0; i < state.results.length; i++) {
+    if ((state.results[i].id || state.results[i].filename) === id) { r = state.results[i]; break; }
+  }
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', WORKER_URL + '/api/query');
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  xhr.onload = function() {
+    state.loading.search = false;
+    setSearchLoading(false);
+    if (xhr.status === 200) {
+      try {
+        var data = JSON.parse(xhr.responseText);
+        state.results = data.results || [];
+        state.gaps = data.gaps || [];
+        renderResults();
+      } catch(e) { showError('Could not parse similar results'); }
+    } else {
+      showError('Could not find similar resources (' + xhr.status + ')');
+    }
+  };
+  xhr.onerror = function() {
+    state.loading.search = false; setSearchLoading(false);
+    showError('Network error during similar search');
+  };
+  xhr.send(JSON.stringify({
+    type: 'similar',
+    resource_id: id,
+    description: r ? (r.extracted_text_sample || r.description || r.filename) : '',
+  }));
+}
+
+/* ═══════════════════════════════════════════════
+   GAP ACTIONS
+   ═══════════════════════════════════════════════ */
+function searchCurriculumOnline(code, label, stage) {
+  var url = 'https://curriculumonline.ie/search/?q=' + encodeURIComponent(code + ' ' + label);
+  window.open(url, '_blank');
+
+  var sid = 'curr-sugg-' + code.replace(/[^a-zA-Z0-9]/g, '');
+  var html = '<div class="suggestion-card" id="' + sid + '">' +
+    '<span class="sugg-text"><strong>curriculumonline.ie</strong> &mdash; Search results for <em>' + esc(code) + ': ' + esc(label) + '</em></span>' +
+    '<button class="btn btn-success btn-sm" data-action="dismiss-suggestion" data-sid="' + sid + '">Done</button>' +
+    '</div>';
+
+  var gapsSection = document.querySelector('.gaps-section');
+  if (gapsSection) {
+    gapsSection.insertAdjacentHTML('beforeend', html);
+  }
+}
+
+function generateLessonPlan(code, label, stage, btnEl) {
+  var gapCard = btnEl ? btnEl.closest('.gap-card') : null;
+  if (gapCard) {
+    gapCard.querySelector('.gap-actions').innerHTML = '<div class="spinner" style="width:20px;height:20px"></div><span style="font-size:0.85rem;color:var(--text-muted)">Generating lesson plan...</span>';
+  }
+
+  state.loading.generate = true;
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', WORKER_URL + '/api/generate-lesson');
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  xhr.onload = function() {
+    state.loading.generate = false;
+    if (xhr.status === 200) {
+      try {
+        var data = JSON.parse(xhr.responseText);
+        var aiCard = {
+          id: 'ai-gen-' + Date.now(),
+          filename: 'Lesson Plan: ' + label + ' (' + stage + ')',
+          ai_generated: true,
+          subject: state.lastQuery ? state.lastQuery.subject : '',
+          grade_band: stage,
+          format: 'Lesson_Plan',
+          extracted_text_sample: data.content || data.plan || 'AI-generated lesson plan based on curriculum outcome.',
+          confidence: 1.0,
+        };
+        state.results.unshift(aiCard);
+        state.aiGenerated.push(aiCard);
+        renderResults();
+      } catch(e) { showError('Could not parse generated lesson plan'); restoreGapButtons(gapCard, code, label, stage); }
+    } else {
+      showError('Could not generate lesson plan (' + xhr.status + ')');
+      restoreGapButtons(gapCard, code, label, stage);
+    }
+  };
+  xhr.onerror = function() {
+    state.loading.generate = false;
+    showError('Network error during lesson plan generation');
+    restoreGapButtons(gapCard, code, label, stage);
+  };
+  xhr.send(JSON.stringify({ outcome_code: code, outcome_label: label, stage: stage }));
+}
+
+function restoreGapButtons(gapCard, code, label, stage) {
+  if (gapCard) {
+    gapCard.querySelector('.gap-actions').innerHTML =
+      '<button class="btn btn-secondary btn-sm" data-action="search-curriculum" data-code="' + esc(code) + '" data-label="' + esc(label) + '" data-stage="' + esc(stage) + '">Search curriculumonline.ie</button>' +
+      '<button class="btn btn-secondary btn-sm" data-action="generate-lesson" data-code="' + esc(code) + '" data-label="' + esc(label) + '" data-stage="' + esc(stage) + '">Generate lesson plan</button>';
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   BUNDLE & DOWNLOAD
+   ═══════════════════════════════════════════════ */
+function updateBundleCount() {
+  var total = objSize(state.selectedIds);
+  var badge = document.getElementById('bundleCount');
+  var btn = document.getElementById('bundleBtn');
+
+  if (total > 0) {
+    badge.style.display = 'inline-flex';
+    badge.textContent = total;
+    btn.disabled = false;
+    btn.innerHTML = 'Bundle & Download <span class="bundle-badge">' + total + '</span>';
+  } else {
+    badge.style.display = 'none';
+    btn.disabled = true;
+    btn.textContent = 'Bundle & Download';
+  }
+}
+
+function triggerBundle() {
+  if (objSize(state.selectedIds) === 0) {
+    showError('Select at least one resource to bundle.');
+    return;
+  }
+
+  var overlay = document.getElementById('downloadOverlay');
+  overlay.classList.remove('hidden');
+
+  var aiIncluded = [];
+  for (var i = 0; i < state.aiGenerated.length; i++) {
+    var a = state.aiGenerated[i];
+    if (objHas(state.selectedIds, a.id)) {
+      aiIncluded.push({ id: a.id, content: a.extracted_text_sample });
+    }
+  }
+
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', WORKER_URL + '/api/bundle');
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  xhr.responseType = 'blob';
+  xhr.onload = function() {
+    overlay.classList.add('hidden');
+    if (xhr.status === 200) {
+      var blob = xhr.response;
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'teachers-pet-bundle-' + new Date().toISOString().slice(0, 10) + '.zip';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } else {
+      showError('Download failed (' + xhr.status + ')');
+    }
+  };
+  xhr.onerror = function() { overlay.classList.add('hidden'); showError('Network error during download'); };
+  xhr.send(JSON.stringify({
+    resource_ids: objKeys(state.selectedIds),
+    include_ai_generated: aiIncluded,
+  }));
+}
+
+/* ═══════════════════════════════════════════════
+   UTILITY FUNCTIONS
+   ═══════════════════════════════════════════════ */
+function esc(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function showError(msg) {
+  var existing = document.querySelector('.error-banner');
+  if (existing) existing.remove();
+
+  var banner = document.createElement('div');
+  banner.className = 'error-banner';
+  banner.textContent = msg;
+  banner.addEventListener('click', function() { banner.remove(); });
+
+  var main = document.querySelector('.main');
+  main.insertBefore(banner, main.firstChild);
+
+  setTimeout(function() { if (banner.parentNode) banner.remove(); }, 8000);
+}
+
+/* ═══════════════════════════════════════════════
+   INITIALISATION
+   ═══════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('resultsContainer').addEventListener('click', handleResultClick);
+  document.getElementById('bundleBtn').addEventListener('click', triggerBundle);
+  initTaxonomies();
+});
+</script>
+
+</body>
+</html>
