@@ -1498,45 +1498,65 @@ TEACHER gets UFLI54-2ndClass.zip — every file, ready to use.
 <h3>Seven numbered decisions — push back on any of them</h3>
 
 <div class="card">
-  <h4>Decision 1: The demo proves the pipeline, not the catalogue</h4>
-  <p>The rubric's heaviest-weighted criterion is Handoff &amp; Orchestration (25%) — does each agent's output become the next agent's real input? A shallowly-tagged catalogue of 4,400 files with perfect handoffs scores higher than an exhaustively-tagged catalogue with loose handoffs. Build the pipeline solid; fill the catalogue enough to demonstrate it.</p>
-  <p class="decision-made">→ Decision: Deep-parse a representative sample (~150 files). Tag the rest from folder structure. Prove the handoffs first; catalogue completeness is the production run.</p>
+  <h4>Decision 1: Parse depth — how much of the catalogue gets deep-parsed?</h4>
+  <p>The tagging exploration (Sections 3–6) proved that full deep parse of all ~3,300 PDFs is trivially cheap: ~$5–16 total API spend, ~90 minutes processing time. The cost argument for an optimised sample no longer applies — there is no meaningful time or money saving from skipping files. The catalogue is the product; an honest catalogue needs honest tagging.</p>
+  <p>For text-rich PDFs (~70%): pdfplumber text extraction → DeepSeek classification → 6–8 structured tags per file. For image-heavy PDFs (~30%): Gemini Flash vision → direct tag inference from visual content. This catches activity type, grade band, and pedagogical intent that text extraction alone misses from worksheets, craft templates, and posters.</p>
+  <p class="decision-made">→ Decision: Deep-parse all PDFs in-scope. Text-rich via DeepSeek (~$3). Image-heavy via Gemini Flash vision (~$3–13). The <code>confidence</code> column still records parse method: 0.9 = content-parsed, 0.5 = folder-only (for non-PDF files). Total: ~$6–16, ~90 minutes.</p>
 </div>
 
 <div class="card">
-  <h4>Decision 2: Two curriculum subjects &gt; all of them</h4>
-  <p>Language + Maths covers the two taxonomy styles the Irish curriculum uses (coded outcomes vs. progression continua). Adding SESE/SPHE/PE/Arts is transcription work — it proves endurance, not insight. The two-regime problem is fully demonstrable with two subjects.</p>
-  <p class="decision-made">→ Decision: Build full outcome-level mapping for Primary Language (TF codes) + Primary Mathematics (PC continua). 1999 subjects get strand/stage skeleton only.</p>
+  <h4>Decision 2: Subject scope — which subjects, and should we trim the catalogue?</h4>
+  <p>The Irish primary curriculum spans Language (English + Gaeilge), Mathematics, SESE (Science, Geography, History), SPHE, PE, and Arts Education. Building outcome-level mapping for all of them is rote transcription, not engineering insight. The two-regime problem — coded outcomes (TF codes) vs. progression continua (PC1–PC12) — is fully demonstrable with just Language + Maths. Adding more subjects proves endurance, not understanding.</p>
+  <p>If we scope the <em>reference taxonomy</em> to English + Maths, should we also trim the <em>catalogue</em> to only those subjects? There is a strong argument for yes: a catalogue of 4,400 files with only ~1,800 actually mapped to outcomes creates a misleading demo (most queries return zero results because the files exist but aren't mapped). A trimmed catalogue of ~1,800 English + Maths files where every file has deep tags and outcome mapping tells a cleaner story. The brief itself says <em>"It also will target a limited content catalogue, aiming to establish credibility rather than delivering a broad solution."</em></p>
+  <p>Note: some folders are cross-curricular. A Christmas phonics worksheet lives in <code>xmas/</code> but is literacy content. The trim should be by <em>inferred subject</em> (from content analysis), not by folder path. Seasonal folders, back-to-school packs, and fun-stuff resources that are fundamentally literacy or numeracy stay in scope.</p>
+  <p class="decision-made">→ Decision: Scope reference taxonomies to Primary Language (English, TF codes) + Primary Mathematics (PC continua). Trim the catalogue to files whose content infers English or Maths as primary subject. Others tagged from folder only and excluded from demo queries. Estimated catalogue size after trim: ~1,800–2,200 files.</p>
 </div>
 
 <div class="card">
-  <h4>Decision 3: Text generation only — lesson plans are the product</h4>
-  <p>Lesson plans are what LLMs do best, what teachers value most (planning is the time-sink), and what the brief explicitly names as the baseline (<em>"at least creation of lesson plans"</em>). Worksheet generation is the brief's own "stretch" — name it as such and don't build it.</p>
-  <p class="decision-made">→ Decision: Maker agent generates structured markdown lesson plans only. Worksheet/image generation is named as future work, not built.</p>
+  <h4>Decision 3: No Gaeilge — exclusion as domain awareness</h4>
+  <p>LLMs are materially weaker in Irish — grammatical errors, dialect mismatches, unnatural phrasing. Generating Irish-language educational content with an LLM is an active research problem, not a CA3 deliverable. The ~119 Gaeilge files in the catalogue are tagged as subject=Gaeilge from folder name and excluded from the trimmed catalogue per Decision 2. Naming this as a deliberate exclusion with the specific reasoning demonstrates you understand AI limitations, not that you forgot about Gaeilge. The exclusion is itself a trust-calibration move (Week 2 — Lee &amp; See, 2004): don't claim capability you can't deliver.</p>
+  <p class="decision-made">→ Decision: Exclude Gaeilge from the trimmed catalogue, outcome mapping, deep parsing, and demo queries. Name the reasoning explicitly in the writeup.</p>
 </div>
 
 <div class="card">
-  <h4>Decision 4: One programme reference (UFLI) proves the pattern</h4>
-  <p>24 files in the collection are already UFLI-tagged in filename. The scope-and-sequence is well-documented. The lesson-based structure maps cleanly to outcome codes. One tight integration demonstrates the programme-reference concept better than five shallow ones.</p>
-  <p class="decision-made">→ Decision: Author the UFLI scope-and-sequence as JSON. Numicon and morphology plan taxonomies are authored as skeletons but not wired into active matching.</p>
+  <h4>Decision 4: UFLI programme reference — what it is and why it matters</h4>
+  <p><strong>What UFLI is:</strong> UFLI Foundations is a structured phonics programme from the University of Florida Literacy Institute. It has 128 lessons in a specific scope-and-sequence — Lesson 1 starts with short 'a' CVC words, Lesson 54 introduces the VCe a_e pattern ("cake," "gate"), and so on through affixes and advanced word study by Lesson 128. Each lesson is a known, fixed point on a progression.</p>
+  <p><strong>Why it matters for Teacher's Pet:</strong> The teacher's collection contains 24 UFLI-aligned resources (worksheets, word-work mats, decodable passages, games). Many are already filename-tagged with lesson numbers (e.g. "UFLI 54-62 Word Work - Korotney.pdf"). If we author the UFLI scope-and-sequence as a JSON taxonomy — 128 entries, each with lesson number, focus description, and which sounds are in play — the system can:</p>
+  <ul>
+    <li>Respond to the query <em>"I need resources for UFLI Lesson 54"</em> by matching <code>programme_ref="UFLI/L54"</code> in the catalogue</li>
+    <li>Know that Lesson 54 = VCe a_e pattern and cross-reference it to the Language Curriculum outcome TF4 (Phonics/word recognition) at Stage 2</li>
+    <li>Prevent generated lesson plans from accidentally using sounds from later, untaught lessons (a real risk with LLM generation)</li>
+    <li>Suggest adjacent-lesson resources as fallbacks: <em>"No resources for Lesson 54, but you have 3 resources for Lessons 53 and 55 that target similar patterns"</em></li>
+  </ul>
+  <p>This is a separate reference layer from curriculum outcomes. A resource can be tagged to both: <code>outcome_code=TF4,C2</code> AND <code>programme_ref=UFLI/L54</code>. The teacher can search by either.</p>
+  <p class="decision-made">→ Decision: Author the full UFLI Foundations scope-and-sequence (128 lessons) as a JSON taxonomy. Map the 24 UFLI-aligned resources by lesson number. Numicon and morphology plan taxonomies stay as JSON skeletons — not wired into active demo matching.</p>
 </div>
 
 <div class="card">
-  <h4>Decision 5: App-only Graph auth for the demo; name delegated auth as production fix</h4>
+  <h4>Decision 5: Gap filling — search first, generate as fallback</h4>
+  <p>The original design had Maker generating lesson plans for every curriculum gap. A better model respects teacher agency: the system should first try to <em>find</em> existing content (from trusted public sources), suggest it to the teacher for review, and only generate new content as a fallback when nothing is found.</p>
+  <p><strong>Revised gap-flow:</strong></p>
+  <ol>
+    <li><strong>Catalogue match:</strong> Query the Excel catalogue for resources matching the outcome. These go straight into the bundle.</li>
+    <li><strong>Gap identified:</strong> An outcome has zero or low-confidence matches.</li>
+    <li><strong>Search for existing content:</strong> The Researcher agent queries curriculumonline.ie (one strand, one stage — narrow scope per Section 11) for public NCCA resources matching the gap. Returns titles, descriptions, and URLs.</li>
+    <li><strong>Teacher reviews:</strong> Results shown as <em>"Found 3 public resources for this gap. Review and add to catalogue?"</em> Teacher clicks to add → new row written to Excel → resource added to bundle. Teacher can also reject ("not what I need").</li>
+    <li><strong>Generate as fallback:</strong> If teacher rejects the suggested resources, or if nothing was found, the Maker agent generates a lesson plan (text-only markdown). This is the safety net, not the first resort.</li>
+  </ol>
+  <p>This design is stronger than the original for three reasons: (a) it keeps the teacher in control of what enters their catalogue, (b) discovered content is NCCA-vetted so quality is higher than AI generation, (c) the search-first-then-generate flow is a more interesting agent orchestration to demonstrate — it involves conditional branching (Researcher → if found, Communicator presents; if not, Maker generates) rather than a linear pipeline.</p>
+  <p class="decision-made">→ Decision: Gap resolution is search-first, generate-as-fallback. Bundle contains: matched catalogue resources + teacher-approved discovered resources + generated lesson plan (only if gaps remain after discovery). Teacher reviews all additions before they enter the catalogue.</p>
+</div>
+
+<div class="card">
+  <h4>Decision 6: App-only Graph auth for the demo; name delegated auth as production fix</h4>
   <p>The demo needs zero friction to feel magical. A login popup kills the illusion. The Limitations section explains exactly what changes for production (MSAL.js, delegated permissions, content isolation) and why it matters (GDPR Art 5 data minimisation, Art 32 security). The lecturer sees you know the right answer even if you're not building it.</p>
   <p class="decision-made">→ Decision: Ship the demo with app-only Graph auth in the Worker. No user login. Document delegated auth as the production path in Limitations.</p>
 </div>
 
 <div class="card">
-  <h4>Decision 6: Representative sample for deep parsing; confidence column for honesty</h4>
-  <p>Parse ~100–200 text-rich files + ~20–30 image-heavy files. Tag the rest from folder structure. The <code>confidence</code> column in the catalogue tells the truth: 0.9 = deep-parsed, 0.5 = folder-inferred. This is trust calibration applied to your own system (Week 2 — Lee &amp; See, 2004).</p>
-  <p class="decision-made">→ Decision: Deep-parse ~150 files targeting the Language + UFLI subset. Vision-parse ~25 image-heavy files. All other resources: folder-tagged with confidence=0.5. Full parse is the production run.</p>
-</div>
-
-<div class="card">
-  <h4>Decision 7: No Gaeilge — exclusion as domain awareness</h4>
-  <p>Irish-language LLM generation is unreliable. Naming this as a deliberate exclusion with the specific reasoning (grammatical errors, dialect mismatch, unnatural phrasing) demonstrates you understand AI limitations, not that you forgot about Gaeilge. The ~119 Gaeilge resources are tagged as subject=Gaeilge from folder name and left out of scope.</p>
-  <p class="decision-made">→ Decision: Exclude Gaeilge from generation, outcome mapping, and deep parsing. Tag from folder only. Name the reasoning explicitly in the writeup.</p>
+  <h4>Decision 7: Parse all, not a sample</h4>
+  <p>Covered by Decision 1 above. No separate sample-based approach.</p>
+  <p class="decision-made">→ Decision: See Decision 1.</p>
 </div>
 
 <h3>The model behind Teacher's Pet</h3>
