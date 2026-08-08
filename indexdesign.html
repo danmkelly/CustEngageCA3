@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CA3 — Catalogue Index Design Journey</title>
+<style>
+  :root {
+    --bg: #fafaf9;
+    --card: #ffffff;
+    --text: #1c1917;
+    --muted: #78716c;
+    --accent: #2563eb;
+    --accent-light: #eff6ff;
+    --border: #e7e5e4;
+    --green: #16a34a;
+    --red: #dc2626;
+    --amber: #d97706;
+    --purple: #7c3aed;
+    --code-bg: #1e293b;
+    --code-text: #e2e8f0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 6rem;
+  }
+  h1 { font-size: 2rem; margin-bottom: 0.25rem; letter-spacing: -0.02em; }
+  h2 { font-size: 1.35rem; margin: 2.5rem 0 0.75rem; padding-top: 1rem; border-top: 1px solid var(--border); letter-spacing: -0.01em; }
+  h3 { font-size: 1.05rem; margin: 1.5rem 0 0.5rem; color: var(--accent); }
+  p { margin-bottom: 1rem; }
+  .meta { color: var(--muted); font-size: 0.9rem; margin-bottom: 2rem; }
+  .repo { display: inline-block; background: var(--accent-light); color: var(--accent); padding: 0.15rem 0.6rem; border-radius: 4px; font-family: monospace; font-size: 0.85rem; text-decoration: none; }
+  .repo:hover { text-decoration: underline; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.25rem;
+  }
+  .card h4 { font-size: 0.95rem; margin-bottom: 0.5rem; }
+  .card ul { padding-left: 1.25rem; }
+  .card li { margin-bottom: 0.35rem; font-size: 0.92rem; }
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0 1.5rem; font-size: 0.9rem; }
+  th, td { padding: 0.6rem 0.75rem; text-align: left; border-bottom: 1px solid var(--border); }
+  th { background: var(--accent-light); font-weight: 600; color: var(--accent); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  tr:last-child td { border-bottom: none; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .tag { display: inline-block; padding: 0.1rem 0.5rem; border-radius: 3px; font-size: 0.75rem; font-weight: 600; margin-right: 0.25rem; }
+  .tag-green { background: #dcfce7; color: #166534; }
+  .tag-amber { background: #fef3c7; color: #92400e; }
+  .tag-red { background: #fee2e2; color: #991b1b; }
+  .tag-purple { background: #f3e8ff; color: #6b21a8; }
+  .tag-blue { background: #dbeafe; color: #1e40af; }
+  pre {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 1rem 1.25rem;
+    border-radius: 6px;
+    overflow-x: auto;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    margin: 1rem 0 1.5rem;
+  }
+  .ascii { font-size: 0.75rem; line-height: 1.4; }
+  blockquote {
+    border-left: 3px solid var(--accent);
+    padding: 0.5rem 0 0.5rem 1rem;
+    margin: 1rem 0;
+    color: var(--muted);
+    font-style: italic;
+  }
+  .highlight { background: linear-gradient(180deg, transparent 60%, #fef08a 60%); }
+  .section-nav { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 1.5rem 0; }
+  .section-nav a { font-size: 0.8rem; color: var(--accent); text-decoration: none; padding: 0.2rem 0.5rem; border: 1px solid var(--border); border-radius: 4px; }
+  .section-nav a:hover { background: var(--accent-light); }
+  hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+  .phase-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.25rem; }
+  .big-num { font-size: 2.5rem; font-weight: 800; line-height: 1; letter-spacing: -0.03em; }
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin: 1rem 0 1.5rem; }
+  .stat { text-align: center; padding: 1rem; background: var(--accent-light); border-radius: 8px; }
+  .stat .val { font-size: 1.5rem; font-weight: 700; color: var(--accent); }
+  .stat .lbl { font-size: 0.75rem; color: var(--muted); margin-top: 0.25rem; }
+  .options-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 1rem; margin: 1rem 0 1.5rem; }
+  @media (max-width: 500px) {
+    body { padding: 1rem; }
+    .options-grid { grid-template-columns: 1fr; }
+    table { font-size: 0.78rem; }
+    th, td { padding: 0.4rem 0.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<h1>CA3 — Agentic Organisation<br>Catalogue Index Design</h1>
+<p class="meta">
+  <a class="repo" href="https://github.com/danmkelly/CustEngageCA3">github.com/danmkelly/CustEngageCA3</a><br>
+  Daniel Kelly — PGDip/MSc AI for Business, NCI<br>
+  Compiled from an exploration with OpenCode AI, August 2026
+</p>
+
+<div class="section-nav">
+  <a href="#context">Context</a>
+  <a href="#collection">The Collection</a>
+  <a href="#phase1">Phase 1: Folder-Level</a>
+  <a href="#phase2">Phase 2: Content-Level</a>
+  <a href="#phase3">Phase 3: Quantifying</a>
+  <a href="#phase4">Phase 4: Image PDFs</a>
+  <a href="#options">Four Options</a>
+  <a href="#hybrid">Recommended Hybrid</a>
+  <a href="#decisions">Open Decisions</a>
+</div>
+
+
+<!-- ============================================================ -->
+<h2 id="context">1. Project Context</h2>
+
+<p>The CA3 Final Project (Customer Engagement &amp; Artificial Intelligence, H9CEAI) requires building an <strong>Agentic Organisation</strong> — a five-agent pipeline (Researcher, Designer, Maker, Communicator, Manager) that collaboratively solves a real customer-engagement problem. The chosen domain: <strong>Irish primary teachers overwhelmed by curriculum-aligned resource discovery</strong>.</p>
+
+<p>The solution must demonstrate:</p>
+<ul>
+  <li>An unbroken handoff chain where each agent's output becomes the next agent's real input (25% of grade)</li>
+  <li>At least one agent connecting to a live external data source via MCP/API at run time</li>
+  <li>A catalogue taxonomy capable of multi-dimensional tagging across subject, grade, format, season, pedagogy, and source</li>
+</ul>
+
+<p>The initial content corpus is a teacher's manually curated <strong>Teaching Resources</strong> folder — ~4,850 files built up over years of classroom practice. This document captures the exploration from naive folder-based categorisation through to a costed, benchmarked plan for full-content indexing.</p>
+
+
+<!-- ============================================================ -->
+<h2 id="collection">2. The Teaching Resources Collection</h2>
+
+<div class="stat-grid">
+  <div class="stat"><div class="val">4,398</div><div class="lbl">Files (excl. archives)</div></div>
+  <div class="stat"><div class="val">41.6 GB</div><div class="lbl">Total size</div></div>
+  <div class="stat"><div class="val">70+</div><div class="lbl">Top-level folders</div></div>
+  <div class="stat"><div class="val">3,321</div><div class="lbl">PDF files</div></div>
+  <div class="stat"><div class="val">670</div><div class="lbl">Images (JPG/PNG)</div></div>
+  <div class="stat"><div class="val">119</div><div class="lbl">ZIP bundles</div></div>
+</div>
+
+<table>
+  <tr><th>File type</th><th class="num">Count</th><th>Parseable?</th><th>Notes</th></tr>
+  <tr><td>PDF</td><td class="num">3,321</td><td><span class="tag tag-green">Yes</span></td><td>Text extraction via pdfplumber; 30% image-heavy</td></tr>
+  <tr><td>JPG / PNG</td><td class="num">670</td><td><span class="tag tag-red">No</span></td><td>Screenshots of craft ideas/inspiration — no text layer</td></tr>
+  <tr><td>PPTX</td><td class="num">135</td><td><span class="tag tag-green">Yes</span></td><td>python-pptx, near-instant extraction</td></tr>
+  <tr><td>ZIP</td><td class="num">119</td><td><span class="tag tag-amber">Nested</span></td><td>Must extract and recurse; est. ~15 files per archive</td></tr>
+  <tr><td>DOCX</td><td class="num">58</td><td><span class="tag tag-green">Yes</span></td><td>python-docx</td></tr>
+  <tr><td>MP4</td><td class="num">27</td><td><span class="tag tag-red">No</span></td><td>2.75 GB of PD webinar recordings</td></tr>
+  <tr><td>TXT / MD / HTML</td><td class="num">41</td><td><span class="tag tag-green">Yes</span></td><td>Instant</td></tr>
+  <tr><td>Other (PPT, DOC, MHT, etc.)</td><td class="num">27</td><td><span class="tag tag-amber">Partial</span></td><td>Legacy formats, mostly unparseable</td></tr>
+</table>
+
+<p><strong>Key finding:</strong> The folder structure itself is the teacher's implicit taxonomy. Folders like <code>phonics/digraphs</code>, <code>maths/fractions</code>, <code>SEL/empathy</code>, and <code>xmas/Maths</code> already encode subject, sub-domain, and seasonal dimensions. The question is: how much additional signal does deep content analysis add?</p>
+
+
+<!-- ============================================================ -->
+<h2 id="phase1">3. Phase 1 — Naive Folder-Level Categorisation</h2>
+
+<div class="phase-label">Where we started</div>
+
+<p>The first pass treated the folder structure <em>as</em> the taxonomy. Each folder was mapped to a category, sub-categories inherited from subdirectories. This produced the initial <a href="https://github.com/danmkelly/CustEngageCA3/blob/main/CATALOGUE.md">CATALOGUE.md</a> — 20 top-level categories covering Literacy (~1,800 files), Mathematics (~545), SESE (~95), Gaeilge (~119), SEL (~338), and so on.</p>
+
+<div class="card">
+  <h4>What folder-level gave us</h4>
+  <ul>
+    <li>Instant scan — 30 seconds for 4,398 files</li>
+    <li>3–4 reliable tags per file (subject, sub-domain, season from folder path)</li>
+    <li>Clean top-level structure matching Irish primary curriculum areas</li>
+    <li>Multi-category detection where folders cross-cut (e.g. <code>xmas/Maths/</code>)</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h4>What folder-level missed</h4>
+  <ul>
+    <li><strong>Duplicate detection:</strong> <code>Free Fall Bundle (4).pdf</code> and <code>Free Fall Bundle (4) 1.pdf</code> are identical content — invisible from names alone</li>
+    <li><strong>Content type:</strong> Is it a lesson plan, a worksheet, a game, or a poster? The folder says "maths" but not "write-the-room counting centre"</li>
+    <li><strong>Grade band:</strong> Most folders mix infants through 6th class with no signal in the path</li>
+    <li><strong>Pedagogy:</strong> SOR-aligned? Play-based? Differentiated? Invisible</li>
+    <li><strong>Source &amp; licensing:</strong> Teachers Pay Teachers single-classroom licenses — critical for the regulatory/ethics section</li>
+    <li><strong>UUID filenames:</strong> 3.5% of PDFs have names like <code>941dbfe6-b2bb-4ebe-bc7c-2fde69145b77.pdf</code> — zero signal</li>
+  </ul>
+</div>
+
+<p>A folder-level approach tags ~30% of the useful dimensions for a teacher query like <em>"morphology games for seniors around Christmas"</em>. It gets <em>morphology</em> (folder) and <em>Christmas</em> (folder), but misses <em>game</em> (content type), <em>seniors</em> (grade band), and whether it's SOR-aligned (pedagogy).</p>
+
+
+<!-- ============================================================ -->
+<h2 id="phase2">4. Phase 2 — Content-Level Experiment</h2>
+
+<div class="phase-label">Testing whether reading files matters</div>
+
+<p>We took one sample folder — <code>fall resources literacy numeracy</code> (3 PDFs) — and extracted their actual text with <code>pdfplumber</code>.</p>
+
+<h3>What content extraction revealed that folder names didn't</h3>
+
+<table>
+  <tr><th>File</th><th>Folder tags</th><th>Content-level tags added</th></tr>
+  <tr>
+    <td><code>Free Fall Bundle (4).pdf</code></td>
+    <td><span class="tag tag-blue">Season/Fall</span> <span class="tag tag-purple">Literacy</span> <span class="tag tag-purple">Maths</span></td>
+    <td>
+      <span class="tag tag-green">Duplicate detected</span>
+      <span class="tag tag-green">Grade/PreK-K</span>
+      <span class="tag tag-green">Format/Write-the-Room</span>
+      <span class="tag tag-green">Format/Sensory-Bin</span>
+      <span class="tag tag-green">Sub-domain/Counting</span>
+      <span class="tag tag-green">Sub-domain/Subitizing</span>
+      <span class="tag tag-amber">Source/TPT</span>
+      <span class="tag tag-amber">License/Single-Classroom</span>
+      <span class="tag tag-amber">20-author collaboration</span>
+    </td>
+  </tr>
+  <tr>
+    <td><code>Just Add Words Fall .pdf</code></td>
+    <td><span class="tag tag-blue">Season/Fall</span></td>
+    <td>
+      <span class="tag tag-green">Sub-domain/Writing</span>
+      <span class="tag tag-green">Format/Picture Prompts</span>
+      <span class="tag tag-green">Pedagogy/Independent-Work</span>
+      <span class="tag tag-green">Pedagogy/Differentiation</span>
+      <span class="tag tag-green">Grade/K-2</span>
+      <span class="tag tag-amber">Source/TPT</span>
+      <span class="tag tag-amber">Author/TeachingInBlueJeans</span>
+    </td>
+  </tr>
+</table>
+
+<p><strong>3 tags from folder → 6–8 tags from content.</strong> Content extraction tripled the tagging surface. But the experiment also surfaced the hard ceiling: 9 of 14 pages in <code>Just Add Words Fall</code> yielded <em>zero</em> extractable text — they were purely image-based writing prompt sheets. The instructional value lived in pictures, not words.</p>
+
+<blockquote>Takeaway: folder-level captures ~30% of the tagging surface. Content extraction triples it — but with a hard ceiling where image-heavy worksheets dominate.</blockquote>
+
+
+<!-- ============================================================ -->
+<h2 id="phase3">5. Phase 3 — Quantifying the Two Approaches</h2>
+
+<div class="phase-label">Full deep parse vs. optimised hybrid</div>
+
+<p>We benchmarked <code>pdfplumber</code> on a 50-PDF random sample to get real timing data, then extrapolated to the full collection.</p>
+
+<h3>Benchmark results (50 PDF sample)</h3>
+
+<div class="stat-grid">
+  <div class="stat"><div class="val">25</div><div class="lbl">Avg pages per PDF</div></div>
+  <div class="stat"><div class="val">1.43s</div><div class="lbl">Parse time per PDF</div></div>
+  <div class="stat"><div class="val">4,652</div><div class="lbl">Avg chars extracted</div></div>
+  <div class="stat"><div class="val">30%</div><div class="lbl">Image-heavy (&lt;500 chars)</div></div>
+  <div class="stat"><div class="val">48%</div><div class="lbl">Text-rich (&gt;2,000 chars)</div></div>
+  <div class="stat"><div class="val">3.5%</div><div class="lbl">UUID filenames</div></div>
+</div>
+
+<h3>Approach comparison</h3>
+
+<table>
+  <tr><th></th><th>Full Deep Parse</th><th>Optimised Hybrid</th></tr>
+  <tr><td><strong>Files parsed</strong></td><td class="num">~5,340 (all parseable)</td><td class="num">~370–520 (gaps only)</td></tr>
+  <tr><td><strong>Processing time</strong></td><td class="num">~90 minutes</td><td class="num">~10–15 minutes</td></tr>
+  <tr><td><strong>Tags per file (avg)</strong></td><td class="num">6–8</td><td class="num">3–5</td></tr>
+  <tr><td><strong>Duplicate detection</strong></td><td>Automatic</td><td>Missed (unless filename match)</td></tr>
+  <tr><td><strong>Source/license detection</strong></td><td>Captured</td><td>Missed</td></tr>
+  <tr><td><strong>Image-only page handling</strong></td><td>Empty — fails silently</td><td>Same limitation</td></tr>
+  <tr><td><strong>DeepSeek API cost</strong></td><td class="num">~$3.10</td><td class="num">~$0.29</td></tr>
+  <tr><td><strong>+ Vision for image-heavy</strong></td><td class="num">+ ~$1.75</td><td class="num">+ ~$0.26</td></tr>
+  <tr><td><strong>Total API cost</strong></td><td class="num"><strong>~$4.85</strong></td><td class="num"><strong>~$0.55</strong></td></tr>
+</table>
+
+<p>The API cost is trivially cheap either way. The real cost is engineering time to build the pipeline, and the quality gap is driven by the image-heavy-PDF problem — not by parse depth.</p>
+
+
+<!-- ============================================================ -->
+<h2 id="phase4">6. Phase 4 — The Image-Heavy PDF Problem</h2>
+
+<div class="phase-label">The real bottleneck</div>
+
+<p><strong>30% of PDFs (996 files) yield fewer than 500 characters of extractable text.</strong> These are predominantly:</p>
+<ul>
+  <li>Scanned/photographed worksheets where the instructional content is in the picture</li>
+  <li>Craft templates (cut-and-paste, colour-by-number, tracing sheets)</li>
+  <li>Classroom posters and display materials</li>
+  <li>Activity cards and game boards where structure is visual</li>
+</ul>
+
+<p>Standard <code>pdfplumber</code> text extraction gets almost nothing from them because there <em>is</em> no embedded text layer. The value a teacher would search for — "CVC word sort with pumpkin theme for infants" — is visually obvious to a human but invisible to a text parser.</p>
+
+<div class="card">
+  <h4>Case study: Just Add Words Fall (14 pages)</h4>
+  <ul>
+    <li>Pages 1–4: Introduction, terms, author bio — <strong>1,200 chars of extractable text</strong></li>
+    <li>Pages 5–14: The actual picture writing prompts — <strong>0 chars</strong> (just a copyright footer)</li>
+    <li>All the instructional value is in the images: a scarecrow scene, a pumpkin patch, autumn leaves</li>
+    <li>A text-only parser learns it's "about fall writing" but completely misses that it's 10 distinct scene-based prompts</li>
+  </ul>
+</div>
+
+
+<!-- ============================================================ -->
+<h2 id="options">7. Four Options for Solving Image Extraction</h2>
+
+<div class="options-grid">
+
+  <div class="card">
+    <h4>Option 1: Tesseract OCR <span class="tag tag-green">Free</span></h4>
+    <p><code>pdf2image</code> + <code>pytesseract</code> — run OCR on every page, feed extracted text to DeepSeek for tagging.</p>
+    <table>
+      <tr><td>Accuracy</td><td>85–92% on clean print; poor on handwriting, decorative fonts, cluttered layouts</td></tr>
+      <tr><td>Speed</td><td>2–3s per page → 50–75s per 25-page PDF</td></tr>
+      <tr><td>996 PDFs</td><td>~14–21 hours local processing</td></tr>
+      <tr><td>Cost</td><td><strong>Free</strong></td></tr>
+      <tr><td>Best for</td><td>Clean worksheets, typed instructions</td></tr>
+      <tr><td>Worst for</td><td>Handwritten annotations, clip-art-heavy craft templates</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h4>Option 2: Cloud OCR <span class="tag tag-amber">~$37</span></h4>
+    <p>Azure Document Intelligence / Google Document AI / AWS Textract. Returns structured JSON with text, tables, and layout analysis.</p>
+    <table>
+      <tr><td>Accuracy</td><td>95%+ on printed text; handles tables, multi-column</td></tr>
+      <tr><td>Speed</td><td>~1s per page (async batch)</td></tr>
+      <tr><td>996 PDFs</td><td>~7 hours (async, wall-clock much faster)</td></tr>
+      <tr><td>Cost</td><td><strong>~$37</strong> (@ $1.50/1,000 pages)</td></tr>
+      <tr><td>Best for</td><td>Mixed content, tables, multi-column worksheets</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h4>Option 3: Marker (open-source) <span class="tag tag-green">Free</span></h4>
+    <p>PDF-to-markdown converter with built-in OCR. Preserves layout, handles equations and mixed content better than raw Tesseract.</p>
+    <table>
+      <tr><td>Accuracy</td><td>Strong layout preservation; better on mixed text/image</td></tr>
+      <tr><td>Speed</td><td>GPU: 2s/page; CPU: 20s/page</td></tr>
+      <tr><td>996 PDFs</td><td>GPU: ~14 hours; CPU: ~140 hours</td></tr>
+      <tr><td>Cost</td><td><strong>Free</strong> (GPU recommended)</td></tr>
+      <tr><td>Setup</td><td><code>pip install marker-pdf</code>; ~2GB model download</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h4>Option 4: Vision LLM <span class="tag tag-purple">$2–125</span></h4>
+    <p>Send page images directly to a multimodal model. Bypasses OCR entirely — the model <em>sees</em> the worksheet and describes it directly.</p>
+    <table>
+      <tr><th>Model</th><th>Cost per image</th><th>996 PDFs (25 pages each)</th></tr>
+      <tr><td>Gemini 1.5 Flash</td><td>$0.0001–0.0005</td><td><strong>~$2.50–12.50</strong></td></tr>
+      <tr><td>GPT-4o</td><td>$0.002–0.005</td><td>~$50–125</td></tr>
+      <tr><td>Claude 3.5 Sonnet</td><td>$0.003–0.006</td><td>~$75–150</td></tr>
+    </table>
+    <p style="margin-top:0.5rem;"><strong>Unique advantage:</strong> The model can infer pedagogical intent directly from the image — "cut-and-paste CVC word sort, K-1st, independent centre activity, SOR-aligned" — without any intermediate text extraction step. This is the only approach that captures what a worksheet <em>does</em>, not just what it <em>says</em>.</p>
+    <p><strong>Best for:</strong> Activity type identification, grade-level inference, pedagogical intent.<br>
+    <strong>Worst for:</strong> Structured metadata extraction (author, source, license terms — though these are usually on text-heavy intro pages).</p>
+  </div>
+
+</div>
+
+
+<!-- ============================================================ -->
+<h2 id="hybrid">8. Recommended Hybrid Architecture</h2>
+
+<div class="phase-label">How to put it together</div>
+
+<pre class="ascii">
+                    ┌──────────────────────────────────────────────┐
+                    │           ALL PDFs (3,321)                   │
+                    └──────────────────┬───────────────────────────┘
+                                       │
+                              Fast text-extraction pass
+                              (pdfplumber, ~90 min)
+                                       │
+                    ┌──────────────────┴───────────────────────────┐
+                    │                                              │
+              Text-rich (70%)                            Image-heavy (30%)
+              ≥500 chars                                 <500 chars
+                    │                                              │
+        ┌───────────┴───────────┐                    ┌─────────────┴─────────────┐
+        │                       │                    │                           │
+   DeepSeek classify     Folder tags           Gemini Flash             Tesseract/Marker
+   (~6-8 tags/file)      supplement            vision → tags            OCR → DeepSeek
+   ~$3.10                (free)                ~$2.50–12.50             (free)
+                                              (direct pedagogical      (~14-140 hrs CPU)
+                                               inference from image)
+                    │                                              │
+                    └──────────────────┬───────────────────────────┘
+                                       │
+                              Unified tag store
+                              (JSON/SQLite/Google Sheet)
+                                       │
+                              Queryable catalogue
+                              with multi-dimension tags
+</pre>
+
+<p>The <strong>Gemini Flash vision path</strong> (Option 4) is the most compelling for image-heavy PDFs because:</p>
+<ol>
+  <li>At $2.50–12.50 for all 996 PDFs, it's in the same cost ballpark as cloud OCR ($37) but with orders of magnitude less engineering (no OCR pipeline to build or tune)</li>
+  <li>It captures <em>pedagogical intent</em> — "this is a write-the-room counting centre for PreK-K" — that OCR text alone cannot express</li>
+  <li>It handles the worst case (craft templates with zero words) gracefully — the model can still describe the activity from the visual layout</li>
+  <li>Prompt engineering: send the image with "Describe this teaching resource. Output JSON with: subject, subdomain, grade_band, format, activity_type, season, pedagogy_flags, requires_preparation"</li>
+</ol>
+
+<p>For the 70% text-rich PDFs, DeepSeek classification on extracted text is perfectly adequate and trivially cheap ($3.10). The prompt would similarly request structured JSON output from the extracted text content.</p>
+
+
+<!-- ============================================================ -->
+<h2 id="decisions">9. Open Design Decisions</h2>
+
+<div class="card">
+  <h4>Decision 1: Parse depth — full or optimised?</h4>
+  <p>At $4.85 vs $0.55 total API cost, money isn't the deciding factor. The question is: <strong>does the engineering effort to build the full pipeline (ZIP extraction, nested recursion, error handling for 5,000+ files) justify the 3–5 extra tags per file?</strong> For the CA3 deliverable — where the rubric values demonstrated handoffs and live data over catalogue completeness — the optimised approach (folder-pass + deep-parse only gaps) is likely the right tradeoff. The full deep parse can be named as "production path" in the future-work section.</p>
+</div>
+
+<div class="card">
+  <h4>Decision 2: Vision model for image-heavy PDFs?</h4>
+  <p>Gemini Flash at $2.50–12.50 is almost free. The question is whether the CA3 rubric rewards this level of catalogue sophistication, or whether demonstrating the <em>architecture</em> (the pipeline design, the handoff, the live data connection) carries more weight than an exhaustively tagged catalogue. If the rubric favours architecture, build the pipeline to handle image-heavy PDFs but only run it on a representative sample (50–100 files) for the demo.</p>
+</div>
+
+<div class="card">
+  <h4>Decision 3: Tag taxonomy — how many dimensions?</h4>
+  <table>
+    <tr><th>Dimension</th><th>Example values</th><th>Source</th></tr>
+    <tr><td>Subject</td><td>Literacy, Maths, SESE, Gaeilge, SPHE, Arts, PE</td><td>Folder name</td></tr>
+    <tr><td>Sub-domain</td><td>Phonics, Morphology, Fractions, Map Skills</td><td>Folder + content</td></tr>
+    <tr><td>Grade band</td><td>Infants, 1st–2nd, 3rd–4th, 5th–6th, SEN, Multi-grade</td><td>Content only</td></tr>
+    <tr><td>Format</td><td>Worksheet, Game, Lesson Plan, Poster, Assessment, Flash Cards, Write-the-Room, Sensory Bin</td><td>Content only</td></tr>
+    <tr><td>Season/Event</td><td>Christmas, Halloween, Easter, Back-to-School, Generic</td><td>Folder name</td></tr>
+    <tr><td>Pedagogy</td><td>SOR-aligned, Play-based, Differentiated, Independent Work, Whole-class, Pair Work</td><td>Content only</td></tr>
+    <tr><td>Source</td><td>TPT, Twinkl, Self-made, PDST, NCCA, Unknown</td><td>Content only</td></tr>
+    <tr><td>License</td><td>Single-classroom, Open/free, School-wide, Unknown</td><td>Content only</td></tr>
+  </table>
+  <p>The first four rows are what a teacher query needs. The last three are what the <strong>regulatory/ethics section</strong> (EU AI Act, GDPR, IP rights) of the CA3 writeup needs. Both are required.</p>
+</div>
+
+<div class="card">
+  <h4>Decision 4: Live data connection — the catalogue as the mandatory API call</h4>
+  <p>The project brief requires at least one agent must connect to a live external data source via MCP/API at run time. The catalogue itself (a Google Sheet or lightweight database that agents write to and read from) is the natural candidate — it satisfies the technical gate <em>and</em> the narrative (agents don't work from cached data, they query the live catalogue at run time). This avoids bolting on an artificial API call unrelated to the core problem.</p>
+</div>
+
+
+<!-- ============================================================ -->
+<h2 id="summary">10. Summary of the Journey</h2>
+
+<table>
+  <tr><th>Phase</th><th>What we learned</th><th>Key metric</th></tr>
+  <tr>
+    <td>Folder-level categorisation</td>
+    <td>The teacher's own folder structure is a strong but incomplete taxonomy</td>
+    <td>3–4 tags/file, 30s total</td>
+  </tr>
+  <tr>
+    <td>Content-level experiment</td>
+    <td>Reading files triples tag depth; image-heavy worksheets hit a hard ceiling</td>
+    <td>6–8 tags/file, 1.43s/file</td>
+  </tr>
+  <tr>
+    <td>Quantification</td>
+    <td>Full deep parse is trivially cheap ($4.85); the bottleneck is image extraction, not text</td>
+    <td>90 min processing, ~$5 API</td>
+  </tr>
+  <tr>
+    <td>Image problem</td>
+    <td>30% of PDFs are image-heavy. OCR is slow; vision LLMs are fast, cheap, and capture pedagogy</td>
+    <td>Gemini Flash: $2.50–12.50 for all 996</td>
+  </tr>
+  <tr>
+    <td>Recommended hybrid</td>
+    <td>Text → DeepSeek for 70%; images → Gemini Flash vision for 30%</td>
+    <td>~$6–16 total, ~100 min processing</td>
+  </tr>
+</table>
+
+<p>The exploration moved from <em>"can we just use folder names?"</em> (yes, mostly) to <em>"what does reading the files add?"</em> (a lot, but with a hard ceiling) to <em>"how do we break through that ceiling?"</em> (vision LLMs). The right answer for a CA3 project is the optimised hybrid: demonstrate the pipeline architecture, deep-parse a representative sample, and name the full production path as future work. This shows the lecturer you understand both the engineering <em>and</em> the strategic tradeoffs.</p>
+
+
+<hr>
+<p style="font-size:0.8rem; color: var(--muted);">
+  Design document for <a href="https://github.com/danmkelly/CustEngageCA3" style="color:var(--accent);">github.com/danmkelly/CustEngageCA3</a> — CA3 Final Project, H9CEAI Customer Engagement &amp; AI, NCI PGDip/MSc AI for Business.
+</p>
+
+</body>
+</html>
