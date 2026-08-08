@@ -119,6 +119,7 @@
   <a href="#gapfilling">Gap Filling</a>
   <a href="#architecture">Architecture</a>
   <a href="#msft-ecosystem">MS Ecosystem</a>
+  <a href="#ux">UX Design</a>
 </div>
 
 
@@ -1196,7 +1197,219 @@ TEACHER gets UFLI54-2ndClass.zip — every file, ready to use.
 </table>
 
 <!-- ============================================================ -->
-<h2 id="summary">14. Summary of the Journey</h2>
+<h2 id="ux">14. UX Design — Three Entry Points, One Results Surface</h2>
+
+<div class="phase-label">Not every teacher query is a curriculum outcome lookup</div>
+
+<p>A teacher might arrive with a clear curriculum target (<em>"I'm teaching UFLI Lesson 54 next Tuesday"</em>), a vague content memory (<em>"there was that worksheet with blue balloons, phonics I think"</em>), or no specific need at all (<em>"what do I have for infants maths?"</em>). The system must handle all three without forcing curriculum mapping on every interaction. It must also let the teacher disagree with a match, alter constraints, or augment results — refinement is a first-class interaction, not an apology screen.</p>
+
+<h3>Three entry points, one destination</h3>
+
+<div class="stat-grid">
+  <div class="stat"><div class="val">1</div><div class="lbl">Guided<br>Curriculum search</div></div>
+  <div class="stat"><div class="val">2</div><div class="lbl">Free-text<br>Content search</div></div>
+  <div class="stat"><div class="val">3</div><div class="lbl">Browse<br>&amp; Explore</div></div>
+</div>
+
+<p>All three converge on the same <strong>results + refinement panel</strong>. The bundle action is always available but always explicit — the system never assumes the teacher wants a download just because they searched.</p>
+
+<div class="card">
+  <h4>Entry Point 1 — "I know my outcome"</h4>
+  <p><strong>Mode:</strong> Curriculum-directed. Structured, guided, predictable.</p>
+  <p><strong>UX:</strong> Progressive disclosure dropdowns — Subject → Strand → Stage → Outcome — with a trailing free-text field for any additional constraints (<em>"needs to work for a mixed 1st/2nd class with two EAL learners"</em>). The dropdowns are populated from the reference taxonomy JSON. As each level is selected, the next narrows to valid options.</p>
+  <p><strong>Backend behaviour:</strong> Researcher queries the Excel catalogue by <code>outcome_code</code> and <code>stage</code>. If the teacher added free-text constraints, those are layered as additional filters on the result set (format, pedagogy, grade-range). Gap detection runs against the selected outcome. Maker generates lesson plans for gaps. Bundle is offered but not pushed.</p>
+  <p><strong>Example query:</strong> Language → Reading → Stage 2 → TF5 (Phonics, word recognition, word study) → <em>"preferably a game, not a worksheet"</em></p>
+</div>
+
+<div class="card">
+  <h4>Entry Point 2 — "I remember a resource"</h4>
+  <p><strong>Mode:</strong> Content-directed. Free-text, fuzzy, description-based.</p>
+  <p><strong>UX:</strong> A single prominent search box with placeholder text: <em>"Describe the resource you're looking for — any detail helps."</em> No dropdowns, no taxonomy. The teacher types what they remember: colour, theme, activity type, a stray keyword from the filename, anything.</p>
+  <p><strong>Backend behaviour:</strong> The query is sent to the Worker, which runs it through the Researcher agent with a different system prompt: <em>"Match this free-text description against resource metadata (filename, content description, tags). Do not infer curriculum outcomes unless the user explicitly mentions them. Return matches ranked by relevance with a brief explanation of why each matched."</em> No gap detection runs. No lesson plans are generated. The system is in pure-retrieval mode.</p>
+  <p><strong>Example query:</strong> <em>"blue balloons, I think it was phonics, maybe CVC words"</em></p>
+</div>
+
+<div class="card">
+  <h4>Entry Point 3 — "Surprise me"</h4>
+  <p><strong>Mode:</strong> Exploratory browsing. Filterable catalogue tiles.</p>
+  <p><strong>UX:</strong> A visual grid of filter chips representing the primary tag dimensions: Subject, Grade band, Format, Season. Selecting a chip narrows the visible resources. Selecting multiple chips intersects them. Results appear below as cards (filename, format icon, key tags, a one-line content description). No taxonomy guidance, no free-text parsing — just direct catalogue exploration.</p>
+  <p><strong>Backend behaviour:</strong> The full Excel catalogue is loaded as JSON (cached client-side after first fetch). Filtering happens entirely in the browser — instant, no Worker calls. Clicking a resource card opens a detail panel with full metadata, the content description, and a "Find similar" action that switches to Entry Point 2 with that resource as the seed.</p>
+  <p><strong>Example session:</strong> Click "Maths" → Click "Infants" → Click "Game" → see 14 matching resources → tap one → "Find similar" → 8 more resources the system thinks are related.</p>
+</div>
+
+<h3>Convergence: the results + refinement panel</h3>
+
+<p>All three entry points render results into the same panel. The panel has two states: <strong>browsing</strong> (teacher is exploring, matching, refining) and <strong>committed</strong> (teacher has selected resources and is ready to bundle).</p>
+
+<div class="card">
+  <h4>Browsing state — refine, disagree, alter, augment</h4>
+  <table>
+    <tr><th>Interaction</th><th>How it works</th><th>System response</th></tr>
+    <tr>
+      <td><strong>Thumbs down a resource</strong></td>
+      <td>Teacher clicks &#x1F44E; on a result card</td>
+      <td>Resource is dimmed and moved to an "Excluded" section at the bottom. The system notes the exclusion reason implicitly (the resource's tags and the current query context) and may surface alternatives tagged similarly but not identically. Does <em>not</em> trigger a new Worker call — results are already in the browser.</td>
+    </tr>
+    <tr>
+      <td><strong>Thumbs up / "More like this"</strong></td>
+      <td>Teacher clicks &#x1F44D; or "Find similar" on a result card</td>
+      <td>The resource is promoted. The system re-ranks remaining results by tag similarity to the liked resource. Optionally triggers a new Worker call: <em>"Find resources similar to RES-0047 in your catalogue"</em> — the Researcher searches across content descriptions for semantic similarity, not just tag overlap.</td>
+    </tr>
+    <tr>
+      <td><strong>Add a constraint</strong></td>
+      <td>Teacher clicks a filter chip or types in the refinement bar: <em>"only worksheets"</em>, <em>"no seasonal content"</em>, <em>"infant level only"</em></td>
+      <td>Client-side filter applied to the current result set. The refinement bar accepts both structured chips (format, grade, pedagogy) and free-text (<em>"nothing that needs laminating"</em> — sent to the Worker for semantic interpretation against resource content descriptions).</td>
+    </tr>
+    <tr>
+      <td><strong>Disagree with a curriculum match</strong></td>
+      <td>Teacher clicks "Not for this outcome" on a result card in curriculum mode</td>
+      <td>The resource's <code>outcome_code</code> tag is flagged for human review in the Excel catalogue (the Manager logs the disagreement). The resource is removed from the current result set. This is a governance action — it improves the catalogue over time.</td>
+    </tr>
+    <tr>
+      <td><strong>Switch mode mid-session</strong></td>
+      <td>Teacher clicks "Search by curriculum" or "Search by content" tab at the top of the results panel</td>
+      <td>The current result set is preserved in a "Previous results" collapsible section. The new mode opens a fresh search context. This prevents losing work while allowing mode switching.</td>
+    </tr>
+    <tr>
+      <td><strong>Exclude a catalogue resource, request generation instead</strong></td>
+      <td>Teacher sees a matched resource, thinks it's not quite right, clicks "Generate something better"</td>
+      <td>The Maker agent receives the gap description <em>plus</em> the excluded resource as a reference: <em>"Generate a lesson plan for TF5, C2. Do NOT replicate the approach in RES-0047 (too worksheet-heavy). Prefer a game-based activity."</em> The generated plan appears in the results alongside catalogue resources, clearly marked as AI-generated.</td>
+    </tr>
+  </table>
+</div>
+
+<div class="card">
+  <h4>Committed state — bundle what matters</h4>
+  <p>When the teacher is satisfied with the selected resources (whether 1 or 20), the "Bundle &amp; Download" button becomes the terminal action. The button shows a count: <em>"Bundle 7 resources + 1 generated lesson plan"</em>.</p>
+  <p>Clicking it:</p>
+  <ol>
+    <li>The Communicator agent produces the summary markdown — explaining why each resource was selected, what it covers, and how they work together. This is the "written summary" the teacher asked for earlier.</li>
+    <li>If the session started in curriculum mode, gaps are noted: <em>"You have coverage for outcomes TF4-TF6 but TF7 (Comprehension) has no matching resources. A lesson plan has been generated. Consider adding comprehension activities to your catalogue."</em></li>
+    <li>The Worker fetches all selected files from OneDrive, bundles with generated content, adds the README + AI disclosure, and returns the zip.</li>
+    <li>The Manager logs the session: query, mode, resources selected, resources excluded, disagreements flagged, generated content produced. This is written to the Excel audit sheet.</li>
+  </ol>
+</div>
+
+<h3>Designing for disagreement</h3>
+
+<p>Disagreement is the most interesting interaction because it combines trust calibration (Week 2 — the teacher is calibrating their trust in the system's recommendations) with catalogue improvement (every disagreement makes the catalogue better for the next query).</p>
+
+<div class="card">
+  <h4>Three levels of disagreement, three system responses</h4>
+  <table>
+    <tr><th>Level</th><th>Teacher action</th><th>What the system learns</th></tr>
+    <tr>
+      <td><strong>Implicit</strong> — "This isn't right for me right now"</td>
+      <td>Thumbs down, excludes from bundle, moves on</td>
+      <td>Session-level signal only. The resource stays in the catalogue with its current tags. The Manager notes the exclusion in the audit log but does not alter the catalogue. This is a <em>context</em> signal, not a <em>quality</em> signal — the resource might be perfect for a different query.</td>
+    </tr>
+    <tr>
+      <td><strong>Explicit</strong> — "This is tagged wrong"</td>
+      <td>Clicks "Not for this outcome" or "Wrong grade band"</td>
+      <td>A flag is written to the Excel catalogue row (<code>review_flag=TRUE, review_reason="Teacher says not TF5,C2"</code>). The Manager surfaces flagged rows for periodic human review. This is a <em>quality</em> signal — the system's tagging was incorrect. The review cadence is defined in GOVERNANCE.md.</td>
+    </tr>
+    <tr>
+      <td><strong>Structured</strong> — "I need something different entirely"</td>
+      <td>Clicks "Generate something better" with a constraint</td>
+      <td>The Maker agent receives the original outcome + the teacher's constraint + the rejected resource as a negative example. The generated plan is tagged with <code>generation_trigger=teacher_rejection</code> so the Manager can track how often generation is requested vs. how often catalogue resources are accepted — a quality metric for the catalogue itself.</td>
+    </tr>
+  </table>
+</div>
+
+<h3>What the frontend looks like (rough wireframe)</h3>
+
+<pre class="ascii">
+┌──────────────────────────────────────────────────────────────────┐
+│  TEACHER RESOURCE FINDER                                         │
+│                                                                   │
+│  [I know my outcome]  [I remember a resource]  [Browse]           │
+│  ═══════════════════                                          │
+│                                                                   │
+│  Language ▼  Reading ▼  Stage 2 ▼  TF5 (Phonics) ▼              │
+│  Any other requirements?  [prefer games, EAL-friendly       ]    │
+│                                                    [Search →]    │
+│                                                                   │
+│  ─────────────────────────────────────────────────────────────── │
+│  Found 5 matching resources + 1 gap                               │
+│                                                                   │
+│  ┌─────────────────────────┐  ┌─────────────────────────┐       │
+│  │ 📄 CVC Word Sort         │  │ 🎮 UFLI 54 Word Work    │       │
+│  │ Phonics, 1st-2nd         │  │ Phonics, UFLI-aligned   │       │
+│  │ Worksheet, Christmas     │  │ Game, 1st-2nd           │       │
+│  │                          │  │                          │       │
+│  │ A cut-and-paste activity │  │ Roll-and-read game for   │       │
+│  │ sorting CVC words by     │  │ VCe a_e pattern. Pairs   │       │
+│  │ vowel sound. Festive.    │  │ well with word mat.      │       │
+│  │                          │  │                          │       │
+│  │ [👍] [👎] [More like]    │  │ [👍] [👎] [More like]    │       │
+│  │ [Not for this outcome]   │  │ [Not for this outcome]   │       │
+│  └─────────────────────────┘  └─────────────────────────┘       │
+│                                                                   │
+│  ┌─────────────────────────────────────────────────────────┐     │
+│  │ 🤖 GENERATED: Lesson Plan — VCe Word Work (TF5, C2)      │     │
+│  │ AI-generated lesson plan covering a_e pattern with game   │     │
+│  │ and worksheet components. [View inline]                   │     │
+│  │                                          [👍] [👎]        │     │
+│  └─────────────────────────────────────────────────────────┘     │
+│                                                                   │
+│  ⚠ Gap: TF7 (Comprehension) has no matching resources.            │
+│     [Generate lesson plan for this gap]                            │
+│                                                                   │
+│  ─────────────────────────────────────────────────────────────── │
+│  Refine: [+Worksheet] [+Game] [Infants only] [No seasonal]        │
+│  or type: [nothing laminated                           ]          │
+│                                                                   │
+│  [💾 Bundle 5 resources + 1 generated plan → Download]            │
+└──────────────────────────────────────────────────────────────────┘
+</pre>
+
+<div class="card">
+  <h4>Key design decisions behind the wireframe</h4>
+  <ul>
+    <li><strong>Mode tabs at the top, not buried in a menu.</strong> The three modes are fundamentally different mental models for the teacher. Making them visible as tabs signals that the system supports all three, and switching is cheap.</li>
+    <li><strong>Curriculum dropdowns only appear in curriculum mode.</strong> Content-search and browse modes don't show them — reducing cognitive load when the teacher isn't thinking in curriculum terms.</li>
+    <li><strong>AI-generated content is visually distinct</strong> (the 🤖 badge, different card border) but lives in the same results list as catalogue resources. The teacher treats them the same way — thumbs up, thumbs down, bundle or exclude. The system is transparent about provenance without segregating the experience.</li>
+    <li><strong>Gaps are called out but don't block the flow.</strong> The teacher can ignore a gap and bundle what exists, or click to generate. The system doesn't force action.</li>
+    <li><strong>The refinement bar accepts both structured chips and free-text.</strong> Structured chips (format, grade, pedagogy) are instant client-side filters. Free-text (<em>"nothing that needs laminating"</em>) is sent to the Worker for semantic interpretation — slower but handles the unpredictable stuff teachers actually say.</li>
+    <li><strong>The bundle button is always visible, always shows a count, and is always a deliberate action.</strong> No auto-download, no "you might also want..." upsells. The teacher decides when they're done.</li>
+    <li><strong>Disagreement actions are per-resource, not buried in a settings panel.</strong> This keeps the refinement loop tight — the teacher stays in the results view, making quick judgments, rather than navigating away to configure filters.</li>
+  </ul>
+</div>
+
+<h3>What this means for the agent pipeline</h3>
+
+<p>The three modes map to different Researcher agent behaviours:</p>
+
+<table>
+  <tr><th>Mode</th><th>Researcher system prompt</th><th>Excel catalogue query</th><th>Gap detection?</th><th>Maker invoked?</th></tr>
+  <tr>
+    <td><strong>Guided</strong></td>
+    <td><em>"Match resources to the specified curriculum outcome. Identify gaps. Return resources ranked by fit, with explanations. Note catalogue resources that could be adapted from adjacent outcomes."</em></td>
+    <td>Filter by <code>outcome_code</code> and <code>stage</code></td>
+    <td>Yes — against selected outcome</td>
+    <td>Yes — for any gap, and on teacher request</td>
+  </tr>
+  <tr>
+    <td><strong>Free-text</strong></td>
+    <td><em>"Match this free-text description against resource metadata and content descriptions. Do not infer curriculum outcomes. Return resources ranked by semantic similarity to the query. Explain why each matched."</em></td>
+    <td>Full catalogue scanned; Worker sends top-N rows to the LLM for semantic matching against the query</td>
+    <td>No</td>
+    <td>No — unless teacher explicitly requests generation</td>
+  </tr>
+  <tr>
+    <td><strong>Browse</strong></td>
+    <td>No Researcher call — client-side filtering only</td>
+    <td>Full catalogue loaded as JSON on first visit, cached</td>
+    <td>No</td>
+    <td>No</td>
+  </tr>
+</table>
+
+<p>The Communicator's output adapts to mode: in Guided mode, the summary is curriculum-structured (outcome → resources → gaps → lesson plan). In Free-text mode, the summary is relevance-structured (query → matches ranked → why each matched). The bundle is the same regardless of mode — a zip of selected files + README.</p>
+
+
+<!-- ============================================================ -->
+<h2 id="summary">15. Summary of the Journey</h2>
 
 <table>
   <tr><th>Phase</th><th>What we learned</th><th>Key metric</th></tr>
@@ -1256,13 +1469,13 @@ TEACHER gets UFLI54-2ndClass.zip — every file, ready to use.
     <td>~3 hours taxonomy authoring (was ~5)</td>
   </tr>
   <tr>
-    <td>Scope-down decisions</td>
-    <td>No Gaeilge. Modernised curriculum only (Language + Maths with codes; 1999 subjects skeleton only). Lesson plans only (no worksheet generation). No curriculumonline.ie scraping. Single-teacher. Effort redirected to making the query→bundle path work end-to-end for the full catalogue.</td>
-    <td>~3 hours taxonomy authoring (was ~5)</td>
+    <td>UX &amp; interaction model</td>
+    <td>Three entry points converging on one results panel: (1) Guided curriculum search with progressive dropdowns, (2) Free-text content search for "blue balloons" queries, (3) Browse &amp; explore with filter chips. Disagreement is first-class: thumbs up/down per resource, "Not for this outcome" flags improve the catalogue, "Generate something better" triggers Maker with the rejected resource as a negative example. Bundle is always explicit and deliberate — the teacher decides when they're done. AI-generated content is visually distinct but lives alongside catalogue resources.</td>
+    <td>3 modes, 1 results panel, 6 refinement interactions</td>
   </tr>
 </table>
 
-<p>The exploration moved from <em>"can we just use folder names?"</em> (yes, mostly) to <em>"what does reading the files add?"</em> (a lot, but with a hard ceiling) to <em>"how do we break through that ceiling?"</em> (vision LLMs) to <em>"what dimension are teachers actually searching on?"</em> (curriculum outcomes) to <em>"what do we do when the catalogue comes up empty?"</em> (describe smartly, generate lesson plans safely, discover from public sources narrowly). The right answer for a CA3 project: hand-author the Language Curriculum + UFLI reference taxonomies, deep-parse a representative resource sample with the hybrid text+vision pipeline, implement gap detection → lesson plan generation as the core Maker-agent handoff, add a curriculumonline.ie scraping proof-of-concept as a live-data connection, and name full-scale ambitions (worksheet generation, OER standards mapping, multi-user features) honestly in the Limitations &amp; Future section. This shows the lecturer you understand the engineering, the strategic tradeoffs, and the domain — which is the whole point of the module.</p>
+<p>The exploration moved from <em>"can we just use folder names?"</em> (yes, mostly) to <em>"what does reading the files add?"</em> (a lot, but with a hard ceiling) to <em>"how do we break through that ceiling?"</em> (vision LLMs) to <em>"what dimension are teachers actually searching on?"</em> (curriculum outcomes) to <em>"what do we do when the catalogue comes up empty?"</em> (describe, generate, discover) to <em>"how does the teacher actually interact with this?"</em> (three modes, one surface, disagreement as a feature). The full spine is now clear for a CA3 build: MS ecosystem + Cloudflare Worker for zero-auth serverless AI, Excel catalogue with live Graph API, reference taxonomies for Language + UFLI, three interaction modes feeding one results+refinement panel, gap detection driving lesson plan generation, and the bundle as the deliberate terminal action. This shows the lecturer you understand the engineering, the strategic tradeoffs, the domain, <em>and</em> the user — which is the whole point of the module.</p>
 
 
 <hr>
