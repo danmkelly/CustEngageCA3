@@ -19,14 +19,14 @@ Teacher's Pet is a single-teacher resource concierge. You describe what you need
 │  index.html     │     JSON/zip    │ (worker.js)      │    catalogue +      │ catalogue│
 └─────────────────┘                 │                  │    file downloads)  │ + files) │
                                     │ 5-agent pipeline │                     └──────────┘
-                                    │ + Keelin QA      │
+                                     │ + Ops-Keelin QA   │
                                     │                  │     DeepSeek API
                                     │ Ops-Maker ──────→│ (lesson plan gen,
                                     │                  │  only on gap + flag)
                                     └──────────────────┘
 ```
 
-The Worker runs a 5-agent pipeline on every query: **Manager** (orchestration) → **Researcher** (catalogue search + curriculumonline.ie fallback) → **Designer** (resource sequencing + gap spec) → **Maker** (DeepSeek lesson plan generation, conditional) → **Communicator** (markdown summary + zip bundle). **Keelin** (QA agent) validates every generated plan before the teacher sees it. All sessions are logged to the Excel audit sheet.
+The Worker runs a 5-agent pipeline on every query: **Manager** (orchestration) → **Researcher** (catalogue search + curriculumonline.ie fallback) → **Designer** (resource sequencing + gap spec) → **Maker** (DeepSeek lesson plan generation, conditional) → **Communicator** (markdown summary + zip bundle). **Ops-Keelin** (QA agent) validates every generated plan before the teacher sees it. All sessions are logged to the Excel audit sheet.
 
 ---
 
@@ -90,14 +90,15 @@ GitRepo/
 │   │   ├── architect.md          #   System design & architecture
 │   │   ├── maker.md              #   Code generation
 │   │   ├── communicator.md       #   Documentation & disclosure
-│   │   └── manager.md            #   Orchestration & quality gate
+│   │   ├── manager.md            #   Orchestration & quality gate
+│   │   └── keelin.md             #   Dev-Keelin (deployment security QA)
 │   ├── ops/                      # Ops team agent definitions
 │   │   ├── manager.md            #   Session orchestration
 │   │   ├── researcher.md         #   Catalogue search + fallback
 │   │   ├── designer.md           #   Resource sequencing
 │   │   ├── maker.md              #   Lesson plan generation
-│   │   └── communicator.md       #   Summary & bundling
-│   └── keelin.md                 # QA agent (shared Dev + Ops)
+│   │   ├── communicator.md       #   Summary & bundling
+│   │   └── keelin.md             #   Ops-Keelin (content validation QA)
 ├── frontend/
 │   └── index.html                # Web UI (search, browse, bundle download)
 ├── scripts/
@@ -162,7 +163,7 @@ This project engages with the following module frameworks and authors:
 - **AI in Creative Work** — del Rosal (2024), HUMANLIKE Ch 6: AI as a collaborative tool with human judgment at the centre
 - **Trust in Automation** — Lee & See (2004): trust calibration through appropriate reliance, not blind trust or blanket rejection
 
-These are operationalised in the governance framework (`GOVERNANCE.md`), the disclosure model (`AI_DISCLOSURE.md`), the QA agent's design (`agents/keelin.md`), and the pipeline architecture (`worker/worker.js`).
+These are operationalised in the governance framework (`GOVERNANCE.md`), the disclosure model (`AI_DISCLOSURE.md`), the QA agents' design (`agents/dev/keelin.md`, `agents/ops/keelin.md`), and the pipeline architecture (`worker/worker.js`).
 
 ---
 

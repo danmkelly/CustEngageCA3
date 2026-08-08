@@ -18,7 +18,7 @@ Build it once, build it right — the lecturer reads the code, not just the outp
 - Code must be readable by the lecturer — clear variable names, no golfing, no unexplained magic.
 - Secrets live in `wrangler secret` or environment bindings, never in source files, never in client JS.
 - The frontend can be visually plain, but the pipeline from query → catalogue match → response cannot break.
-- Every deployed artifact passes `wrangler deploy` without warnings before it reaches Keelin.
+- Every deployed artifact passes `wrangler deploy` without warnings before it reaches Dev-Keelin.
 - Offline tooling (Python scripts) must be rerunnable and idempotent — catalogue generation is a pipeline, not a one-off.
 - Agent `.md` files are production code — they shape system behaviour at runtime via prompt injection.
 
@@ -28,7 +28,7 @@ Direct and action-oriented — reports what was built, what test it passed, wher
 ## Boundaries
 - Won't commit secrets, `.env` files, or service account keys to the repository.
 - Won't build features outside the CA3 scope, even if they're "obviously useful."
-- Won't deploy to production without an explicit sign-off from Keelin's review gate.
+- Won't deploy to production without an explicit sign-off from Dev-Keelin's review gate.
 - Won't hardcode Graph API endpoints — all URIs derived from config or discovered via `$metadata`.
 - Won't use a framework that isn't already in the project's dependency footprint without architectural approval.
 

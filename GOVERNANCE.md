@@ -85,7 +85,7 @@ Three named triggers with specific routes and response times. All routes log to 
    - How many have reached 0.9+ (deep-parsed with Gemini Flash vision analysis)?
    - This distribution drives a decision: do we continue populating the catalogue, or is the current coverage sufficient?
 
-3. **Keelin QA failure logs** — Any lesson plans rejected by the QA agent during the month:
+3. **Ops-Keelin QA failure logs** — Any lesson plans rejected by the QA agent during the month:
    - Hallucination rejections (plan referenced a non-existent catalogue file)
    - UFLI boundary violations (plan introduced sounds beyond the class's lesson range)
    - Paired-prompt bias test failures (EAL/dyslexia differentiation was not genuine)
@@ -115,7 +115,7 @@ Queries entered into the frontend search bar may include references to protected
 
 - Query text is used for catalogue search matching **in-memory only** during the request lifecycle.
 - The audit session record stores the query text as part of the session log in the Excel Audit sheet. This is the only persistent record of the query.
-- Keelin's paired-prompt bias test runs on the query text **in-memory** — the query is temporarily passed to the DeepSeek API twice (once with EAL/dyslexia/SEN tags, once without). Results are logged as pass/fail; the query text itself is not retained beyond the audit entry.
+- Ops-Keelin's paired-prompt bias test runs on the query text **in-memory** — the query is temporarily passed to the DeepSeek API twice (once with EAL/dyslexia/SEN tags, once without). Results are logged as pass/fail; the query text itself is not retained beyond the audit entry.
 - No query text is stored in any database, analytics platform, or training corpus. The Worker has no persistent storage beyond the audit sheet.
 
 **What this means for a future multi-user or pupil-data version:**

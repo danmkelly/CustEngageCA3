@@ -27,11 +27,12 @@ The **Dev team** — four AI agents with distinct roles — built the Teacher's 
 | **Dev-Communicator** | Documentation and disclosure | `README.md`, `GOVERNANCE.md`, `AI_DISCLOSURE.md`, `CATALOGUE.md`, agent definition files |
 | **Dev-Manager** | Orchestration, quality gate, and build log | Assigns tasks to Dev agents, tracks build progress, maintains the build log, decides when a component is "done" |
 
-**Keelin** — the QA agent — operated across both Dev and Ops teams:
-- Dev-side: secret detection in source files, CORS configuration audit, MS Graph scope audit, `wrangler.toml` validation
-- Ops-side: lesson plan validation, hallucination detection, UFLI boundary enforcement, paired-prompt bias testing
+**Dev-Keelin** — the deployment QA agent — and **Ops-Keelin** — the content QA agent — operate as distinct roles:
 
-All agent definition files are at `agents/dev/` and `agents/keelin.md`. The codebase was produced through iterative prompting: the developer described the requirement, the Dev team produced the implementation, Keelin reviewed it, and the cycle repeated until Keelin signed off.
+- Dev-Keelin: secret detection in source files, CORS configuration audit, MS Graph scope audit, `wrangler.toml` validation — blocks deployment on failure
+- Ops-Keelin: lesson plan validation, hallucination detection, UFLI boundary enforcement, paired-prompt bias testing — blocks content from reaching the teacher on failure
+
+All agent definition files are at `agents/dev/` and `agents/ops/`. The codebase was produced through iterative prompting: the developer described the requirement, the Dev team produced the implementation, Dev-Keelin reviewed it, and the cycle repeated until Dev-Keelin signed off.
 
 This reflects the module's discussion of del Rosal (2024, HUMANLIKE Ch 6): AI as a collaborative tool in creative and knowledge work, where the human sets the brief, defines the constraints, and makes the final acceptance decision.
 
@@ -39,12 +40,12 @@ This reflects the module's discussion of del Rosal (2024, HUMANLIKE Ch 6): AI as
 
 ## How AI Was Used in Operation
 
-The **Ops team** — five AI agents — runs on the Cloudflare Worker and executes the resource pipeline on every teacher query:
+The **Ops team** — six AI agents — runs on the Cloudflare Worker and executes the resource pipeline on every teacher query:
 
 ```
 Teacher query → Manager → Researcher → Designer → [Maker] → Communicator → Bundle
                                                          ↑
-                                                     Keelin (QA)
+                                                     Ops-Keelin (QA)
 ```
 
 | Agent | Role | What It Does |
@@ -54,12 +55,12 @@ Teacher query → Manager → Researcher → Designer → [Maker] → Communicat
 | **Ops-Designer** | Resource sequencing | Assigns matched resources to lesson phases (warm-up / main activity / plenary); produces a structured Maker specification for identified gaps |
 | **Ops-Maker** | Lesson plan generation | Invokes DeepSeek API to generate markdown lesson plans — **only when a catalogue gap is confirmed and no public resources fill it**; rate-limited to prevent duplicate generation |
 | **Ops-Communicator** | Summary and bundling | Produces teacher-facing markdown summaries; assembles zip bundles with catalogue resources, generated plans, and the AI disclosure README |
-| **Keelin** (QA) | Quality gate | Validates every generated lesson plan before it reaches the teacher: hallucination detection, UFLI boundary check, paired-prompt bias test for EAL/dyslexia differentiation |
+| **Ops-Keelin** (QA) | Quality gate | Validates every generated lesson plan before it reaches the teacher: hallucination detection, UFLI boundary check, paired-prompt bias test for EAL/dyslexia differentiation |
 
 **Key design principles in operation:**
 - The Maker is **never** invoked without a confirmed catalogue gap (Researcher and Designer run first).
 - The Maker is **never** invoked without a teacher's explicit or implicit request (guided mode with gaps, or `generate: true` flag).
-- Keelin validates **every** generated plan. Rejected plans do not reach the teacher. Maximum 2 Maker attempts per plan before the gap is declared unfilled (Lee & See 2004 trust calibration).
+- Ops-Keelin validates **every** generated plan. Rejected plans do not reach the teacher. Maximum 2 Maker attempts per plan before the gap is declared unfilled (Lee & See 2004 trust calibration).
 
 ---
 
@@ -93,13 +94,13 @@ The confidence score is visible in the web UI, in the Excel catalogue (`confiden
 
 7. **App-only MS Graph authentication.** The Worker authenticates to MS Graph using client credentials (app-only), not delegated user permissions. This means the Worker can access the entire OneDrive, not just a scoped folder. This is a demo convenience, not a production security posture.
 
-### Bias Testing (Keelin's Paired-Prompt Test)
+### Bias Testing (Ops-Keelin's Paired-Prompt Test)
 
-When a teacher query includes EAL, dyslexia, SEN, autism, or similar needs-related tags, Keelin runs a paired-prompt bias test:
+When a teacher query includes EAL, dyslexia, SEN, autism, or similar needs-related tags, Ops-Keelin runs a paired-prompt bias test:
 
 1. The Maker generation prompt is sent to DeepSeek **with** the needs tag.
 2. An identical prompt **without** the needs tag is also sent.
-3. Keelin compares the two outputs for structural differentiation — not just vocabulary substitution, but genuine differences in scaffolding, task complexity, support materials, and language level.
+3. Ops-Keelin compares the two outputs for structural differentiation — not just vocabulary substitution, but genuine differences in scaffolding, task complexity, support materials, and language level.
 
 If the two outputs are functionally identical (the system didn't actually differentiate), the plan is rejected. This reflects the module's engagement with algorithmic bias and fairness: a system that claims to support diverse learners but produces identical outputs for all of them is not supporting diverse learners.
 

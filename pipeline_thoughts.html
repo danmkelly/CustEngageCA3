@@ -88,7 +88,7 @@
   <button class="tab-btn active" onclick="showTab('scope')">Scope</button>
   <button class="tab-btn" onclick="showTab('agents')">Agents (11)</button>
   <button class="tab-btn" onclick="showTab('references')">References</button>
-  <button class="tab-btn" onclick="showTab('decisions')">Decisions (7)</button>
+  <button class="tab-btn" onclick="showTab('decisions')">Decisions (6)</button>
   <button class="tab-btn" onclick="showTab('architecture')">Architecture</button>
   <button class="tab-btn" onclick="showTab('ux')">UX Design</button>
   <button class="tab-btn" onclick="showTab('catalogue')">Cataloguing</button>
@@ -153,8 +153,8 @@
 <!-- ============================================================== -->
 <div class="tab-panel" id="tab-agents">
 
-<h2>Two Agent Teams — Dev Builds, Ops Runs, Keelin Guards</h2>
-<p>11 agents across 2 teams + 1 shared consultant. The Five Innovators are roles, not interchangeable tools. Fill a role with different domain expertise and you get a genuinely different agent.</p>
+<h2>Two Agent Teams — Dev Builds, Ops Runs, Keelins Guard</h2>
+<p>11 agents across 2 teams. The Five Innovators are roles, not interchangeable tools. Fill a role with different domain expertise and you get a genuinely different agent.</p>
 
 <h3>Development Team (5 agents — builds once)</h3>
 
@@ -168,12 +168,13 @@
   <tr><td><strong>Dev-Maker</strong></td><td>JS, Python, HTML/CSS, wrangler deploy, Azure AD</td><td>Deployed code: worker.js, index.html, catalogue_populator.py, taxonomy JSONs, agent .md files, wrangler.toml</td></tr>
   <tr><td><strong>Dev-Communicator</strong></td><td>Technical docs, disclosure conventions, module rubrics</td><td>README.md, GOVERNANCE.md, AI_DISCLOSURE.md, inline docs</td></tr>
   <tr><td><strong>Dev-Manager</strong></td><td>Rubric criteria, build sequencing, dependency tracking</td><td>Build plan + rubric coverage map + build log (evidence for AI Acknowledgement)</td></tr>
+  <tr><td><strong>Dev-Keelin</strong> <span class="tag tag-red">security</span></td><td>Secret detection, CORS config, Graph scope audit, rubric validation</td><td>Pass/fail security verdict with line-level violation references — nothing deploys without sign-off</td></tr>
 </table>
 
 <h4>Dev handoffs</h4>
 <pre class="ascii">
-  Dev-Manager → Dev-Architect → Dev-Maker → Keelin (security review)
-                                                ↓
+  Dev-Manager → Dev-Architect → Dev-Maker → Dev-Keelin (security review)
+                                                  ↓
   Dev-Communicator ← Dev-Maker ← (pass/fail)
         ↓
   Dev-Manager (archive build log, hand system to Ops-Manager)
@@ -197,7 +198,7 @@
   <tr><td><strong>Ops-Maker</strong></td>
     <td>Markdown generation, curriculum-aligned prose, DeepSeek prompts with taxonomy context</td>
     <td>Generated lesson plan (markdown) — only as fallback. References real catalogue resources by filename.</td>
-    <td>Never generates worksheets or images. Never generates Gaeilge. Must pass Keelin before release.</td>
+    <td>Never generates worksheets or images. Never generates Gaeilge. Must pass Ops-Keelin before release.</td>
   </tr>
   <tr><td><strong>Ops-Communicator</strong></td>
     <td>Teacher comms, markdown summaries, AI disclosure, bundle packaging</td>
@@ -206,8 +207,11 @@
   </tr>
   <tr><td><strong>Ops-Manager</strong></td>
     <td>Session orchestration, UX mode classification, audit logging, governance cadence</td>
-    <td>Session audit log in Excel: query, mode, agents invoked, matches, exclusions, disagreements, Keelin outcomes, bundle delivered</td>
+    <td>Session audit log in Excel: query, mode, agents invoked, matches, exclusions, disagreements, Ops-Keelin outcomes, bundle delivered</td>
     <td>Will not silently drop disagreements. Enforces search-first, generate-as-fallback.</td>
+  </tr>
+  <tr><td><strong>Ops-Keelin</strong> <span class="tag tag-purple">qa</span></td><td>Outcome alignment, hallucination detection, paired-prompt bias testing, UFLI boundary enforcement</td><td>Pass/fail content verdict per plan — max 2 Maker attempts per gap</td>
+    <td>Blocks content if plans hallucinate catalogue references, exceed UFLI lessons, fail bias tests, or are age-inappropriate</td>
   </tr>
 </table>
 
@@ -221,29 +225,16 @@
                     │                             Teacher reviews → adds to bundle
                     │
                     └─ Gap + search empty + teacher requests generation:
-                         Ops-Maker → Keelin (validate) → Ops-Communicator
-                                      │                    (pass)
-                                      └── FAIL → back to Ops-Maker (max 2 attempts)
-                                                  → if still fail: gap left honestly unfilled
+                         Ops-Maker → Ops-Keelin (validate) → Ops-Communicator
+                                       │                      (pass)
+                                       └── FAIL → back to Ops-Maker (max 2 attempts)
+                                                   → if still fail: gap left honestly unfilled
 
-  Free-text mode: Researcher → Designer → Communicator (no Maker, no Keelin, no gap analysis)
+  Free-text mode: Researcher → Designer → Communicator (no Maker, no Ops-Keelin, no gap analysis)
   Browse mode:    Client-side only. No Worker call.
 </pre>
 
-<h3>Keelin — Shared Consultant (Security &amp; QA)</h3>
-
-<table>
-  <tr><th>Side</th><th>Role</th><th>Checks</th></tr>
-  <tr>
-    <td><strong>Dev</strong></td><td>Security review before deployment</td>
-    <td>No secrets in repo, no keys in client JS, CORS correct, Graph scopes minimal, rubric validation</td>
-  </tr>
-  <tr>
-    <td><strong>Ops</strong></td><td>Content validation before teacher sees output</td>
-    <td>Outcome alignment, hallucination detection (does plan reference non-existent catalogue files?), paired-prompt bias test (if query mentioned EAL/dyslexia — same prompt minus characteristic → compare complexity), UFLI sound boundary (no untaught sounds), age-appropriateness</td>
-  </tr>
-</table>
-<p>Failing Keelin means content doesn't reach the teacher. Max 2 Maker attempts. After 2 failures, the gap is left unfilled and the teacher is told honestly. This is trust calibration (Week 2: Lee &amp; See, 2004) — the system knows its limits and communicates them.</p>
+<p><strong>Why two Keelins:</strong> Dev-Keelin guards the deployment boundary (secrets, CORS, Graph scopes); Ops-Keelin guards the teacher boundary (content accuracy, bias, age checks). Their scopes don't overlap — failing one doesn't mean failing the other. Both block on fail: Dev-Keelin blocks deployment, Ops-Keelin blocks content from reaching the teacher. Trust calibration (Lee &amp; See, 2004): the system knows its limits and communicates them.</p>
 
 <p><strong>Cross-team handoff:</strong> Dev-Manager delivers deployed Worker + populated catalogue + taxonomy JSONs + agent definitions + signed-off build log → Ops-Manager takes ownership. Dev team archived, not retired; spun back up if rubric changes or bugs found.</p>
 
@@ -316,7 +307,7 @@ Guard: generated plans must not use sounds from lessons > 54</pre>
 <!-- ============================================================== -->
 <div class="tab-panel" id="tab-decisions">
 
-<h2>Seven Numbered Decisions</h2>
+<h2>Six Numbered Decisions</h2>
 
 <div class="card">
   <h4>Decision 1: Deep-parse all in-scope PDFs</h4>
@@ -354,11 +345,6 @@ Guard: generated plans must not use sounds from lessons > 54</pre>
   <p class="decision-made">→ Decision: Ship with app-only auth. No login. Document delegated auth as production path.</p>
 </div>
 
-<div class="card">
-  <h4>Decision 7: Parse all (see Decision 1)</h4>
-  <p class="decision-made">→ Decision: See Decision 1.</p>
-</div>
-
 </div>
 
 
@@ -383,6 +369,8 @@ Guard: generated plans must not use sounds from lessons > 54</pre>
 │                                                                   │
 │  POST /api/query     → 5-agent pipeline (Researcher → Designer   │
 │                          → Maker → Communicator → Manager)        │
+│                          (shown here as five core roles;           │
+│                          see Agents for full build/run teams)      │
 │  POST /api/bundle    → Fetch files from OneDrive, zip in-memory, │
 │                          return download                          │
 │  GET  /api/catalogue → Full catalogue as JSON                    │
@@ -486,7 +474,7 @@ Guard: generated plans must not use sounds from lessons > 54</pre>
 
 <h2>Cataloguing Pipeline</h2>
 
-<h3>Three passes, one catalogue</h3>
+<h3>Four passes, one catalogue</h3>
 
 <table>
   <tr><th>Pass</th><th>Files</th><th>Method</th><th>Cost</th><th>Time</th><th>Output</th></tr>
