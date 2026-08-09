@@ -167,35 +167,33 @@ async function graphRequest(env, url, options) {
 }
 
 // --------------------------------------------------------------------------
-// MS GRAPH — Excel Catalogue Operations
+// CATALOGUE — fetched from GitHub Pages (static JSON, no auth needed)
+// Personal OneDrive doesn't support app-only Graph API, so we serve
+// the catalogue as a static JSON file from GitHub Pages instead.
 // --------------------------------------------------------------------------
 
-function catalogueUsedRangeUrl(env) {
-  var filePath = encodeURIComponent("Teaching Resources/Catalogue.xlsx");
-  return MS_GRAPH_BASE + "/users/" + env.ONEDRIVE_USER + "/drive/root:" + filePath +
-    ":/workbook/worksheets/Catalogue/usedRange";
-}
+/** In-memory cache of catalogue rows, loaded once per cold-start */
+var catalogueCache = null;
 
 /**
- * Fetch all catalogue rows from Excel via MS Graph.
- * Returns an array of row objects keyed by column names from the header row.
+ * Fetch all catalogue rows from GitHub Pages JSON.
+ * Returns an array of row objects.
  */
 async function fetchCatalogue(env) {
-  var url = catalogueUsedRangeUrl(env);
-  var resp = await graphRequest(env, url);
-
+  if (catalogueCache) return catalogueCache;
+  
+  var url = "https://danmkelly.github.io/CustEngageCA3/data/catalogue.json";
+  var resp = await fetch(url);
+  
   if (!resp.ok) {
-    if (resp.status === 404) return []; // Catalogue not uploaded yet — return empty
-    var text = await resp.text();
-    console.error("Catalogue fetch failed: " + resp.status + " " + text.substring(0, 200));
-    return []; // Graceful degradation — platform works, catalogue is empty
+    console.error("Catalogue fetch failed: " + resp.status);
+    return [];
   }
-
+  
   var data = await resp.json();
-  if (Array.isArray(data.values)) {
-    return parseExcelRows(data.values);
-  }
-  return [];
+  catalogueCache = data.rows || [];
+  console.log("[Catalogue] Loaded " + catalogueCache.length + " rows from GitHub Pages");
+  return catalogueCache;
 }
 
 /**

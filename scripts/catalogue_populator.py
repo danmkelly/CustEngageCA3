@@ -230,27 +230,22 @@ def write_catalogue(rows, output_path):
     wb = Workbook()
     ws = wb.active
     ws.title = "Catalogue"
-
-    # Header
     for col_idx, col_name in enumerate(COLUMNS, start=1):
         ws.cell(row=1, column=col_idx, value=col_name)
-
-    # Data
     for row_idx, row_data in enumerate(rows, start=2):
         for col_idx, col_name in enumerate(COLUMNS, start=1):
-            ws.cell(row=row_idx, column=col_idx, value=row_data.get(col_name, ""))
-
-    # Auto-width rough pass
-    for col_idx, col_name in enumerate(COLUMNS, start=1):
-        max_len = len(col_name)
-        for row_idx in range(2, len(rows) + 2):
-            val = ws.cell(row=row_idx, column=col_idx).value
-            if val:
-                max_len = max(max_len, min(len(str(val)), 60))
-        ws.column_dimensions[ws.cell(row=1, column=col_idx).column_letter].width = max_len + 2
-
-    wb.save(output_path)
-    print(f"\nCatalogue written to: {output_path}")
+            val = row_data.get(col_name, "")
+            if isinstance(val, str):
+                val = val.replace("\x00", "").replace("\r", " ")
+                if len(val) > 32000:
+                    val = val[:32000]
+            ws.cell(row=row_idx, column=col_idx, value=val)
+    try:
+        wb.save(str(output_path))
+        print(f"\nCatalogue written to: {output_path}")
+    except Exception as e:
+        print(f"\nERROR writing catalogue: {e}")
+        import traceback; traceback.print_exc()
 
 
 def main():
