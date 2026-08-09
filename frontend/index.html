@@ -815,11 +815,8 @@ function performSearch() {
     if (xhr.status === 200) {
       try {
         var data = JSON.parse(xhr.responseText);
-        console.log("API resources:", data.resources ? data.resources.length : "none");
-        console.log("API results:", data.results ? data.results.length : "none");
         state.results = data.resources || data.results || [];
         state.gaps = data.gaps || [];
-        console.log("state.results:", state.results.length);
         renderResults();
       } catch(e) { showError('Invalid response from server'); }
     } else {
@@ -1170,11 +1167,8 @@ function findSimilar(id) {
     if (xhr.status === 200) {
       try {
         var data = JSON.parse(xhr.responseText);
-        console.log("API resources:", data.resources ? data.resources.length : "none");
-        console.log("API results:", data.results ? data.results.length : "none");
         state.results = data.resources || data.results || [];
         state.gaps = data.gaps || [];
-        console.log("state.results:", state.results.length);
         renderResults();
       } catch(e) { showError('Could not parse similar results'); }
     } else {
