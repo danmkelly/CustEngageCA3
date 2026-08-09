@@ -1297,12 +1297,17 @@ async function handleBundle(request, env) {
 
     try {
       var fileData;
-      if (delegatedToken) {
+      var cleanFilename = row.filename || ("resource-" + resId + ".pdf");
+      // Try GitHub-hosted copy first (personal OneDrive has no SPO license)
+      var ghUrl = "https://raw.githubusercontent.com/danmkelly/CustEngageCA3/main/data/resources/" + encodeURIComponent(cleanFilename);
+      var ghResp = await fetch(ghUrl);
+      if (ghResp.ok) {
+        fileData = await ghResp.arrayBuffer();
+      } else if (delegatedToken) {
         fileData = await downloadFromOneDriveWithToken(delegatedToken, row.onedrive_path);
       } else {
         fileData = await downloadFromOneDrive(env, row.onedrive_path);
       }
-      var cleanFilename = row.filename || ("resource-" + resId + ".pdf");
       if (!fileData || fileData.byteLength === 0) {
         fileFetchErrors.push("Empty file: " + row.onedrive_path);
         continue;
