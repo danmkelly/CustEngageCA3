@@ -1279,8 +1279,11 @@ function renderResults() {
         if (objHas(state.selectedIds, id)) { delete state.selectedIds[id]; }
         else { state.selectedIds[id] = true; }
         updateHeaderBundleCount();
-        updateBundleSidebar();
-        updateCardButton(id);
+        // Defer DOM updates to let click event complete
+        setTimeout(function() {
+          updateBundleSidebar();
+          updateCardButton(id);
+        }, 0);
         return false;
       };
     })(btns[b]);
@@ -1293,8 +1296,10 @@ function renderResults() {
         var rid = btn.getAttribute('data-id');
         delete state.selectedIds[rid];
         updateHeaderBundleCount();
-        updateBundleSidebar();
-        updateCardButton(rid);
+        setTimeout(function() {
+          updateBundleSidebar();
+          updateCardButton(rid);
+        }, 0);
         return false;
       };
     })(rmvs[r]);
@@ -1769,6 +1774,22 @@ function updateBundleSidebar() {
   var panel = document.querySelector('.bundle-panel');
   if (panel) {
     panel.innerHTML = renderBundleSidebarHTML();
+    // Re-attach Remove button handlers
+    var rmvs = panel.querySelectorAll('.bundle-item button[data-action="select"]');
+    for (var r = 0; r < rmvs.length; r++) {
+      (function(btn) {
+        btn.onclick = function(e) {
+          if (e) { e.preventDefault(); e.stopPropagation(); }
+          delete state.selectedIds[btn.getAttribute('data-id')];
+          updateHeaderBundleCount();
+          updateBundleSidebar();
+          updateCardButton(btn.getAttribute('data-id'));
+          return false;
+        };
+      })(rmvs[r]);
+    }
+  } else {
+    renderResults();
   }
 }
 
@@ -1777,16 +1798,12 @@ function updateCardButton(id) {
   var card = document.querySelector('.card[data-id="' + cssId + '"]');
   if (!card) return;
   var isSelected = objHas(state.selectedIds, id);
-  if (isSelected) {
-    card.classList.add('selected');
-  } else {
-    card.classList.remove('selected');
-  }
+  if (isSelected) { card.classList.add('selected'); }
+  else { card.classList.remove('selected'); }
   var btn = card.querySelector('.card-add button');
   if (btn) {
-    btn.textContent = isSelected ? '- Remove' : '+ Add to bundle';
-    if (isSelected) { btn.classList.add('remove-action'); }
-    else { btn.classList.remove('remove-action'); }
+    btn.textContent = isSelected ? '− Remove' : '+ Add to bundle';
+    btn.className = isSelected ? 'remove-action' : '';
   }
 }
 
