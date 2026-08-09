@@ -1057,6 +1057,29 @@ async function handleQuery(request, env) {
     return jsonResponse({ error: "Invalid JSON body" }, 400);
   }
 
+  // Handle refinement requests: merge base_query with refinement_text
+  if (body.type === "refine") {
+    if (body.base_query) {
+      body.query = body.base_query.query || "";
+      body.outcome_code = body.base_query.outcome_code || body.outcome_code;
+      body.subject = body.base_query.subject || body.subject;
+      body.strand = body.base_query.strand || body.strand;
+      if (body.base_query.stage) body.grade_band = body.base_query.stage;
+      if (body.base_query.type) body.mode = body.base_query.type;
+    }
+    if (body.refinement_text) {
+      body.query = (body.query || "") + " " + body.refinement_text;
+    }
+  }
+
+  // Handle similarity search: use description as freetext query
+  if (body.type === "similar") {
+    body.query = body.description || body.resource_id || "";
+    body.mode = "freetext";
+    delete body.outcome_code;
+    delete body.grade_band;
+  }
+
   if (!body.query && !body.outcome_code && body.mode !== "browse") {
     return jsonResponse(
       { error: "Missing required field: query or outcome_code" },
@@ -1199,11 +1222,15 @@ async function handleBundle(request, env) {
       400
     );
   }
-  if (!body.summary_md) {
-    return jsonResponse(
-      { error: "Missing required field: summary_md" },
-      400
-    );
+
+  // Accept include_ai_generated as alias for generated_content
+  if (!body.generated_content && body.include_ai_generated && Array.isArray(body.include_ai_generated)) {
+    body.generated_content = body.include_ai_generated.map(function (item) {
+      return {
+        title: item.title || item.id || "AI-Generated Plan",
+        markdown: item.content || item.markdown || "",
+      };
+    });
   }
 
   var runId = body.run_id || generateRunId();
@@ -1268,7 +1295,7 @@ async function handleBundle(request, env) {
 
   // ── README.md with AI disclosure ────────────────────────────────
   var bundleReadme =
-    body.summary_md +
+    (body.summary_md || "# Teacher's Pet — Resource Bundle\n\n**Bundle assembled:** " + new Date().toISOString()) +
     "\n\n---\n" +
     "**Bundle assembled:** " + new Date().toISOString() + "\n" +
     "**Run ID:** " + runId + "\n" +
@@ -1321,6 +1348,67 @@ async function handleBundle(request, env) {
       CORS_HEADERS
     ),
   });
+}
+
+// ============================================================================
+// ENDPOINT: POST /api/generate-lesson
+// ============================================================================
+// Generates a lesson plan via Ops-Maker on demand from the frontend gap card.
+// Opposite of the /api/query pipeline: this is a direct Maker invocation.
+//
+// Request:  { outcome_code, outcome_label, stage }
+// Response: { content, title, confidence }
+
+async function handleGenerateLesson(request, env) {
+  var body;
+  try {
+    body = await request.json();
+  } catch {
+    return jsonResponse({ error: "Invalid JSON body" }, 400);
+  }
+
+  var outcomeCode = body.outcome_code || "";
+  var outcomeLabel = body.outcome_label || "";
+  var stage = body.stage || "";
+
+  if (!outcomeCode && !outcomeLabel) {
+    return jsonResponse(
+      { error: "Missing outcome_code or outcome_label" },
+      400
+    );
+  }
+
+  var makerSpec = {
+    outcome_code: outcomeCode,
+    grade_band: stage,
+    description:
+      "No catalogue resource available for " +
+      outcomeCode +
+      (outcomeLabel ? " (" + outcomeLabel + ")" : ""),
+    suggested_activity_type: mapOutcomeToActivity(outcomeCode),
+    programme: "General",
+    query: outcomeLabel,
+  };
+
+  try {
+    var plan = await opsMaker(env, makerSpec);
+    if (!plan) {
+      return jsonResponse(
+        { error: "Generation returned no content" },
+        500
+      );
+    }
+    return jsonResponse({
+      content: plan.markdown,
+      title: plan.title,
+      confidence: plan.confidence,
+    });
+  } catch (err) {
+    return jsonResponse(
+      { error: "Generation failed", detail: err.message },
+      500
+    );
+  }
 }
 
 // ============================================================================
@@ -1416,6 +1504,10 @@ export default {
         return await handleBundle(request, env);
       }
 
+      if (pathname === "/api/generate-lesson" && request.method === "POST") {
+        return await handleGenerateLesson(request, env);
+      }
+
       if (
         pathname === "/api/catalogue" &&
         request.method === "GET"
@@ -1438,6 +1530,7 @@ export default {
           endpoints: [
             "POST /api/query",
             "POST /api/bundle",
+            "POST /api/generate-lesson",
             "GET /api/catalogue", "GET /api/taxonomy/:name",
           ],
         },

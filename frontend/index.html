@@ -761,6 +761,17 @@ function renderBrowseResults() {
     if (objSize(state.browseFilters.grade) > 0 && !objHas(state.browseFilters.grade, item.grade_band)) return false;
     if (objSize(state.browseFilters.format) > 0 && !objHas(state.browseFilters.format, item.format)) return false;
     if (objSize(state.browseFilters.season) > 0 && !objHas(state.browseFilters.season, item.season)) return false;
+
+    // Apply refinement chip filters on top of browse filters
+    var refKeys = objKeys(state.refinementChips);
+    if (refKeys.length > 0) {
+      var matches = refKeys.some(function(key) {
+        return (item.format && item.format.toLowerCase() === key.toLowerCase()) ||
+               (item.grade_band && item.grade_band.toLowerCase() === key.toLowerCase()) ||
+               (item.season && item.season.toLowerCase() === key.toLowerCase());
+      });
+      if (!matches) return false;
+    }
     return true;
   });
 
@@ -804,6 +815,7 @@ function freetextSearch(e) {
 function performSearch() {
   state.loading.search = true;
   setSearchLoading(true);
+  showResultsLoading();
   clearExclusions();
 
   var xhr = new XMLHttpRequest();
@@ -812,6 +824,7 @@ function performSearch() {
   xhr.onload = function() {
     state.loading.search = false;
     setSearchLoading(false);
+    hideResultsLoading();
     if (xhr.status === 200) {
       try {
         var data = JSON.parse(xhr.responseText);
@@ -823,7 +836,7 @@ function performSearch() {
       showError('Search failed (' + xhr.status + ')');
     }
   };
-  xhr.onerror = function() { state.loading.search = false; setSearchLoading(false); showError('Network error during search'); };
+  xhr.onerror = function() { state.loading.search = false; setSearchLoading(false); hideResultsLoading(); showError('Network error during search'); };
   xhr.send(JSON.stringify(state.lastQuery));
 }
 
@@ -832,6 +845,20 @@ function setSearchLoading(loading) {
   if (btn) { btn.disabled = loading; btn.textContent = loading ? 'Searching...' : 'Search'; }
   var ftBtn = document.querySelector('#panel-freetext button[type="submit"]');
   if (ftBtn) { ftBtn.disabled = loading; ftBtn.textContent = loading ? 'Searching...' : 'Search'; }
+}
+
+function showResultsLoading() {
+  document.getElementById('emptyState').classList.add('hidden');
+  var container = document.getElementById('resultsContainer');
+  container.classList.remove('hidden');
+  container.innerHTML = '<div class="loading-spinner"><div class="spinner"></div><span>Searching your catalogue...</span></div>';
+}
+
+function hideResultsLoading() {
+  var container = document.getElementById('resultsContainer');
+  if (container.querySelector('.loading-spinner')) {
+    container.innerHTML = '';
+  }
 }
 
 function clearExclusions() {
@@ -910,9 +937,22 @@ function renderResults() {
 
   var parts = [];
 
+  // Apply refinement chip filtering (local only, not sent to Worker)
+  var activeRefinementKeys = objKeys(state.refinementChips);
+  var filteredResults = state.results;
+  if (activeRefinementKeys.length > 0 && state.activeMode !== 'browse') {
+    filteredResults = state.results.filter(function(r) {
+      return activeRefinementKeys.some(function(key) {
+        return (r.format && r.format.toLowerCase() === key.toLowerCase()) ||
+               (r.grade_band && r.grade_band.toLowerCase() === key.toLowerCase()) ||
+               (r.season && r.season.toLowerCase() === key.toLowerCase());
+      });
+    });
+  }
+
   var resultsCount = 0;
-  for (var ri = 0; ri < state.results.length; ri++) {
-    var rr = state.results[ri];
+  for (var ri = 0; ri < filteredResults.length; ri++) {
+    var rr = filteredResults[ri];
     if (!objHas(state.excludedIds, rr.id || rr.filename)) resultsCount++;
   }
   parts.push('<div class="results-header"><h2>' + resultsCount + ' resource' + (resultsCount !== 1 ? 's' : '') + ' found</h2></div>');
@@ -942,8 +982,8 @@ function renderResults() {
 
   parts.push('<div class="results-grid">');
 
-  for (var vi = 0; vi < state.results.length; vi++) {
-    var r = state.results[vi];
+  for (var vi = 0; vi < filteredResults.length; vi++) {
+    var r = filteredResults[vi];
     if (!objHas(state.excludedIds, r.id || r.filename)) {
       parts.push(renderResultCardHTML(r, false));
     }
@@ -956,8 +996,8 @@ function renderResults() {
     var exclIds = objKeys(state.excludedIds);
     for (var ei = 0; ei < exclIds.length; ei++) {
       var id = exclIds[ei];
-      for (var ej = 0; ej < state.results.length; ej++) {
-        var rr2 = state.results[ej];
+      for (var ej = 0; ej < filteredResults.length; ej++) {
+        var rr2 = filteredResults[ej];
         if ((rr2.id || rr2.filename) === id) {
           parts.push(renderResultCardHTML(rr2, true));
           break;
@@ -977,15 +1017,15 @@ function renderResultCardHTML(r, dimmed) {
   var id = r.id || r.filename;
   var isAi = r.ai_generated === true;
   var isSelected = objHas(state.selectedIds, id);
+  var safeId = 'card-' + id.replace(/[^a-zA-Z0-9]/g, '-');
 
   var classes = 'card';
   if (isAi) classes += ' ai-generated';
   if (dimmed) classes += ' dimmed';
   if (isSelected) classes += ' selected';
 
-  var desc = r.extracted_text_sample
-    ? r.extracted_text_sample.substring(0, 140)
-    : (r.description || 'No description available.');
+  var fullText = r.extracted_text_sample || r.description || '';
+  var desc = fullText.substring(0, 140);
 
   var badges = '';
   if (isAi) badges += '<span class="badge badge-ai">AI Generated</span>';
@@ -999,9 +1039,20 @@ function renderResultCardHTML(r, dimmed) {
   var selStyle = isSelected ? 'style="background:var(--accent);color:#fff;border-color:var(--accent)"' : '';
   var selText = isSelected ? 'Selected' : '+ Add to bundle';
 
+  var expandHtml = '';
+  if (isAi && fullText.length > 140) {
+    expandHtml =
+      '<div class="card-description">' + esc(desc) + '... ' +
+      '<button class="btn btn-sm btn-secondary" style="margin-left:4px;font-size:0.7rem" onclick="var el=document.getElementById(\'' + safeId + '-full\');var btn=this;if(el.classList.contains(\'hidden\')){el.classList.remove(\'hidden\');btn.textContent=\'Hide plan\'}else{el.classList.add(\'hidden\');btn.textContent=\'Show full plan\'}">Show full plan</button>' +
+      '</div>' +
+      '<div class="card-description hidden" id="' + safeId + '-full" style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;max-height:300px;overflow-y:auto;font-size:0.78rem;line-height:1.5;white-space:pre-wrap;font-family:var(--font-mono)">' + esc(fullText) + '</div>';
+  } else {
+    expandHtml = '<div class="card-description">' + esc(desc) + '</div>';
+  }
+
   return '<div class="' + classes + '" data-id="' + esc(id) + '">' +
     '<div class="card-filename">' + esc(r.filename || 'Untitled Resource') + '</div>' +
-    '<div class="card-description">' + esc(desc) + '</div>' +
+    expandHtml +
     '<div class="card-badges">' + badges + '</div>' +
     '<div class="card-actions">' +
     '<button class="thumbs-up' + tuClass + '" data-action="thumbs-up" data-id="' + esc(id) + '" title="Good match">Like</button>' +
@@ -1081,20 +1132,23 @@ function applyRefinements() {
 
   if (hasText) {
     state.loading.search = true;
+    showResultsLoading();
     var xhr = new XMLHttpRequest();
     xhr.open('POST', WORKER_URL + '/api/query');
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.onload = function() {
       state.loading.search = false;
+      hideResultsLoading();
       if (xhr.status === 200) {
         try {
           var data = JSON.parse(xhr.responseText);
-        state.results = data.resources || data.results || [];
+          state.results = data.resources || data.results || [];
+          state.gaps = data.gaps || [];
         } catch(e) {}
       }
       renderResults();
     };
-    xhr.onerror = function() { state.loading.search = false; renderResults(); };
+    xhr.onerror = function() { state.loading.search = false; hideResultsLoading(); renderResults(); };
     xhr.send(JSON.stringify({
       type: 'refine',
       base_query: state.lastQuery,
@@ -1154,6 +1208,7 @@ function flagForReview(id) {
 function findSimilar(id) {
   state.loading.search = true;
   setSearchLoading(true);
+  showResultsLoading();
   var r = null;
   for (var i = 0; i < state.results.length; i++) {
     if ((state.results[i].id || state.results[i].filename) === id) { r = state.results[i]; break; }
@@ -1164,6 +1219,7 @@ function findSimilar(id) {
   xhr.onload = function() {
     state.loading.search = false;
     setSearchLoading(false);
+    hideResultsLoading();
     if (xhr.status === 200) {
       try {
         var data = JSON.parse(xhr.responseText);
@@ -1176,7 +1232,7 @@ function findSimilar(id) {
     }
   };
   xhr.onerror = function() {
-    state.loading.search = false; setSearchLoading(false);
+    state.loading.search = false; setSearchLoading(false); hideResultsLoading();
     showError('Network error during similar search');
   };
   xhr.send(JSON.stringify({
@@ -1284,13 +1340,47 @@ function triggerBundle() {
   var overlay = document.getElementById('downloadOverlay');
   overlay.classList.remove('hidden');
 
-  var aiIncluded = [];
+  // Build generated_content array from selected AI-generated cards
+  var generatedContent = [];
   for (var i = 0; i < state.aiGenerated.length; i++) {
     var a = state.aiGenerated[i];
     if (objHas(state.selectedIds, a.id)) {
-      aiIncluded.push({ id: a.id, content: a.extracted_text_sample });
+      generatedContent.push({
+        title: a.title || a.filename || 'Lesson Plan',
+        markdown: a.extracted_text_sample || '',
+      });
     }
   }
+
+  // Build summary_md from current results
+  var summaryLines = [];
+  summaryLines.push('# Teacher\'s Pet — Resource Bundle');
+  summaryLines.push('');
+  if (state.lastQuery) {
+    summaryLines.push('**Query:** ' + (state.lastQuery.query || 'Catalogue browse'));
+    summaryLines.push('**Mode:** ' + (state.lastQuery.type || 'freetext'));
+  }
+  summaryLines.push('**Resources selected:** ' + objSize(state.selectedIds));
+  if (generatedContent.length > 0) {
+    summaryLines.push('**AI-generated plans included:** ' + generatedContent.length);
+  }
+  summaryLines.push('');
+  summaryLines.push('## Selected Resources');
+  for (var j = 0; j < state.results.length; j++) {
+    var r = state.results[j];
+    var rid = r.id || r.filename;
+    if (objHas(state.selectedIds, rid)) {
+      summaryLines.push('- **' + (r.filename || 'Untitled') + '**');
+      if (r.ai_generated) summaryLines.push('  - [AI-Generated | Not Classroom-Tested]');
+      if (r.subject) summaryLines.push('  - Subject: ' + r.subject);
+      if (r.grade_band) summaryLines.push('  - Grade: ' + r.grade_band);
+    }
+  }
+  summaryLines.push('');
+  summaryLines.push('---');
+  summaryLines.push('*Bundle assembled by Teacher\'s Pet, CA3 Final Project, August 2026.*');
+
+  var summaryMd = summaryLines.join('\n');
 
   var xhr = new XMLHttpRequest();
   xhr.open('POST', WORKER_URL + '/api/bundle');
@@ -1315,7 +1405,9 @@ function triggerBundle() {
   xhr.onerror = function() { overlay.classList.add('hidden'); showError('Network error during download'); };
   xhr.send(JSON.stringify({
     resource_ids: objKeys(state.selectedIds),
-    include_ai_generated: aiIncluded,
+    generated_content: generatedContent,
+    summary_md: summaryMd,
+    run_id: 'bundle-' + Date.now(),
   }));
 }
 
@@ -1339,7 +1431,7 @@ function showError(msg) {
   var main = document.querySelector('.main');
   main.insertBefore(banner, main.firstChild);
 
-  setTimeout(function() { if (banner.parentNode) banner.remove(); }, 8000);
+  setTimeout(function() { if (banner.parentNode) banner.remove(); }, 15000);
 }
 
 /* ═══════════════════════════════════════════════
