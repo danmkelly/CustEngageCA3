@@ -102,9 +102,9 @@
 </div>
 
 <div class="issue-count">
-  <span class="issue-pill fixed">7 Fixed (this session)</span>
+  <span class="issue-pill fixed">12 Fixed (this session)</span>
   <span class="issue-pill fixed">1 Resolved (catalogue)</span>
-  <span class="issue-pill open">2 Open</span>
+  <span class="issue-pill open">1 Open</span>
   <span class="issue-pill known">4 Known limitations (documented)</span>
 </div>
 
@@ -115,9 +115,9 @@
   <table>
     <tr><th style="width:50px">ID</th><th style="width:70px">Impact</th><th>Issue</th><th style="width:100px">Action</th></tr>
     <tr>
-      <td>O01</td><td><span class="sev-high">HIGH</span></td>
-      <td><strong>Bundle can't download resource files.</strong> Personal OneDrive doesn't support app-only MS Graph auth. Zip contains README + generated plans only.</td>
-      <td>MSAL.js delegated auth (implemented)</td>
+      <td>O01</td><td><span class="sev-low">LOW</span></td>
+      <td><s><strong>Bundle can't download resource files.</strong></s> <strong>Resolved.</strong> MSAL.js popup-based delegated auth implemented. User signs in via popup (no browser profile hopping), token passed to Worker for OneDrive file downloads via <code>/me/drive/root:</code>.</td>
+      <td><span class="tag tag-fixed">RESOLVED</span></td>
     </tr>
     <tr>
       <td>O02</td><td><span class="sev-low">LOW</span></td>
@@ -624,14 +624,49 @@
 <tr>
   <td>K10</td>
   <td>Bundle</td>
-  <td><strong>Bundle file downloads fail.</strong> Personal OneDrive does not support app-only MS Graph auth. downloadFromOneDrive() returns 401 for all files. Bundle zip contains README + generated plans but no actual resource files. Errors listed in README. Documented in README Limitations + commit 507dc5d.</td>
+  <td><s><strong>Bundle file downloads fail.</strong></s> <strong>Resolved.</strong> MSAL.js popup-based delegated auth with <code>Files.Read</code> scope. User signs in via popup, token passed to Worker which uses <code>/me/drive/root:</code> for delegated downloads. Falls back to README-only zip if user declines sign-in.</td>
   <td><span class="sev-high">HIGH</span></td>
-  <td>ACCEPTED</td>
+  <td><span class="tag tag-fixed">RESOLVED</span></td>
 </tr>
 <tr>
   <td>K11</td>
+  <td>UX</td>
+  <td><strong>Guided dropdown cascade broken.</strong> Subject→Strand→Stage→Outcome chain failed due to: inline onchange referencing non-existent functions, async taxonomy loading race, and <code>Object.keys(lang.strands[val])</code> returning [elements] instead of strand names. Fixed with embedded static taxonomy data, subject dropdown locked until loaded, and corrected key extraction.</td>
+  <td><span class="sev-high">HIGH</span></td>
+  <td><span class="tag tag-fixed">FIXED</span></td>
+</tr>
+<tr>
+  <td>K12</td>
+  <td>UX</td>
+  <td><strong>Two-column layout with bundle sidebar.</strong> Restructured from single-column to two-panel: results grid (left) + sticky bundle sidebar (right). Cards use "+ Add to bundle" / "− Remove" toggle. Sidebar shows selected items with count and Download button. Header duplicate removed. Results sorted by confidence descending.</td>
+  <td><span class="sev-med">MED</span></td>
+  <td><span class="tag tag-fixed">IMPLEMENTED</span></td>
+</tr>
+<tr>
+  <td>K13</td>
+  <td>UX</td>
+  <td><strong>Select button not responding to clicks.</strong> The "+ Add to bundle" button went through multiple failed approaches (event delegation, inline onclick, direct addEventListener, setTimeout deferral) before discovering that calling renderResults() from within a click handler destroyed the button mid-event. Fixed with forceRefresh() that routes through renderResults() from a clean call stack.</td>
+  <td><span class="sev-high">HIGH</span></td>
+  <td><span class="tag tag-fixed">FIXED</span></td>
+</tr>
+<tr>
+  <td>K14</td>
+  <td>Env</td>
+  <td><strong>MSAL redirect caused browser profile hopping.</strong> loginRedirect opened a new Edge instance under a different profile. Switched to loginPopup which opens in the current session. Redirect URI normalized to always end with /index.html.</td>
+  <td><span class="sev-med">MED</span></td>
+  <td><span class="tag tag-fixed">FIXED</span></td>
+</tr>
+<tr>
+  <td>K15</td>
+  <td>Env</td>
+  <td><strong>Emoji and em-dash characters corrupted.</strong> 29 em-dashes corrupted to U+FFFD during PowerShell encoding operations. Emoji (📚🎯🔍✨📦🗂️) similarly corrupted to "??". Replaced with numeric HTML entities then plain hyphens for dashes.</td>
+  <td><span class="sev-med">MED</span></td>
+  <td><span class="tag tag-fixed">FIXED</span></td>
+</tr>
+<tr>
+  <td>K16</td>
   <td>State</td>
-  <td><strong>No persistent session state.</strong> All state in-memory. Page refresh loses selections, thumbs-up/down, and flagged items. No history of previous searches. Documented Worker limitation (no persistent storage).</td>
+  <td><strong>No persistent session state.</strong> All state in-memory. Page refresh loses selections and search history. Documented Worker limitation (no persistent storage).</td>
   <td><span class="sev-low">LOW</span></td>
   <td>ACCEPTED</td>
 </tr>
