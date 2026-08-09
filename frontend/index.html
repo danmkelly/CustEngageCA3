@@ -8,42 +8,38 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://alcdn.msauth.net/browser/2.28.3/js/msal-browser.min.js"></script>
 <script>
-/* Embedded taxonomy data — avoids async XHR race condition */
-var EMBEDDED_TAXONOMY_READY = false;
-loadTaxonomyEmbed('language');
-loadTaxonomyEmbed('maths');
-
-function loadTaxonomyEmbed(name) {
+/* Embedded taxonomy loader — runs before state object, writes to window.__tax */
+window.__tax = { language: null, maths: null };
+(function() {
+var loaded = 0;
+function loadOne(name) {
   var xhr = new XMLHttpRequest();
   xhr.open('GET', 'https://raw.githubusercontent.com/danmkelly/CustEngageCA3/main/taxonomy/' + name + '.json');
   xhr.onload = function() {
-    if (xhr.status === 200) {
-      try { state.taxonomies[name] = JSON.parse(xhr.responseText); } catch(e) {}
-    }
-    tryEmbedDone();
+    if (xhr.status === 200) { try { window.__tax[name] = JSON.parse(xhr.responseText); } catch(e) {} }
+    checkDone(name);
   };
   xhr.onerror = function() {
-    // Fallback to Worker
     var xhr2 = new XMLHttpRequest();
     xhr2.open('GET', 'https://teachers-pet.dan-m-kelly.workers.dev/api/taxonomy/' + name);
     xhr2.onload = function() {
-      if (xhr2.status === 200) {
-        try { state.taxonomies[name] = JSON.parse(xhr2.responseText); } catch(e) {}
-      }
-      tryEmbedDone();
+      if (xhr2.status === 200) { try { window.__tax[name] = JSON.parse(xhr2.responseText); } catch(e) {} }
+      checkDone(name);
     };
-    xhr2.onerror = function() { tryEmbedDone(); };
+    xhr2.onerror = function() { checkDone(name); };
     xhr2.send();
   };
   xhr.send();
 }
-
-function tryEmbedDone() {
-  if (state.taxonomies.language && state.taxonomies.maths && !EMBEDDED_TAXONOMY_READY) {
-    EMBEDDED_TAXONOMY_READY = true;
-    populateGuidedDropdowns();
+function checkDone(name) {
+  loaded++;
+  if (loaded >= 2 && window.__tax.language && window.__tax.maths) {
+    window.__taxReady = true;
   }
 }
+loadOne('language');
+loadOne('maths');
+})();
 </script>
 <style>
 :root {
@@ -1513,8 +1509,20 @@ document.addEventListener('DOMContentLoaded', function() {
   initTaxonomies();
 
   function initTaxonomies() {
+    state.taxonomies.language = window.__tax && window.__tax.language || null;
+    state.taxonomies.maths = window.__tax && window.__tax.maths || null;
     if (state.taxonomies.language && state.taxonomies.maths) {
       populateGuidedDropdowns();
+    } else {
+      // Taxonomies still loading — keep checking
+      var check = setInterval(function() {
+        state.taxonomies.language = window.__tax && window.__tax.language || null;
+        state.taxonomies.maths = window.__tax && window.__tax.maths || null;
+        if (state.taxonomies.language && state.taxonomies.maths) {
+          clearInterval(check);
+          populateGuidedDropdowns();
+        }
+      }, 100);
     }
   }
 });
