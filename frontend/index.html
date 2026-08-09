@@ -204,39 +204,47 @@ body {
 .chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
 /* ── Results ── */
-.results-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-.results-header h2 { font-family: var(--font-display); font-size: 1.15rem; font-weight: 600; color: var(--accent); }
+.results-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.results-header h2 { font-family: var(--font-display); font-size: 1.05rem; font-weight: 600; color: var(--accent); }
 
-.results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 18px; }
+.results-layout { display: flex; gap: 20px; align-items: flex-start; }
+.results-panel { flex: 1; min-width: 0; }
+.bundle-panel { width: 320px; flex-shrink: 0; }
+@media (max-width: 860px) {
+  .results-layout { flex-direction: column; }
+  .bundle-panel { width: 100%; }
+}
 
-/* Cards styled as library index cards: cream stock, top double-rule, stacked shadow */
+.results-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+@media (max-width: 600px) { .results-grid { grid-template-columns: 1fr; } }
+
+/* Cards styled as library index cards */
 .card {
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-  padding: 16px 16px 14px; box-shadow: 3px 3px 0 var(--border), var(--shadow);
+  padding: 12px 14px 10px; box-shadow: 2px 2px 0 var(--border), var(--shadow);
   border-top: 3px solid var(--accent);
   transition: box-shadow 0.15s, transform 0.15s;
   position: relative;
 }
-.card:hover { box-shadow: 4px 4px 0 var(--accent), var(--shadow-lg); transform: translate(-1px, -1px); }
+.card:hover { box-shadow: 3px 3px 0 var(--accent), var(--shadow-lg); transform: translate(-1px, -1px); }
 .card.ai-generated { border-top-color: var(--purple); }
-.card.ai-generated:hover { box-shadow: 4px 4px 0 var(--purple), var(--shadow-lg); }
-.card.dimmed { opacity: 0.4; filter: grayscale(0.6); }
-.card.selected { box-shadow: 0 0 0 2px var(--accent), 3px 3px 0 var(--border); border-color: var(--accent); }
+.card.ai-generated:hover { box-shadow: 3px 3px 0 var(--purple), var(--shadow-lg); }
+.card.selected { box-shadow: 0 0 0 2px var(--accent), 2px 2px 0 var(--border); border-color: var(--accent); }
 .card.selected::after {
-  content: '✓'; position: absolute; top: -10px; right: 12px; color: #fff;
-  background: var(--accent); border-radius: 50%; width: 20px; height: 20px;
+  content: '✓'; position: absolute; top: -8px; right: 10px; color: #fff;
+  background: var(--accent); border-radius: 50%; width: 18px; height: 18px;
   display: flex; align-items: center; justify-content: center;
-  font-weight: 700; font-size: 0.75rem; box-shadow: var(--shadow-sm);
+  font-weight: 700; font-size: 0.7rem; box-shadow: var(--shadow-sm);
 }
 
-.card-filename { font-family: var(--font-display); font-weight: 600; font-size: 1rem; margin-bottom: 8px; color: var(--text); word-break: break-word; }
-.card-description { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px; line-height: 1.45; }
+.card-filename { font-family: var(--font-display); font-weight: 600; font-size: 0.9rem; margin-bottom: 6px; color: var(--text); word-break: break-word; }
+.card-description { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px; line-height: 1.4; }
 
-.card-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.card-badges { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
 .badge {
   display: inline-flex; align-items: center;
-  padding: 2px 9px; border-radius: 999px;
-  font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+  padding: 1px 7px; border-radius: 999px;
+  font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
   font-family: var(--font-mono);
 }
 .badge-subject { background: var(--accent-light); color: var(--accent); }
@@ -248,22 +256,44 @@ body {
   border: 1px solid var(--gold);
 }
 
-.card-confidence { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 10px; }
-
-.card-actions { display: flex; gap: 6px; flex-wrap: wrap; border-top: 1px dashed var(--border); padding-top: 10px; }
-.card-actions button {
-  padding: 4px 10px; font-size: 0.75rem; border-radius: var(--radius);
-  border: 1px solid var(--border); background: var(--surface);
-  cursor: pointer; font-family: var(--font); color: var(--text-muted);
+.card-add {
+  display: flex; justify-content: flex-end; border-top: 1px dashed var(--border); padding-top: 8px;
+}
+.card-add button {
+  padding: 3px 10px; font-size: 0.72rem; border-radius: var(--radius);
+  border: 1px solid var(--accent); background: var(--accent-light);
+  cursor: pointer; font-family: var(--font); font-weight: 600; color: var(--accent);
   transition: all 0.1s ease;
 }
-.card-actions button:hover { border-color: var(--accent); color: var(--accent); }
-.card-actions button.thumbs-up:hover { border-color: var(--success); color: var(--success); }
-.card-actions button.thumbs-down:hover { border-color: var(--danger); color: var(--danger); }
-.card-actions button.flag:hover { border-color: var(--warning); color: var(--warning); }
-.card-actions button.similar:hover { border-color: var(--purple); color: var(--purple); }
-.card-actions button.thumbs-up.active { background: var(--success); color: #fff; border-color: var(--success); }
-.card-actions button.thumbs-down.active { background: var(--danger); color: #fff; border-color: var(--danger); }
+.card-add button:hover { background: var(--accent); color: #fff; }
+.card-add button.remove-action { background: var(--danger-light); border-color: var(--danger); color: var(--danger); }
+.card-add button.remove-action:hover { background: var(--danger); color: #fff; }
+
+/* ── Bundle Sidebar ── */
+.bundle-sidebar {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: 16px; position: sticky; top: 80px;
+  border-top: 3px solid var(--accent); box-shadow: var(--shadow-sm);
+}
+.bundle-sidebar h3 { font-family: var(--font-display); font-size: 0.95rem; color: var(--accent); margin-bottom: 10px; }
+.bundle-sidebar .bundle-empty { font-size: 0.8rem; color: var(--text-muted); font-style: italic; }
+.bundle-sidebar .bundle-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.8rem;
+}
+.bundle-item:last-child { border-bottom: none; }
+.bundle-item-name { flex: 1; word-break: break-word; }
+.bundle-item-name .ai-tag { font-size: 0.62rem; color: var(--purple); font-weight: 700; display: block; }
+.bundle-item button {
+  flex-shrink: 0; padding: 2px 8px; font-size: 0.68rem; border-radius: var(--radius);
+  border: 1px solid var(--danger); background: transparent; color: var(--danger);
+  cursor: pointer; font-family: var(--font); font-weight: 600;
+  transition: all 0.1s ease;
+}
+.bundle-item button:hover { background: var(--danger); color: #fff; }
+.bundle-download { margin-top: 14px; }
+.bundle-download .btn { width: 100%; justify-content: center; }
+.bundle-count-footer { font-size: 0.72rem; color: var(--text-muted); text-align: center; margin-top: 6px; }
 
 /* ── Refinement Bar ── */
 .refinement-bar {
@@ -288,10 +318,6 @@ body {
 .gap-card .gap-icon { font-size: 1.2rem; }
 .gap-card .gap-text { flex: 1; font-size: 0.9rem; font-weight: 500; min-width: 200px; }
 .gap-card .gap-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-
-/* ── Exclusion Section ── */
-.exclusion-section { margin-top: 24px; }
-.exclusion-section h3 { font-family: var(--font-display); font-size: 0.95rem; font-weight: 600; color: var(--text-muted); margin-bottom: 10px; }
 
 /* ── Loading / Empty / Error ── */
 .loading-spinner {
@@ -507,17 +533,13 @@ var pendingBundleData = null;
 /* ═══════════════════════════════════════════════
    APPLICATION STATE
    ═══════════════════════════════════════════════ */
-var   state = {
+var state = {
   activeMode: 'guided',
   taxonomies: { language: null, maths: null },
   catalogue: [],
   results: [],
   gaps: [],
   selectedIds: {},
-  excludedIds: {},
-  thumbsUp: {},
-  thumbsDown: {},
-  flaggedIds: {},
   aiGenerated: [],
   loading: { taxonomy: false, catalogue: false, search: false, bundle: false, generate: false },
   guidedSelections: { subject: '', strand: '', stage: '', outcome: '' },
@@ -864,7 +886,6 @@ function performSearch() {
   state.loading.search = true;
   setSearchLoading(true);
   showResultsLoading();
-  clearExclusions();
 
   var xhr = new XMLHttpRequest();
   xhr.open('POST', WORKER_URL + '/api/query');
@@ -909,12 +930,6 @@ function hideResultsLoading() {
   }
 }
 
-function clearExclusions() {
-  state.excludedIds = {};
-  state.thumbsDown = {};
-  state.flaggedIds = {};
-}
-
 /* ═══════════════════════════════════════════════
    EVENT DELEGATION
    ═══════════════════════════════════════════════ */
@@ -924,11 +939,7 @@ function handleResultClick(e) {
     if (target.hasAttribute && target.hasAttribute('data-action')) {
       var action = target.getAttribute('data-action');
       var id = target.getAttribute('data-id');
-      if (action === 'thumbs-up') toggleThumbsUp(id);
-      else if (action === 'thumbs-down') toggleThumbsDown(id);
-      else if (action === 'flag') flagForReview(id);
-      else if (action === 'similar') findSimilar(id);
-      else if (action === 'select') toggleSelect(id);
+      if (action === 'select') toggleSelect(id);
       else if (action === 'search-curriculum') {
         var c = target.getAttribute('data-code');
         var l = target.getAttribute('data-label');
@@ -972,9 +983,8 @@ function renderResults() {
 
   var hasResults = state.results.length > 0;
   var hasGaps = state.gaps.length > 0;
-  var hasExcluded = objSize(state.excludedIds) > 0;
 
-  if (!hasResults && !hasGaps && !hasExcluded) {
+  if (!hasResults && !hasGaps) {
     emptyEl.classList.remove('hidden');
     container.classList.add('hidden');
     return;
@@ -983,9 +993,7 @@ function renderResults() {
   emptyEl.classList.add('hidden');
   container.classList.remove('hidden');
 
-  var parts = [];
-
-  // Apply refinement chip filtering (local only, not sent to Worker)
+  // Apply refinement chip filtering
   var activeRefinementKeys = objKeys(state.refinementChips);
   var filteredResults = state.results;
   if (activeRefinementKeys.length > 0 && state.activeMode !== 'browse') {
@@ -998,15 +1006,9 @@ function renderResults() {
     });
   }
 
-  var resultsCount = 0;
-  for (var ri = 0; ri < filteredResults.length; ri++) {
-    var rr = filteredResults[ri];
-    if (!objHas(state.excludedIds, rr.id || rr.filename)) resultsCount++;
-  }
-  parts.push('<div class="results-header"><h2>' + resultsCount + ' resource' + (resultsCount !== 1 ? 's' : '') + ' found</h2></div>');
+  var parts = [];
 
-  parts.push(renderRefinementBar());
-
+  // Gaps section (above the split layout)
   if (hasGaps) {
     parts.push('<div class="gaps-section">');
     for (var gi = 0; gi < state.gaps.length; gi++) {
@@ -1028,40 +1030,67 @@ function renderResults() {
     parts.push('</div>');
   }
 
-  parts.push('<div class="results-grid">');
+  // Header
+  parts.push('<div class="results-header"><h2>' + filteredResults.length + ' resource' + (filteredResults.length !== 1 ? 's' : '') + ' found</h2></div>');
+  parts.push(renderRefinementBar());
 
+  // Two-panel layout
+  parts.push('<div class="results-layout">');
+
+  // Left: results grid
+  parts.push('<div class="results-panel"><div class="results-grid">');
   for (var vi = 0; vi < filteredResults.length; vi++) {
-    var r = filteredResults[vi];
-    if (!objHas(state.excludedIds, r.id || r.filename)) {
-      parts.push(renderResultCardHTML(r, false));
-    }
+    parts.push(renderResultCardHTML(filteredResults[vi]));
   }
+  parts.push('</div></div>');
 
+  // Right: bundle sidebar
+  parts.push('<div class="bundle-panel">');
+  parts.push(renderBundleSidebarHTML());
   parts.push('</div>');
 
-  if (hasExcluded) {
-    parts.push('<div class="exclusion-section" id="exclusionContainer"><h3>Excluded / Flagged Resources</h3><div class="results-grid" id="exclusionItems">');
-    var exclIds = objKeys(state.excludedIds);
-    for (var ei = 0; ei < exclIds.length; ei++) {
-      var id = exclIds[ei];
-      for (var ej = 0; ej < filteredResults.length; ej++) {
-        var rr2 = filteredResults[ej];
-        if ((rr2.id || rr2.filename) === id) {
-          parts.push(renderResultCardHTML(rr2, true));
-          break;
-        }
-      }
-    }
-    parts.push('</div></div>');
-  }
+  parts.push('</div>'); // close results-layout
 
   container.innerHTML = parts.join('');
 
   setupRefinementListeners();
-  updateBundleCount();
+  updateHeaderBundleCount();
 }
 
-function renderResultCardHTML(r, dimmed) {
+function renderBundleSidebarHTML() {
+  var selectedCount = objSize(state.selectedIds);
+  var html = '<div class="bundle-sidebar"><h3>&#128230; Your Bundle</h3>';
+
+  if (selectedCount === 0) {
+    html += '<p class="bundle-empty">No resources selected yet.<br>Click "+ Add to bundle" on any resource card.</p>';
+  } else {
+    for (var j = 0; j < state.results.length; j++) {
+      var r = state.results[j];
+      var rid = r.id || r.filename;
+      if (objHas(state.selectedIds, rid)) {
+        var isAi = r.ai_generated === true;
+        html += '<div class="bundle-item">' +
+          '<span class="bundle-item-name">' +
+          esc(r.filename || 'Untitled') +
+          (isAi ? '<span class="ai-tag">[AI-Generated]</span>' : '') +
+          '</span>' +
+          '<button data-action="select" data-id="' + esc(rid) + '">&times; Remove</button>' +
+          '</div>';
+      }
+    }
+  }
+
+  html += '<div class="bundle-download">';
+  html += '<button class="btn btn-primary" ' + (selectedCount === 0 ? 'disabled' : '') + ' onclick="triggerBundle()">&#128230; Download Bundle';
+  if (selectedCount > 0) html += ' <span class="bundle-badge">' + selectedCount + '</span>';
+  html += '</button>';
+  html += '<div class="bundle-count-footer">' + selectedCount + ' resource' + (selectedCount !== 1 ? 's' : '') + ' selected</div>';
+  html += '</div></div>';
+
+  return html;
+}
+
+function renderResultCardHTML(r) {
   var id = r.id || r.filename;
   var isAi = r.ai_generated === true;
   var isSelected = objHas(state.selectedIds, id);
@@ -1069,7 +1098,6 @@ function renderResultCardHTML(r, dimmed) {
 
   var classes = 'card';
   if (isAi) classes += ' ai-generated';
-  if (dimmed) classes += ' dimmed';
   if (isSelected) classes += ' selected';
 
   var fullText = r.extracted_text_sample || r.description || '';
@@ -1082,18 +1110,16 @@ function renderResultCardHTML(r, dimmed) {
   if (r.format) badges += '<span class="badge badge-format">' + esc(r.format) + '</span>';
   if (r.confidence != null) badges += '<span class="badge badge-confidence">' + Math.round(r.confidence * 100) + '% match</span>';
 
-  var tuClass = objHas(state.thumbsUp, id) ? ' active' : '';
-  var tdClass = objHas(state.thumbsDown, id) ? ' active' : '';
-  var selStyle = isSelected ? 'style="background:var(--accent);color:#fff;border-color:var(--accent)"' : '';
-  var selText = isSelected ? 'Selected' : '+ Add to bundle';
+  var addClass = isSelected ? ' remove-action' : '';
+  var addText = isSelected ? '− Remove' : '+ Add to bundle';
 
   var expandHtml = '';
   if (isAi && fullText.length > 140) {
     expandHtml =
       '<div class="card-description">' + esc(desc) + '... ' +
-      '<button class="btn btn-sm btn-secondary" style="margin-left:4px;font-size:0.7rem" onclick="var el=document.getElementById(\'' + safeId + '-full\');var btn=this;if(el.classList.contains(\'hidden\')){el.classList.remove(\'hidden\');btn.textContent=\'Hide plan\'}else{el.classList.add(\'hidden\');btn.textContent=\'Show full plan\'}">Show full plan</button>' +
+      '<button class="btn btn-sm btn-secondary" style="margin-left:4px;font-size:0.65rem" onclick="var el=document.getElementById(\'' + safeId + '-full\');var btn=this;if(el.classList.contains(\'hidden\')){el.classList.remove(\'hidden\');btn.textContent=\'Hide plan\'}else{el.classList.add(\'hidden\');btn.textContent=\'Show full plan\'}">Show full plan</button>' +
       '</div>' +
-      '<div class="card-description hidden" id="' + safeId + '-full" style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;max-height:300px;overflow-y:auto;font-size:0.78rem;line-height:1.5;white-space:pre-wrap;font-family:var(--font-mono)">' + esc(fullText) + '</div>';
+      '<div class="card-description hidden" id="' + safeId + '-full" style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;max-height:260px;overflow-y:auto;font-size:0.72rem;line-height:1.5;white-space:pre-wrap;font-family:var(--font-mono)">' + esc(fullText) + '</div>';
   } else {
     expandHtml = '<div class="card-description">' + esc(desc) + '</div>';
   }
@@ -1102,12 +1128,8 @@ function renderResultCardHTML(r, dimmed) {
     '<div class="card-filename">' + esc(r.filename || 'Untitled Resource') + '</div>' +
     expandHtml +
     '<div class="card-badges">' + badges + '</div>' +
-    '<div class="card-actions">' +
-    '<button class="thumbs-up' + tuClass + '" data-action="thumbs-up" data-id="' + esc(id) + '" title="Good match">Like</button>' +
-    '<button class="thumbs-down' + tdClass + '" data-action="thumbs-down" data-id="' + esc(id) + '" title="Not relevant">Dislike</button>' +
-    '<button class="flag" data-action="flag" data-id="' + esc(id) + '" title="Not for this outcome">Review</button>' +
-    '<button class="similar" data-action="similar" data-id="' + esc(id) + '" title="More like this">More like this</button>' +
-    '<button class="btn-sm" data-action="select" data-id="' + esc(id) + '" ' + selStyle + '>' + selText + '</button>' +
+    '<div class="card-add">' +
+    '<button class="' + addClass + '" data-action="select" data-id="' + esc(id) + '">' + addText + '</button>' +
     '</div>' +
     '</div>';
 }
@@ -1217,76 +1239,10 @@ function toggleSelect(id) {
   } else {
     state.selectedIds[id] = true;
   }
-  updateBundleCount();
+  // Re-render to update card state AND bundle sidebar
+  updateHeaderBundleCount();
   renderResults();
 }
-
-function toggleThumbsUp(id) {
-  if (objHas(state.thumbsUp, id)) {
-    delete state.thumbsUp[id];
-  } else {
-    state.thumbsUp[id] = true;
-    delete state.thumbsDown[id];
-  }
-  renderResults();
-}
-
-function toggleThumbsDown(id) {
-  if (objHas(state.thumbsDown, id)) {
-    delete state.thumbsDown[id];
-    delete state.excludedIds[id];
-  } else {
-    state.thumbsDown[id] = true;
-    state.excludedIds[id] = true;
-    delete state.thumbsUp[id];
-    delete state.selectedIds[id];
-  }
-  updateBundleCount();
-  renderResults();
-}
-
-function flagForReview(id) {
-  state.flaggedIds[id] = true;
-  state.excludedIds[id] = true;
-  delete state.selectedIds[id];
-  updateBundleCount();
-  renderResults();
-}
-
-function findSimilar(id) {
-  state.loading.search = true;
-  setSearchLoading(true);
-  showResultsLoading();
-  var r = null;
-  for (var i = 0; i < state.results.length; i++) {
-    if ((state.results[i].id || state.results[i].filename) === id) { r = state.results[i]; break; }
-  }
-  var xhr = new XMLHttpRequest();
-  xhr.open('POST', WORKER_URL + '/api/query');
-  xhr.setRequestHeader('Content-Type', 'application/json');
-  xhr.onload = function() {
-    state.loading.search = false;
-    setSearchLoading(false);
-    hideResultsLoading();
-    if (xhr.status === 200) {
-      try {
-        var data = JSON.parse(xhr.responseText);
-        state.results = data.resources || data.results || [];
-        state.gaps = data.gaps || [];
-        renderResults();
-      } catch(e) { showError('Could not parse similar results'); }
-    } else {
-      showError('Could not find similar resources (' + xhr.status + ')');
-    }
-  };
-  xhr.onerror = function() {
-    state.loading.search = false; setSearchLoading(false); hideResultsLoading();
-    showError('Network error during similar search');
-  };
-  xhr.send(JSON.stringify({
-    type: 'similar',
-    resource_id: id,
-    description: r ? (r.extracted_text_sample || r.description || r.filename) : '',
   }));
 }
 
@@ -1362,7 +1318,7 @@ function restoreGapButtons(gapCard, code, label, stage) {
 /* ═══════════════════════════════════════════════
    BUNDLE & DOWNLOAD
    ═══════════════════════════════════════════════ */
-function updateBundleCount() {
+function updateHeaderBundleCount() {
   var total = objSize(state.selectedIds);
   var badge = document.getElementById('bundleCount');
   var btn = document.getElementById('bundleBtn');
@@ -1371,8 +1327,13 @@ function updateBundleCount() {
     badge.style.display = 'inline-flex';
     badge.textContent = total;
     btn.disabled = false;
-    btn.innerHTML = 'Bundle & Download <span class="bundle-badge">' + total + '</span>';
+    btn.innerHTML = '📦 Bundle & Download <span class="bundle-badge">' + total + '</span>';
   } else {
+    badge.style.display = 'none';
+    btn.disabled = true;
+    btn.innerHTML = '📦 Bundle & Download';
+  }
+}
     badge.style.display = 'none';
     btn.disabled = true;
     btn.textContent = 'Bundle & Download';

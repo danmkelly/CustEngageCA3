@@ -481,15 +481,26 @@ Guard: generated plans must not use sounds from lessons > 54</pre>
 <h3>Refinement — disagreement is first-class</h3>
 <table>
   <tr><th>Interaction</th><th>System response</th></tr>
-  <tr><td><strong>Thumbs down</strong> a resource</td><td>Dimmed, moved to "Excluded." Session-level signal only — doesn't alter catalogue tags.</td></tr>
-  <tr><td><strong>"Not for this outcome"</strong></td><td>Writes review_flag to Excel row. Manager surfaces for periodic human review. Catalogue improvement over time.</td></tr>
-  <tr><td><strong>"Generate something better"</strong></td><td>Maker receives outcome + rejected resource as negative example + teacher constraint. Generates plan that doesn't replicate the rejected approach.</td></tr>
-  <tr><td><strong>"More like this"</strong></td><td>Re-ranks results by tag similarity. Optional Worker call for semantic similarity across content descriptions.</td></tr>
-  <tr><td><strong>Add constraint</strong> (chips or free-text)</td><td>Structured chips = instant client-side filter. Free-text ("nothing laminated") = sent to Worker for semantic interpretation.</td></tr>
+  <tr><td><strong>Add to bundle</strong></td><td>Selects resource for download. Appears in bundle sidebar on the right. Button changes to "− Remove" when selected.</td></tr>
+  <tr><td><strong>Remove from bundle</strong></td><td>Deselects resource. Removed from sidebar. Card returns to "+ Add to bundle" state.</td></tr>
+  <tr><td><strong>Refinement chips</strong> (format, grade, season)</td><td>Client-side filter — instant. Chips toggle on/off. Results re-filtered without API call.</td></tr>
+  <tr><td><strong>Refinement text</strong> (keyword)</td><td>Sent to Worker for re-search with merged context. Loading spinner while waiting.</td></tr>
 </table>
 
 <h3>Bundle — the terminal action</h3>
-<p>Always visible, always explicit. Shows count: <em>"Bundle 7 resources + 1 generated lesson plan."</em> Clicking it: Communicator produces summary markdown → Worker fetches files from OneDrive → zips with generated content + README with AI disclosure → streams download. Teacher decides when they're done.</p>
+<p>Persistent right-hand sidebar shows selected resources with count. "+ Add to bundle" on each card toggles selection. "Download Bundle" button at the bottom of the sidebar triggers download. If signed in with Microsoft account, actual resource files are fetched from OneDrive; if not, the zip contains README + generated plans only (explained in the auth dialog).</p>
+
+<h3>CA3 scope— what's deliberately excluded</h3>
+<p>Per the module's Project Brief and grading criteria, the following are explicitly out of CA3 scope:</p>
+<table>
+  <tr><th>Feature</th><th>Reason for exclusion</th></tr>
+  <tr><td><strong>Collaborative filtering</strong></td><td>Single-teacher prototype. No multi-user ratings, no co-purchase data, no user-user similarity. Content-based recommendation only (catalogue search + semantic scoring).</td></tr>
+  <tr><td><strong>Reinforcement learning</strong></td><td>Agents are specified via BDI (Rao &amp; Georgeff 1995), not trained via RL (Sutton &amp; Barto 2018). Module explicitly treats RL as a "glance" only — the module's agents use BDI specification.</td></tr>
+  <tr><td><strong>Persistent state / user accounts</strong></td><td>No login, no localStorage persistence, no session history. All state is in-memory. The bundle sign-in (MSAL.js) is only for OneDrive file access — not for account management.</td></tr>
+  <tr><td><strong>Like / Dislike / Review ratings</strong></td><td>No thumbs-up/down, no review flags, no feedback loop into the catalogue. The UX is transactional: search → select → bundle download.</td></tr>
+  <tr><td><strong>Gaeilge generation</strong></td><td>LLMs unreliable in Irish. Catalogue resources matched and returned but no AI-generated Irish-language content (Decision 3).</td></tr>
+  <tr><td><strong>Worksheet/slide/printable generation</strong></td><td>Maker produces markdown prose only — lesson plan descriptions. No PDFs, worksheets, images, or printable content (Decision 5).</td></tr>
+</table>
 
 </div>
 
