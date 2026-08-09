@@ -1274,13 +1274,13 @@ function renderResults() {
   for (var b = 0; b < btns.length; b++) {
     (function(btn) {
       btn.onclick = function(e) {
-        e && e.stopPropagation && e.stopPropagation();
-        e && e.preventDefault && e.preventDefault();
+        if (e) { e.preventDefault(); e.stopPropagation(); }
         var id = btn.getAttribute('data-id');
         if (objHas(state.selectedIds, id)) { delete state.selectedIds[id]; }
         else { state.selectedIds[id] = true; }
         updateHeaderBundleCount();
-        try { renderResults(); } catch(err) { showError('Select error: ' + (err.message || err)); }
+        updateBundleSidebar();
+        updateCardButton(id);
         return false;
       };
     })(btns[b]);
@@ -1289,11 +1289,12 @@ function renderResults() {
   for (var r = 0; r < rmvs.length; r++) {
     (function(btn) {
       btn.onclick = function(e) {
-        e && e.stopPropagation && e.stopPropagation();
-        e && e.preventDefault && e.preventDefault();
-        delete state.selectedIds[btn.getAttribute('data-id')];
+        if (e) { e.preventDefault(); e.stopPropagation(); }
+        var rid = btn.getAttribute('data-id');
+        delete state.selectedIds[rid];
         updateHeaderBundleCount();
-        renderResults();
+        updateBundleSidebar();
+        updateCardButton(rid);
         return false;
       };
     })(rmvs[r]);
