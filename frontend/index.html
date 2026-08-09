@@ -1561,8 +1561,13 @@ function triggerBundle() {
     return;
   }
 
-  // Signed in - proceed directly
-  doBundle(null);
+  // Signed in - acquire token silently and proceed
+  document.getElementById('downloadOverlay').classList.remove('hidden');
+  msalInstance.acquireTokenSilent(loginRequest).then(function(tokenResponse) {
+    doBundle(tokenResponse.accessToken);
+  }).catch(function() {
+    doBundle(null);
+  });
 }
 
 function signInAndBundle() {
