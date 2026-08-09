@@ -781,7 +781,7 @@ var msalConfig = {
   cache: { cacheLocation: 'sessionStorage', storeAuthStateInCookie: false },
 };
 var msalInstance = new msal.PublicClientApplication(msalConfig);
-var loginRequest = { scopes: ['Files.Read', 'User.Read', 'onedrive.readonly'] };
+var loginRequest = { scopes: ['Files.Read'] };
 
 var pendingBundleData = null;
 
@@ -1565,8 +1565,16 @@ function triggerBundle() {
   document.getElementById('downloadOverlay').classList.remove('hidden');
   msalInstance.acquireTokenSilent(loginRequest).then(function(tokenResponse) {
     doBundle(tokenResponse.accessToken);
-  }).catch(function() {
-    doBundle(null);
+  }).catch(function(err) {
+    console.error('Silent token failed:', err);
+    // Try interactive popup
+    msalInstance.acquireTokenPopup(loginRequest).then(function(tokenResponse) {
+      doBundle(tokenResponse.accessToken);
+    }).catch(function(err2) {
+      console.error('Popup token also failed:', err2);
+      showError('Could not get file access token. Trying without — only pre-loaded files will download.');
+      doBundle(null);
+    });
   });
 }
 
@@ -1583,6 +1591,10 @@ function signInAndBundle() {
         msalInstance.acquireTokenPopup(loginRequest).then(function(tokenResponse) {
           document.getElementById('downloadOverlay').classList.remove('hidden');
           doBundle(tokenResponse.accessToken);
+        }).catch(function() {
+          document.getElementById('downloadOverlay').classList.remove('hidden');
+          showError('Could not get file access token. Trying without — only pre-loaded files will download.');
+          doBundle(null);
         });
       });
     }
