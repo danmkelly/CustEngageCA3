@@ -1741,9 +1741,26 @@ document.addEventListener('DOMContentLoaded', function() {
 // Global handler for card-add buttons (survives innerHTML replacement)
 document.addEventListener('click', function(e) {
   var btn = e.target.closest('.card-add button');
+  var bundleBtn = e.target.closest('.bundle-item button');
   if (btn && btn.hasAttribute('data-id')) {
+    var id = btn.getAttribute('data-id');
+    e.preventDefault();
     e.stopPropagation();
-    toggleSelect(btn.getAttribute('data-id'));
+    if (objHas(state.selectedIds, id)) {
+      delete state.selectedIds[id];
+    } else {
+      state.selectedIds[id] = true;
+    }
+    updateHeaderBundleCount();
+    renderResults();
+  }
+  if (bundleBtn && bundleBtn.hasAttribute('data-id')) {
+    var bid = bundleBtn.getAttribute('data-id');
+    e.preventDefault();
+    e.stopPropagation();
+    delete state.selectedIds[bid];
+    updateHeaderBundleCount();
+    renderResults();
   }
 });
 
