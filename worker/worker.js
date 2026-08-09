@@ -1271,12 +1271,14 @@ async function handleBundle(request, env) {
 
   var runId = body.run_id || generateRunId();
 
-  // Extract delegated token from Authorization header (MSAL.js, for file downloads)
-  var delegatedToken = null;
-  var authHeader = request.headers.get("Authorization");
-  if (authHeader && authHeader.startsWith("Bearer ")) {
-    delegatedToken = authHeader.substring(7);
-    console.log("[Bundle] Delegated token provided — using for file downloads");
+  // Extract delegated token from body (frontend passes it to avoid CORS header issues)
+  var delegatedToken = body.delegated_token || null;
+  // Also check Authorization header as fallback
+  if (!delegatedToken) {
+    var authHeader = request.headers.get("Authorization");
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      delegatedToken = authHeader.substring(7);
+    }
   }
 
   var catalogue;

@@ -1667,7 +1667,7 @@ function doBundle(accessToken) {
   xhr.open('POST', WORKER_URL + '/api/bundle');
   xhr.setRequestHeader('Content-Type', 'application/json');
   if (accessToken) {
-    xhr.setRequestHeader('Authorization', 'Bearer ' + accessToken);
+    payload.delegated_token = accessToken;
   }
   xhr.responseType = 'blob';
   xhr.onload = function() {
