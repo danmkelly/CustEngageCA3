@@ -654,10 +654,6 @@ body {
   <div class="header-actions">
     <span class="auth-status hidden" id="authStatus">&#128274; Signed in</span>
     <button class="btn btn-ghost btn-sm hidden" id="signOutBtn" onclick="signOut()">Sign out</button>
-    <button class="btn btn-primary" id="bundleBtn" disabled onclick="triggerBundle()">
-      &#128230; Bundle & Download
-      <span class="bundle-badge" id="bundleCount" style="display:none">0</span>
-    </button>
   </div>
 </div>
 
@@ -1226,6 +1222,11 @@ function renderResults() {
     });
   }
 
+  // Sort by confidence descending (highest match first)
+  filteredResults = filteredResults.slice().sort(function(a, b) {
+    return (b.confidence || 0) - (a.confidence || 0);
+  });
+
   var parts = [];
 
   // Gaps section (above the split layout)
@@ -1300,7 +1301,6 @@ function renderResults() {
   }
 
   setupRefinementListeners();
-  updateHeaderBundleCount();
 }
 
 function renderBundleSidebarHTML() {
@@ -1549,23 +1549,6 @@ function restoreGapButtons(gapCard, code, label, stage) {
 /* -----------------------------------------------
    BUNDLE & DOWNLOAD
    ----------------------------------------------- */
-function updateHeaderBundleCount() {
-  var total = objSize(state.selectedIds);
-  var badge = document.getElementById('bundleCount');
-  var btn = document.getElementById('bundleBtn');
-
-  if (total > 0) {
-    badge.style.display = 'inline-flex';
-    badge.textContent = total;
-    btn.disabled = false;
-    btn.innerHTML = '&#128230; Bundle & Download <span class="bundle-badge">' + total + '</span>';
-  } else {
-    badge.style.display = 'none';
-    btn.disabled = true;
-    btn.innerHTML = '&#128230; Bundle & Download';
-  }
-}
-
 function triggerBundle() {
   if (objSize(state.selectedIds) === 0) {
     showError('Select at least one resource to bundle.');
@@ -1584,8 +1567,25 @@ function triggerBundle() {
 
 function signInAndBundle() {
   document.getElementById('authOverlay').classList.add('hidden');
-  pendingBundleData = true;
-  msalInstance.loginRedirect(loginRequest);
+  msalInstance.loginPopup(loginRequest).then(function(response) {
+    msalInstance.setActiveAccount(response.account);
+    updateAuthUI();
+    if (response.account) {
+      msalInstance.acquireTokenSilent(loginRequest).then(function(tokenResponse) {
+        document.getElementById('downloadOverlay').classList.remove('hidden');
+        doBundle(tokenResponse.accessToken);
+      }).catch(function() {
+        msalInstance.acquireTokenPopup(loginRequest).then(function(tokenResponse) {
+          document.getElementById('downloadOverlay').classList.remove('hidden');
+          doBundle(tokenResponse.accessToken);
+        });
+      });
+    }
+  }).catch(function(err) {
+    console.error('MSAL popup error:', err);
+    showError('Sign-in was cancelled or failed. Try again or continue without files.');
+    document.getElementById('authOverlay').classList.remove('hidden');
+  });
 }
 
 function bundleWithoutFiles() {
@@ -1674,7 +1674,11 @@ function doBundle(accessToken) {
 }
 
 function signOut() {
-  msalInstance.logoutRedirect({ postLogoutRedirectUri: window.location.origin + window.location.pathname });
+  msalInstance.logoutPopup({ postLogoutRedirectUri: window.location.origin + window.location.pathname }).then(function() {
+    updateAuthUI();
+  }).catch(function() {
+    msalInstance.logoutRedirect({ postLogoutRedirectUri: window.location.origin + window.location.pathname });
+  });
 }
 
 function updateAuthUI() {
@@ -1717,28 +1721,13 @@ function showError(msg) {
    ----------------------------------------------- */
 document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('resultsContainer').addEventListener('click', handleResultClick);
-  document.getElementById('bundleBtn').addEventListener('click', triggerBundle);
 
-  // MSAL redirect handling
-  msalInstance.handleRedirectPromise().then(function(response) {
-    if (response) {
-      msalInstance.setActiveAccount(response.account);
-    }
-    updateAuthUI();
-
-    // If returning from sign-in for bundle, proceed
-    if (pendingBundleData && state.msalAccount) {
-      pendingBundleData = null;
-      msalInstance.acquireTokenSilent(loginRequest).then(function(tokenResponse) {
-        document.getElementById('downloadOverlay').classList.remove('hidden');
-        doBundle(tokenResponse.accessToken);
-      }).catch(function() {
-        msalInstance.acquireTokenRedirect(loginRequest);
-      });
-    }
-  }).catch(function(err) {
-    console.error('MSAL redirect error:', err);
-  });
+  // MSAL init — check for existing session (popup-based, no redirect)
+  var accounts = msalInstance.getAllAccounts();
+  if (accounts.length > 0) {
+    msalInstance.setActiveAccount(accounts[0]);
+  }
+  updateAuthUI();
 
   initTaxonomies();
 
