@@ -341,9 +341,9 @@ Guard: generated plans must not use sounds from lessons > 54</pre>
 </div>
 
 <div class="card">
-  <h4>Decision 6: App-only Graph auth for demo</h4>
-  <p>No user login. Cloudflare Worker uses Azure AD app-only credentials (client credentials flow) to access OneDrive. Zero friction for the demo. Content exposure through the Worker is acceptable for a graded project. Limitations section names delegated OAuth (MSAL.js) as the production fix with GDPR rationale.</p>
-  <p class="decision-made">→ Decision: Ship with app-only auth. No login. Document delegated auth as production path.</p>
+  <h4>Decision 6: App-only Graph auth for demo, MSAL.js delegated auth for bundle downloads</h4>
+  <p>The Worker uses Azure AD app-only credentials (client credentials flow) for audit logging and catalogue reads. For bundle file downloads from OneDrive, a separate MSAL.js delegated auth flow was implemented: the user signs in via popup with <code>Files.Read</code> scope, and the delegated token is passed to the Worker which uses <code>/me/drive/root:</code> to fetch files from the user's personal OneDrive. The auth dialog offers two paths: "Sign in with Microsoft" (includes actual resource files in the zip) or "Continue without files" (zip with README + generated plans only). This solves the documented personal OneDrive app-only auth limitation (Decision 7).</p>
+  <p class="decision-made">→ Decision: Ship with app-only auth for server operations. Add MSAL.js delegated flow for bundle file downloads. Popup-based, no redirect/profile-hopping.</p>
 </div>
 
 <div class="card">
@@ -410,7 +410,7 @@ Guard: generated plans must not use sounds from lessons > 54</pre>
 <div class="card warn" style="border-left-color: var(--amber);">
   <h4>Catalogue hosting — GitHub Pages JSON (Decision 7)</h4>
   <p>Personal OneDrive does not support app-only Graph auth for file operations. The catalogue is now served as a static JSON file from GitHub Pages (<code>data/catalogue.json</code>). The Worker fetches it on cold-start and caches it in memory. The frontend also loads it directly via <code>GET /api/catalogue</code> for browse mode. This is a practical response to a deployment constraint — the architecture documents it honestly rather than hiding it.</p>
-  <p><strong>Consequence:</strong> The bundle endpoint still attempts OneDrive file downloads via app-only Graph auth. These fail for personal OneDrive accounts. The zip contains README + generated plans, but no resource files. Errors are listed in the bundle README. This is documented as a known CA3 limitation.</p>
+  <p><strong>Bundle downloads:</strong> Resource files are fetched from OneDrive using MSAL.js delegated auth (popup-based, <code>Files.Read</code> scope). The Worker receives the token via <code>Authorization</code> header and uses <code>/me/drive/root:/Teaching Resources/...</code> for file downloads. Users who decline sign-in still get a zip with README + generated plans. Backslashes in catalogue paths are normalised to forward slashes for the Graph API.</p>
 </div>
 
 <div class="card">
