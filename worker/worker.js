@@ -1254,15 +1254,8 @@ async function handleBundle(request, env) {
 
   var runId = body.run_id || generateRunId();
 
-  // Extract delegated token from body (frontend passes it to avoid CORS header issues)
-  var delegatedToken = body.delegated_token || null;
-  // Also check Authorization header as fallback
-  if (!delegatedToken) {
-    var authHeader = request.headers.get("Authorization");
-    if (authHeader && authHeader.startsWith("Bearer ")) {
-      delegatedToken = authHeader.substring(7);
-    }
-  }
+  // App-only auth — Worker downloads files directly (modernise.ie business tenant with SPO)
+  // No user sign-in needed. Content scope: NCI/Teaching Resources/* only.
 
   var catalogue;
 
