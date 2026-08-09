@@ -103,7 +103,8 @@
 
 <div class="issue-count">
   <span class="issue-pill fixed">7 Fixed (this session)</span>
-  <span class="issue-pill open">3 Open</span>
+  <span class="issue-pill fixed">1 Resolved (catalogue)</span>
+  <span class="issue-pill open">2 Open</span>
   <span class="issue-pill known">4 Known limitations (documented)</span>
 </div>
 
@@ -116,12 +117,12 @@
     <tr>
       <td>O01</td><td><span class="sev-high">HIGH</span></td>
       <td><strong>Bundle can't download resource files.</strong> Personal OneDrive doesn't support app-only MS Graph auth. Zip contains README + generated plans only.</td>
-      <td>MSAL.js delegated auth (in progress)</td>
+      <td>MSAL.js delegated auth (implemented)</td>
     </tr>
     <tr>
-      <td>O02</td><td><span class="sev-med">MED</span></td>
-      <td><strong>Catalogue data quality.</strong> 2,895 rows at folder-level confidence (0.5). Most fields empty. Populator running in parallel session.</td>
-      <td>Wait for catalogue_populator.py (other session)</td>
+      <td>O02</td><td><span class="sev-low">LOW</span></td>
+      <td><s><strong>Catalogue data quality.</strong></s> <strong>Resolved.</strong> Catalogue now fully populated: 2,895 rows, 1,165 at confidence 0.7–0.9, 1,173 with grade_band and format. Guided TF4/C1 returns 159 resources, zero gaps.</td>
+      <td><span class="tag tag-fixed">RESOLVED</span></td>
     </tr>
     <tr>
       <td>O03</td><td><span class="sev-low">LOW</span></td>
