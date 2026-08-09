@@ -6,9 +6,8 @@
 <title>Teacher's Pet - Resource Discovery for Irish Primary Teachers</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
-
 <script>
-console.log('Teacher\'s Pet loaded');
+
 var EMBED_LANG = {
   "_description": "Primary Language Curriculum (2019) â€” English strand outcomes. TF codes with stage progression.",
   "_source": "curriculumonline.ie/primary/curriculum-areas/primary-language/",
@@ -324,7 +323,8 @@ var state = {
   browseFilters: { subject: {}, grade: {}, format: {}, season: {} },
   refinementText: '',
   refinementChips: {},
-  lastQuery: null,};
+  lastQuery: null,
+};
 
 function objSize(o) { var n = 0; for (var k in o) { if (o.hasOwnProperty(k)) n++; } return n; }
 function objKeys(o) { var a = []; for (var k in o) { if (o.hasOwnProperty(k)) a.push(k); } return a; }
@@ -895,7 +895,7 @@ function renderResultCardHTML(r) {
   if (r.onedrive_path) {
     var safeOdPath = r.onedrive_path.replace(/\\/g, '/').split('/').map(function(s) { return encodeURIComponent(s); }).join('/');
     var odUrl = 'https://modernisetemp-my.sharepoint.com/personal/dan_modernise_ie/Documents/NCI/Teaching%20Resources/' + safeOdPath;
-    fileLink = '<a href="' + odUrl + '" target="_blank" rel="noopener" class="od-link" style="display:inline-block;margin-left:4px;padding:2px 8px;font-size:0.68rem;border:1px solid var(--border);border-radius:999px;color:var(--accent);text-decoration:none;vertical-align:middle">Open ↗</a>';
+    fileLink = ' <a href="' + odUrl + '" target="_blank" rel="noopener" title="Open in OneDrive" style="font-size:0.7rem;text-decoration:none;opacity:0.6">↗</a>';
   }
 
   return '<div class="' + classes + '" data-id="' + esc(id) + '">' +
@@ -1140,8 +1140,7 @@ function doBundle() {
 
   var xhr = new XMLHttpRequest();
   xhr.open('POST', WORKER_URL + '/api/bundle');
-  xhr.setRequestHeader('Content-Type', 'application/json');
-  xhr.responseType = 'blob';
+  xhr.setRequestHeader('Content-Type', 'application/json');xhr.responseType = 'blob';
   xhr.onload = function() {
     overlay.classList.add('hidden');
     if (xhr.status === 200) {
@@ -1189,8 +1188,6 @@ function showError(msg) {
    INITIALISATION
    ----------------------------------------------- */
 document.addEventListener('DOMContentLoaded', function() {
-  console.log('DOM ready');
-  try {
   document.getElementById('resultsContainer').addEventListener('click', handleResultClick);
 
   initTaxonomies();
@@ -1200,12 +1197,9 @@ document.addEventListener('DOMContentLoaded', function() {
     state.taxonomies.maths = EMBED_MATHS;
     populateGuidedDropdowns();
   }
-  } catch(e) { console.error('Init error:', e); }
 });
 
 </script>
 </body>
 </html>
-
-
 
