@@ -121,7 +121,7 @@
     </tr>
     <tr>
       <td>O02</td><td><span class="sev-low">LOW</span></td>
-      <td><s><strong>Catalogue data quality.</strong></s> <strong>Resolved.</strong> Catalogue now fully populated: 2,895 rows, 1,165 at confidence 0.7–0.9, 1,173 with grade_band and format. Guided TF4/C1 returns 159 resources, zero gaps.</td>
+      <td><s><strong>Catalogue data quality.</strong></s> <strong>Resolved.</strong> 2,895 rows: 1,438 outcome-tagged (50%), 1,484 grade/format-tagged (51%). Literacy 97%, Maths 96%. Normalised outcome formats. Guided TF5/C1 returns 172 resources.</td>
       <td><span class="tag tag-fixed">RESOLVED</span></td>
     </tr>
     <tr>
@@ -530,7 +530,7 @@
 <table>
 <tr><th>ID</th><th>Endpoint</th><th>Test</th><th>Result</th></tr>
 <tr><td>V01</td><td>POST /api/query (freetext)</td><td>"phonics cvc" → 20 results, mode=freetext, all 23 catalogue fields passed through in response</td><td><span class="tag tag-pass">200 OK</span></td></tr>
-<tr><td>V02</td><td>POST /api/query (guided)</td><td>TF4/C1/Reading → 2 catalogue matches, 1 gap detected (Limited coverage)</td><td><span class="tag tag-pass">200 OK</span></td></tr>
+<tr><td>V02</td><td>POST /api/query (guided)</td><td>TF5/C1 → 172 resources (outcome+grade matched). TF8/C4 → 0 resources, 1 gap (untagged). Grade normalisation: Infants→C1, 1st-2nd→C2 etc.</td><td><span class="tag tag-pass">200 OK</span></td></tr>
 <tr><td>V03</td><td>POST /api/query (refine)</td><td>type=refine, base_query + refinement_text → re-searches with merged context</td><td><span class="tag tag-pass">200 OK</span></td></tr>
 <tr><td>V04</td><td>POST /api/query (similar)</td><td>type=similar, description → operates as freetext search by description</td><td><span class="tag tag-pass">200 OK</span></td></tr>
 <tr><td>V05</td><td>POST /api/generate-lesson</td><td>TF4/C1 → 4,697-char markdown lesson plan (no duplicate badge after fix)</td><td><span class="tag tag-pass">200 OK</span></td></tr>
@@ -617,9 +617,9 @@
 </tr>
 <tr>
   <td>K09</td><td>Data</td>
-  <td><strong>Catalogue data quality.</strong> 2,895 rows loaded but most at 0.5 confidence (folder-inferred). Empty grade_band/format on majority of rows. Many files categorised as "Other." Expected: catalogue_populator.py still running in separate session. Once complete, deep-parsed rows will be 0.7–0.9 with populated columns.</td>
+  <td><strong>Catalogue data quality.</strong> <s>2,895 rows loaded but most at 0.5 confidence.</s> <strong>Resolved.</strong> 1,438 outcome-tagged (50%: Literacy 97%, Maths 96%), 1,484 grade/format-tagged (51%). Outcomes normalised (932 fixed). 191 image-heavy rows processed via Gemini vision. Remaining untagged rows are excluded subjects (SPHE, PE, SESE, Gaeilge per Decision 2).</td>
   <td><span class="sev-med">MED</span></td>
-  <td>IN PROGRESS</td>
+  <td><span class="tag tag-fixed">RESOLVED</span></td>
 </tr>
 <tr>
   <td>K10</td>
