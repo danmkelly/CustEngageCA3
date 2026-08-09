@@ -74,11 +74,12 @@
 </p>
 
 <div class="card" style="background:var(--accent-light);border-color:var(--accent);">
-  <h4>Status: Pre-build tests complete <span class="go">GO</span></h4>
+  <h4>Status: Deployed <span class="go">LIVE</span> — 5-agent pipeline running on Cloudflare Worker</h4>
   <table style="margin:0;">
-    <tr><td style="border:none;padding-right:1rem;"><strong>curriculumonline.ie scraping</strong></td><td style="border:none;"><span class="go">GO</span> 91 outcome prose matches in raw HTML, no API needed</td></tr>
-    <tr><td style="border:none;padding-right:1rem;"><strong>Gemini Flash vision tags</strong></td><td style="border:none;"><span class="go">GO</span> 10/10 image-heavy PDFs correctly tagged, ~$2 for full parse</td></tr>
-    <tr><td style="border:none;padding-right:1rem;"><strong>DeepSeek text classification</strong></td><td style="border:none;"><span class="go">GO</span> ~$3 for text-rich PDFs, ~90 min, tested on 50-PDF sample</td></tr>
+    <tr><td style="border:none;padding-right:1rem;"><strong>Worker</strong></td><td style="border:none;"><span class="go">LIVE</span> teachers-pet.dan-m-kelly.workers.dev — 5 endpoints, CORS, DeepSeek + Graph API</td></tr>
+    <tr><td style="border:none;padding-right:1rem;"><strong>Frontend</strong></td><td style="border:none;"><span class="go">LIVE</span> GitHub Pages — 3-mode UX, warm library-card theme, refinement chips</td></tr>
+    <tr><td style="border:none;padding-right:1rem;"><strong>Catalogue</strong></td><td style="border:none;"><span class="warn">BUILDING</span> 2,895 rows loaded (GitHub Pages JSON), catalogue_populator.py running in parallel session</td></tr>
+    <tr><td style="border:none;padding-right:1rem;"><strong>QA</strong></td><td style="border:none;"><span class="go">COMPLETE</span> Keelin deep test pass — 7 bugs fixed, 3 open items, 40 framework assessments</td></tr>
   </table>
 </div>
 
@@ -307,7 +308,7 @@ Guard: generated plans must not use sounds from lessons > 54</pre>
 <!-- ============================================================== -->
 <div class="tab-panel" id="tab-decisions">
 
-<h2>Six Numbered Decisions</h2>
+<h2>Nine Numbered Decisions</h2>
 
 <div class="card">
   <h4>Decision 1: Deep-parse all in-scope PDFs</h4>
@@ -345,6 +346,25 @@ Guard: generated plans must not use sounds from lessons > 54</pre>
   <p class="decision-made">→ Decision: Ship with app-only auth. No login. Document delegated auth as production path.</p>
 </div>
 
+<div class="card">
+  <h4>Decision 7: Switch catalogue from OneDrive XLSX to GitHub Pages JSON</h4>
+  <p>Personal OneDrive (hotmail.com) does not support Microsoft Graph app-only (client credentials) authentication — the Worker's calls to <code>/drive/root:/Teaching Resources/Catalogue.xlsx:/workbook/tables/</code> returned 401. The catalogue is the pipeline's sensor — without it, the Researcher has nothing to search. The solution: serve the catalogue as a static JSON file from the same GitHub Pages repo that hosts the frontend. The Worker fetches <code>data/catalogue.json</code> on cold-start and caches it in memory. The catalogue_populator.py writes directly to <code>data/catalogue.json</code> instead of outputting XLSX for OneDrive upload.</p>
+  <p class="decision-made">→ Decision: Catalogue served as static JSON from GitHub Pages. Worker fetches at cold-start. Catalogue_populator.py writes JSON directly. OneDrive Excel path retained for audit logging only (still works for app-only auth — the table rows endpoint is separate from file access).</p>
+  <p class="decision-made"><strong>Consequence:</strong> Bundle file downloads from OneDrive still use app-only auth and fail for personal accounts. This is a known limitation — the bundle zip contains README + generated plans but no actual resource files. Documented in README Limitations, QA page O01, and this decision.</p>
+</div>
+
+<div class="card">
+  <h4>Decision 8: Split Keelin into Dev-Keelin + Ops-Keelin</h4>
+  <p>The original design had a single Keelin agent. During Claude-assisted review, it became clear that security review (what guards the deployment boundary) and content QA (what guards the teacher boundary) are fundamentally different domains. Dev-Keelin audits secrets, CORS, Graph scopes, and wrangler.toml — blocking deployment on failure. Ops-Keelin validates generated lesson plans for hallucinations, UFLI boundary violations, and paired-prompt bias — blocking content from reaching the teacher on failure. Their scopes don't overlap: failing one doesn't mean failing the other. This split reflects the module's trust calibration argument (Lee &amp; See 2004): different trust dimensions need different guards.</p>
+  <p class="decision-made">→ Decision: Two Keelins with non-overlapping scopes. Dev-Keelin in agents/dev/, Ops-Keelin in agents/ops/. Both block on fail: Dev-Keelin blocks deployment, Ops-Keelin blocks content delivery.</p>
+</div>
+
+<div class="card">
+  <h4>Decision 9: Warm visual identity via Claude-assisted design</h4>
+  <p>The initial frontend was functional but stark — white background, standard fonts, minimal styling. The module's UX frameworks (CASA, Fogg B=MAP, Cialdini's liking principle) implied a visual identity should match the system's role: a trusted colleague, not a clinical tool. Claude (via OpenCode) was prompted for a warm, library-inspired theme appropriate for a teacher-facing concierge system. Output: Fraunces (serif display) + Public Sans (body) + IBM Plex Mono (badges/confidence scores), cream background (#f2ecd9) with dot-grid texture, library card-catalogue styling for resource cards (top accent bar, double-rule shadow, stacked hover effect), painted-card tab design with polygon clip-paths, and a four-colour semantic badge system (accent green, success, warning/amber, purple for AI-generated). The dot-grid background and warm palette deliberately evoke a teacher's physical resource library.</p>
+  <p class="decision-made">→ Decision: Apply warm library-card visual identity across all pages (frontend, pipeline_thoughts, QA dashboard). Design rationale documented in the CASA and Cialdini framework assessments in the QA page.</p>
+</div>
+
 </div>
 
 
@@ -359,6 +379,7 @@ Guard: generated plans must not use sounds from lessons > 54</pre>
 ┌──────────────────────────────────────────────────────────────────┐
 │  GITHUB PAGES — static HTML + JS (presentation only)             │
 │  Zero secrets. Zero auth. All intelligence in the Worker.        │
+│  Also hosts: data/catalogue.json (static, ~2,895 rows)            │
 └────────────────────────────┬─────────────────────────────────────┘
                              │  HTTPS
                              ▼
@@ -367,32 +388,38 @@ Guard: generated plans must not use sounds from lessons > 54</pre>
 │  Secrets: DEEPSEEK_API_KEY, MS_TENANT_ID, MS_CLIENT_ID,          │
 │           MS_CLIENT_SECRET, GEMINI_API_KEY                        │
 │                                                                   │
-│  POST /api/query     → 5-agent pipeline (Researcher → Designer   │
-│                          → Maker → Communicator → Manager)        │
-│                          (shown here as five core roles;           │
-│                          see Agents for full build/run teams)      │
-│  POST /api/bundle    → Fetch files from OneDrive, zip in-memory, │
-│                          return download                          │
-│  GET  /api/catalogue → Full catalogue as JSON                    │
-└────────────────────────────┬─────────────────────────────────────┘
-                             │  Microsoft Graph API (app-only)
-                             ▼
-┌──────────────────────────────────────────────────────────────────┐
-│  ONEDRIVE — Teaching Resources/                                  │
-│  ├─ Catalogue.xlsx        (live operational catalogue)            │
-│  ├─ Catalogue_raw.json    (immutable parse archive)               │
-│  └─ *.pdf                 (~1,800 in-scope resource files)        │
-└──────────────────────────────────────────────────────────────────┘
+│  POST /api/query          → 5-agent pipeline (Manager→Researcher  │
+│                               →Designer→Maker→Communicator)       │
+│  POST /api/generate-lesson→ Direct Maker invocation (gap cards)   │
+│  POST /api/bundle         → Fetch files from OneDrive, zip with   │
+│                               README + AI disclosure, download    │
+│  GET  /api/catalogue      → Full catalogue as JSON (slim)         │
+│  GET  /api/taxonomy/:name → Language/Maths/UFLI taxonomy JSON     │
+└────────────────────────────┬──────────────────┬──────────────────┘
+                             │                   │
+              ┌──────────────┘                   └──────────────┐
+              ▼                                                  ▼
+┌──────────────────────────┐              ┌──────────────────────────┐
+│  GitHub Pages (catalogue)│              │  DeepSeek API             │
+│  Static JSON — fetched   │              │  Lesson plan generation   │
+│  at Worker cold-start,   │              │  + agent reasoning        │
+│  cached in memory.       │              │  (conditional, flagged)   │
+└──────────────────────────┘              └──────────────────────────┘
 </pre>
 
+<div class="card warn" style="border-left-color: var(--amber);">
+  <h4>Catalogue hosting — GitHub Pages JSON (Decision 7)</h4>
+  <p>Personal OneDrive does not support app-only Graph auth for file operations. The catalogue is now served as a static JSON file from GitHub Pages (<code>data/catalogue.json</code>). The Worker fetches it on cold-start and caches it in memory. The frontend also loads it directly via <code>GET /api/catalogue</code> for browse mode. This is a practical response to a deployment constraint — the architecture documents it honestly rather than hiding it.</p>
+  <p><strong>Consequence:</strong> The bundle endpoint still attempts OneDrive file downloads via app-only Graph auth. These fail for personal OneDrive accounts. The zip contains README + generated plans, but no resource files. Errors are listed in the bundle README. This is documented as a known CA3 limitation.</p>
+</div>
+
 <div class="card">
-  <h4>Catalogue persistence — append, never rebuild</h4>
+  <h4>Catalogue persistence — append, never rebuild (JSON-based)</h4>
   <table>
     <tr><th>File</th><th>Purpose</th><th>Update model</th></tr>
-    <tr><td><strong>Catalogue.xlsx</strong></td><td>Live operational catalogue. Agents read/write at run time via Graph API. 18 columns.</td><td>Append-only. New content → new row. Existing rows updated only by human disagreement flags.</td></tr>
-    <tr><td><strong>Catalogue_raw.json</strong></td><td>Immutable archive of raw parse results (extracted text, Gemini tags, DeepSeek tags, confidence, timestamps).</td><td>Write-once per file. Never modified. If tagging improves, re-parse and compare — never overwrite.</td></tr>
+    <tr><td><strong>data/catalogue.json</strong></td><td>Live operational catalogue served from GitHub Pages. Worker fetches at cold-start, browser fetches via /api/catalogue for browse mode. 23 fields per row.</td><td>catalogue_populator.py writes new rows (append). Existing rows updated only if human review flags change tags. Committed to repo and pushed to GitHub Pages for Worker to pick up on next cold-start.</td></tr>
+    <tr><td><strong>Catalogue.xlsx (OneDrive)</strong></td><td>Original Excel catalogue — retained for audit sheet writes only (MS Graph table rows endpoint works with app-only auth).</td><td>Audit rows appended via /api/query pipeline. Not used for catalogue reads.</td></tr>
   </table>
-  <p>The parse pipeline is <strong>idempotent by file path</strong>: before parsing, check Catalogue.xlsx for an existing row with that OneDrive path. Found → skip. Not found → parse → append. Adding 50 new files next month runs the same script, skips 1,800 existing rows, parses 50 new ones. No rebuild.</p>
 </div>
 
 <div class="card">
@@ -403,8 +430,8 @@ Guard: generated plans must not use sounds from lessons > 54</pre>
     <tr><td>API / agents</td><td>Cloudflare Worker (single file)</td><td>Hides all API keys in secrets. Free tier (100K req/day). Serverless.</td></tr>
     <tr><td>LLM reasoning</td><td>DeepSeek (chat)</td><td>Cheap ($0.14/M input), good at structured tag output</td></tr>
     <tr><td>Vision tags</td><td>Gemini Flash (latest)</td><td>$0.075/1K images, excellent at worksheet understanding</td></tr>
-    <tr><td>Catalogue</td><td>Excel Online on OneDrive</td><td>Teacher can browse/edit directly. Graph API for programmatic access. Single ecosystem.</td></tr>
-    <tr><td>File storage</td><td>OneDrive (teacher's personal)</td><td>Files stay where they are. Graph API fetches on demand for bundle creation.</td></tr>
+    <tr><td>Catalogue</td><td>GitHub Pages static JSON (catalogue.json)</td><td>Personal OneDrive doesn't support app-only Graph auth for file ops. JSON on GitHub Pages solves this. Worker caches in-memory on cold-start.</td></tr>
+    <tr><td>File storage</td><td>OneDrive (teacher's personal) — bundle only</td><td>Files stay where they are. Bundle attempts Graph API fetch but fails for personal accounts — known limitation (see Decision 7).</td></tr>
     <tr><td>Auth</td><td>Azure AD app-only (demo)</td><td>Zero friction. No login popup. Named as demo-only; delegated auth is the production path.</td></tr>
     <tr><td>Zip bundling</td><td>JSZip in Worker</td><td>In-memory zip creation, streamed to browser. Files fetched from OneDrive at bundle time.</td></tr>
   </table>
@@ -607,6 +634,18 @@ Guard: generated plans must not use sounds from lessons > 54</pre>
 
 <h3>Phase 10: Tests Passed</h3>
 <p>curriculumonline.ie scraping: <span class="go">GO</span>. Gemini Flash vision: <span class="go">GO</span> (10/10 image-heavy PDFs correctly tagged, ~$2 for full parse). DeepSeek text classification: <span class="go">GO</span> (~$3, ~90 min). All blocking unknowns resolved. Ready to build.</p>
+
+<h3>Phase 11: Visual Redesign — Warm Library-Card Identity</h3>
+<p>The initial frontend was functional but stark — white background, standard fonts, minimal styling. The module's UX frameworks (CASA, Fogg B=MAP, Cialdini's liking principle) implied a visual identity should match the system's role: a trusted colleague, not a clinical tool. Claude (via OpenCode) was prompted for a warm, library-inspired theme. Result: Fraunces (serif display) + Public Sans (body) + IBM Plex Mono (mono for badges/confidence scores), cream background (#f2ecd9) with dot-grid texture, library card-catalogue styling for resource cards (top accent bar, double-rule shadow, stacked hover effect), painted-card tab design with polygon clip-paths, and a four-colour semantic badge system. Applied across the frontend, pipeline_thoughts.html, and the QA dashboard. The dot-grid background and warm palette deliberately evoke a teacher's physical resource library — a CASA-aligned visual register that says "trusted colleague" without pretending to be human.</p>
+
+<h3>Phase 12: Catalogue Hosting — OneDrive to GitHub Pages JSON</h3>
+<p>Personal OneDrive (hotmail.com) does not support app-only Microsoft Graph authentication for file operations. The Worker's calls to read Catalogue.xlsx and download resource files returned 401. The fix: serve the catalogue as a static JSON file from GitHub Pages (<code>data/catalogue.json</code>), fetched by the Worker on cold-start and cached in memory. The catalogue_populator.py was redirected to write JSON directly instead of XLSX. This is a practical deployment constraint — documented honestly in Decision 7 and the README Limitations rather than hidden. Consequence: bundle file downloads from OneDrive remain broken for personal accounts (the zip gets README + generated plans but no resource files).</p>
+
+<h3>Phase 13: Deep Test Pass — 7 Bugs Fixed, 3 Open Items</h3>
+<p>Keelin (Dev-Keelin + Ops-Keelin combined) conducted a comprehensive audit against the live deployed Worker and frontend. Seven bugs were found and fixed in a single session: (1) /api/query response stripped catalogue fields (subject, grade_band, format, confidence missing — frontend cards showed no data), (2) duplicate [AI-Generated] badge (system prompt + code both added it), (3) /api/generate-lesson endpoint didn't exist (gap card button returned 404), (4) /api/bundle payload mismatch between frontend and Worker (different field names, missing summary_md), (5) refine/similar query types not handled by Worker, (6) refinement chips toggled visually but never actually filtered results, (7) no loading spinner during searches. Three open items remain: bundle file downloads (OneDrive app-only auth limitation — accepted), catalogue data quality (population in progress), no persistent session state (in-memory only — documented limitation).</p>
+
+<h3>Phase 14: Keelin QA Dashboard — 40 Framework Assessments</h3>
+<p>A comprehensive QA page (<code>qa.html</code>) was built, modelled on the CA2 Emerald Pantry format but mapped to Teacher's Pet's specific domain. The page organises 40 framework assessments across the module's three-pillar structure (Engagement → Intelligence → Partnership), with each framework citing author/year, core claim, and how Teacher's Pet specifically operationalises it. The module's recurring evaluative move — "name the mechanism, don't just assert a conclusion" — is applied throughout. An Assessment Map tab maps every CA3 grading criterion (Agentic Organisation, Handoff & Orchestration, Live Data Gate, Partnership Progression, Governance, AI Disclosure, Trust Calibration) to specific file-and-line evidence. A Functional QA tab documents all 11 findings with live endpoint verification results. The page inherits the warm library-card visual identity for consistency.</p>
 
 </div>
 
