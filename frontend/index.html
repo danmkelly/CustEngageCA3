@@ -423,8 +423,8 @@ body {
     <form class="guided-form" onsubmit="return guidedSearch(event)">
       <div class="field">
         <label for="gSubject">Subject</label>
-        <select id="gSubject" onchange="onGuidedSubjectChange()">
-          <option value="">— Select —</option>
+        <select id="gSubject" disabled onchange="onGuidedSubjectChange()">
+          <option value="">— Loading curriculum... —</option>
           <option value="Language">Language (Primary Language Curriculum)</option>
           <option value="Maths">Maths (Primary Maths Curriculum)</option>
         </select>
@@ -612,8 +612,9 @@ function populateGuidedDropdowns() {
   var lang = state.taxonomies.language;
   var maths = state.taxonomies.maths;
   if (!lang || !maths) return;
-  // Dropdown cascade handled by onGuidedSubjectChange/onGuidedStrandChange/onGuidedStageChange
-  // Taxonomy data is available — no further setup needed
+  var subjEl = document.getElementById('gSubject');
+  subjEl.options[0].textContent = '— Select —';
+  subjEl.disabled = false;
 }
 
 function onGuidedSubjectChange() {
