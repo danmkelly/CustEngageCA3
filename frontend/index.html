@@ -1163,17 +1163,6 @@ function handleResultClick(e) {
     var action = t.getAttribute && t.getAttribute('data-action');
     if (action) {
       e.preventDefault();
-      if (action === 'select') {
-        var id = t.getAttribute('data-id');
-        if (objHas(state.selectedIds, id)) {
-          delete state.selectedIds[id];
-        } else {
-          state.selectedIds[id] = true;
-        }
-        updateHeaderBundleCount();
-        renderResults();
-        return;
-      }
       if (action === 'search-curriculum') {
         searchCurriculumOnline(t.getAttribute('data-code'), t.getAttribute('data-label'), t.getAttribute('data-stage'));
         return;
@@ -1279,6 +1268,32 @@ function renderResults() {
   parts.push('</div>'); // close results-layout
 
   container.innerHTML = parts.join('');
+
+  // Directly attach click handlers to card-add and bundle-item buttons
+  var btns = container.querySelectorAll('.card-add button[data-action="select"]');
+  for (var b = 0; b < btns.length; b++) {
+    (function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation(); e.preventDefault();
+        var id = btn.getAttribute('data-id');
+        if (objHas(state.selectedIds, id)) { delete state.selectedIds[id]; }
+        else { state.selectedIds[id] = true; }
+        updateHeaderBundleCount();
+        renderResults();
+      });
+    })(btns[b]);
+  }
+  var rmvs = container.querySelectorAll('.bundle-item button[data-action="select"]');
+  for (var r = 0; r < rmvs.length; r++) {
+    (function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation(); e.preventDefault();
+        delete state.selectedIds[btn.getAttribute('data-id')];
+        updateHeaderBundleCount();
+        renderResults();
+      });
+    })(rmvs[r]);
+  }
 
   setupRefinementListeners();
   updateHeaderBundleCount();
