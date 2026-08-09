@@ -1174,7 +1174,7 @@ async function handleQuery(request, env) {
   );
 
   // ── 6. Build resources list for JSON response ─────────────────────
-  var resources = matches.slice(0, MAX_SEARCH_RESULTS).map(function (m) {
+  var resources = matches.slice(0, 200).map(function (m) {
     var seqEntry = sequence.find(function (s) {
       return s.resource && s.resource.id === m.id;
     });
