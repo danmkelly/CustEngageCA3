@@ -1089,7 +1089,7 @@ function applyRefinements() {
       if (xhr.status === 200) {
         try {
           var data = JSON.parse(xhr.responseText);
-          state.results = data.results || [];
+        state.results = data.resources || data.results || [];
         } catch(e) {}
       }
       renderResults();
