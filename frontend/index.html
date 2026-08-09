@@ -1737,8 +1737,17 @@ document.addEventListener('DOMContentLoaded', function() {
     populateGuidedDropdowns();
   }
 });
-</script>
 
+// Global handler for card-add buttons (survives innerHTML replacement)
+document.addEventListener('click', function(e) {
+  var btn = e.target.closest('.card-add button');
+  if (btn && btn.hasAttribute('data-id')) {
+    e.stopPropagation();
+    toggleSelect(btn.getAttribute('data-id'));
+  }
+});
+
+</script>
 </body>
 </html>
 
