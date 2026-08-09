@@ -3,43 +3,267 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Teacher's Pet — Resource Discovery for Irish Primary Teachers</title>
+<title>Teacher's Pet � Resource Discovery for Irish Primary Teachers</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://alcdn.msauth.net/browser/2.28.3/js/msal-browser.min.js"></script>
 <script>
-/* Embedded taxonomy loader — runs before state object, writes to window.__tax */
-window.__tax = { language: null, maths: null };
-(function() {
-var loaded = 0;
-function loadOne(name) {
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', 'https://raw.githubusercontent.com/danmkelly/CustEngageCA3/main/taxonomy/' + name + '.json');
-  xhr.onload = function() {
-    if (xhr.status === 200) { try { window.__tax[name] = JSON.parse(xhr.responseText); } catch(e) {} }
-    checkDone(name);
-  };
-  xhr.onerror = function() {
-    var xhr2 = new XMLHttpRequest();
-    xhr2.open('GET', 'https://teachers-pet.dan-m-kelly.workers.dev/api/taxonomy/' + name);
-    xhr2.onload = function() {
-      if (xhr2.status === 200) { try { window.__tax[name] = JSON.parse(xhr2.responseText); } catch(e) {} }
-      checkDone(name);
-    };
-    xhr2.onerror = function() { checkDone(name); };
-    xhr2.send();
-  };
-  xhr.send();
-}
-function checkDone(name) {
-  loaded++;
-  if (loaded >= 2 && window.__tax.language && window.__tax.maths) {
-    window.__taxReady = true;
+
+var EMBED_LANG = {
+  "_description": "Primary Language Curriculum (2019) â€” English strand outcomes. TF codes with stage progression.",
+  "_source": "curriculumonline.ie/primary/curriculum-areas/primary-language/",
+  "_stages": {
+    "C1": "Junior Infants & Senior Infants",
+    "C2": "First & Second Class",
+    "C3": "Third & Fourth Class",
+    "C4": "Fifth & Sixth Class"
+  },
+  "strands": {
+    "Oral Language": {
+      "elements": {
+        "Communicating": {
+          "outcomes": [
+            {"code": "TF1", "label": "Engagement, listening and attention"},
+            {"code": "TF2", "label": "Motivation and choice"},
+            {"code": "TF3", "label": "Social conventions and awareness of others"},
+            {"code": "TF4", "label": "Sentence structure and grammar"},
+            {"code": "TF5", "label": "Vocabulary"}
+          ]
+        },
+        "Understanding": {
+          "outcomes": [
+            {"code": "TF6", "label": "Demonstration of understanding"},
+            {"code": "TF7", "label": "Requests, questions and interactions"},
+            {"code": "TF8", "label": "Categorisation"}
+          ]
+        },
+        "Exploring and Using": {
+          "outcomes": [
+            {"code": "TF9", "label": "Retelling and elaboration"},
+            {"code": "TF10", "label": "Playful and creative use of language"},
+            {"code": "TF11", "label": "Information giving, explanation and justification"},
+            {"code": "TF12", "label": "Description, prediction and reflection"}
+          ]
+        }
+      }
+    },
+    "Reading": {
+      "elements": {
+        "Engagement": {
+          "outcomes": [
+            {"code": "TF1", "label": "Engagement"},
+            {"code": "TF2", "label": "Motivation and choice"}
+          ]
+        },
+        "Communicating": {
+          "outcomes": [
+            {"code": "TF1", "label": "Engagement"},
+            {"code": "TF2", "label": "Motivation and choice"},
+            {"code": "TF3", "label": "Conventions of print and sentence structure"},
+            {"code": "TF4", "label": "Phonological and phonemic awareness"},
+            {"code": "TF5", "label": "Phonics, word recognition, and word study"},
+            {"code": "TF6", "label": "Vocabulary"}
+          ]
+        },
+        "Understanding": {
+          "outcomes": [
+            {"code": "TF7", "label": "Purpose, genre, and voice"},
+            {"code": "TF8", "label": "Response and author's intent"}
+          ]
+        },
+        "Exploring and Using": {
+          "outcomes": [
+            {"code": "TF9", "label": "Comprehension"},
+            {"code": "TF10", "label": "Fluency and self-correction"}
+          ]
+        }
+      }
+    },
+    "Writing": {
+      "elements": {
+        "Communicating": {
+          "outcomes": [
+            {"code": "TF1", "label": "Engagement"},
+            {"code": "TF2", "label": "Motivation and choice"},
+            {"code": "TF3", "label": "Conventions of print and sentence structure"},
+            {"code": "TF4", "label": "Spelling and word study"},
+            {"code": "TF5", "label": "Vocabulary"}
+          ]
+        },
+        "Understanding": {
+          "outcomes": [
+            {"code": "TF6", "label": "Purpose, genre, and voice"},
+            {"code": "TF7", "label": "Writing process and creating text"}
+          ]
+        },
+        "Exploring and Using": {
+          "outcomes": [
+            {"code": "TF8", "label": "Response and author's intent"},
+            {"code": "TF9", "label": "Handwriting and presentation"}
+          ]
+        }
+      }
+    }
+  },
+  "outcome_prose": {
+    "Reading": {
+      "TF4": {
+        "C1": "play with, recognise, and manipulate sounds to develop phonological and phonemic awareness",
+        "C2": "use phonological and phonemic awareness to decode and encode words",
+        "C3": "use a range of word identification strategies flexibly",
+        "C4": "use a comprehensive range of word identification strategies fluently"
+      },
+      "TF5": {
+        "C1": "recognise, name, and sound all lower-case and upper-case letters and identify common sounds",
+        "C2": "use phonic knowledge and a range of word identification strategies to read unfamiliar words",
+        "C3": "use phonic knowledge and a range of word identification strategies with flexibility and confidence",
+        "C4": "read widely and use a full range of word identification strategies flexibly and automatically"
+      },
+      "TF9": {
+        "C1": "recall and talk about significant events and details in a text",
+        "C2": "recall and discuss the main events, information, or ideas in a text",
+        "C3": "retrieve, interpret, and integrate information from a range of texts",
+        "C4": "synthesise, and critically evaluate information from a wide variety of texts"
+      },
+      "TF10": {
+        "C1": "read short, structured texts at an appropriate pace with understanding",
+        "C2": "read a range of texts accurately and with understanding at an appropriate pace",
+        "C3": "read a range of texts accurately, fluently, and with expression",
+        "C4": "read a wide range of challenging texts fluently, accurately, and with expression"
+      }
+    },
+    "Writing": {
+      "TF4": {
+        "C1": "use approximate spelling based on developing knowledge of letter-sound relationships",
+        "C2": "spell a range of high-frequency words and use phonetic strategies to attempt unfamiliar words",
+        "C3": "spell a wide range of words accurately using a range of spelling strategies",
+        "C4": "spell accurately and use spelling resources effectively"
+      },
+      "TF9": {
+        "C1": "develop a satisfactory and legible style of handwriting",
+        "C2": "use a clear and legible handwriting style, developing fluency and speed",
+        "C3": "use a fluent, legible, and joined handwriting style",
+        "C4": "produce legible, fluent, and efficiently-presented handwritten text"
+      }
+    }
   }
 }
-loadOne('language');
-loadOne('maths');
-})();
+;
+var EMBED_MATHS = {
+  "_description": "Primary Mathematics Curriculum (2023) â€” strand and stage structure. Progression Continua PC1â€“PC12.",
+  "_source": "curriculumonline.ie/primary/curriculum-areas/mathematics/",
+  "_stages": {
+    "S1": "Junior Infants & Senior Infants",
+    "S2": "First & Second Class",
+    "S3": "Third & Fourth Class",
+    "S4": "Fifth & Sixth Class"
+  },
+  "strands": {
+    "Algebra": {
+      "strand_units": [
+        {
+          "id": "PC1",
+          "name": "Patterns, rules and relationships",
+          "description": "Exploring, extending, and creating patterns and sequences; identifying rules that describe pattern structure; using rules to make predictions"
+        },
+        {
+          "id": "PC2",
+          "name": "Expressions and equations",
+          "description": "Understanding and using mathematical expressions, equations, and variables"
+        }
+      ]
+    },
+    "Data and Chance": {
+      "strand_units": [
+        {
+          "id": "PC3",
+          "name": "Data",
+          "description": "Collecting, representing, interpreting, and analysing data"
+        },
+        {
+          "id": "PC4",
+          "name": "Chance",
+          "description": "Understanding probability, likelihood, and uncertainty"
+        }
+      ]
+    },
+    "Measures": {
+      "strand_units": [
+        {
+          "id": "PC5",
+          "name": "Time, Money",
+          "description": "Understanding, measuring, and calculating time and money"
+        },
+        {
+          "id": "PC6",
+          "name": "Length, area, weight, capacity",
+          "description": "Understanding, measuring, and comparing length, area, weight, and capacity"
+        }
+      ]
+    },
+    "Number": {
+      "strand_units": [
+        {
+          "id": "PC8",
+          "name": "Uses of number",
+          "description": "Understanding how numbers are used in everyday life and across the curriculum"
+        },
+        {
+          "id": "PC9",
+          "name": "Numeration and counting",
+          "description": "Developing counting skills, number sense, and understanding of number systems"
+        },
+        {
+          "id": "PC10",
+          "name": "Place value and base ten",
+          "description": "Understanding place value, the base-ten system, and number structure"
+        },
+        {
+          "id": "PC11",
+          "name": "Sets and operations",
+          "description": "Understanding and using addition, subtraction, multiplication, division, and their relationships"
+        },
+        {
+          "id": "PC12",
+          "name": "Fractions",
+          "description": "Understanding fractions, decimals, percentages, and their relationships"
+        }
+      ]
+    },
+    "Shape and Space": {
+      "strand_units": [
+        {
+          "id": "PC7",
+          "name": "Spatial awareness, Shape, Transformation",
+          "description": "Understanding spatial relationships, properties of shapes, symmetry, and transformations (turns, angles)"
+        }
+      ]
+    }
+  },
+  "key_outcomes_by_stage": {
+    "Number": {
+      "PC9": {
+        "S1": "develop a sense of ten as the foundation for place value and counting; count, compare, and order numbers to 10",
+        "S2": "count, compare, and order numbers to 100; understand place value to 99",
+        "S3": "count, compare, and order numbers to 1,000; understand place value to 999",
+        "S4": "count, compare, and order numbers to at least 10,000; understand place value to 9,999"
+      },
+      "PC11": {
+        "S1": "develop an understanding of addition and subtraction as combining and partitioning sets",
+        "S2": "develop and use addition and subtraction facts to 20; add and subtract two-digit numbers",
+        "S3": "develop and use multiplication and division facts; multiply and divide within 100",
+        "S4": "use the four operations fluently with whole numbers and decimals"
+      },
+      "PC12": {
+        "S1": "recognise and create halves of sets and shapes",
+        "S2": "identify halves, quarters, and eighths; compare and order fractions with like denominators",
+        "S3": "understand fractions as numbers; find equivalent fractions; add and subtract fractions with like denominators",
+        "S4": "compare, order, add, and subtract fractions with unlike denominators; understand and use decimals and percentages"
+      }
+    }
+  }
+}
+;
 </script>
 <style>
 :root {
@@ -84,7 +308,7 @@ body {
   min-height: 100vh;
 }
 
-/* ── Header ── */
+/* -- Header -- */
 .header {
   background: var(--surface);
   border-bottom: 2px solid var(--accent);
@@ -157,7 +381,7 @@ body {
   font-family: var(--font-mono); font-weight: 700; min-width: 20px; text-align: center;
 }
 
-/* ── Tabs — styled as card-catalogue drawer tabs ── */
+/* -- Tabs � styled as card-catalogue drawer tabs -- */
 .tab-bar {
   display: flex; gap: 6px;
   background: transparent;
@@ -187,7 +411,7 @@ body {
 .tab.active .tab-subtitle { color: rgba(255,255,255,0.75); }
 .tab-subtitle { font-weight: 400; font-size: 0.72rem; color: var(--text-muted); display: block; margin-top: 2px; }
 
-/* ── Layout ── */
+/* -- Layout -- */
 .main { max-width: 1280px; margin: 0 auto; padding: 28px 24px; }
 .mode-panel {
   margin-bottom: 24px;
@@ -199,7 +423,7 @@ body {
 }
 .results-area { min-height: 200px; }
 
-/* ── Guided Mode ── */
+/* -- Guided Mode -- */
 .guided-form { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; }
 .guided-form .field { display: flex; flex-direction: column; gap: 4px; min-width: 160px; }
 .guided-form label { font-size: 0.72rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.06em; }
@@ -214,7 +438,7 @@ body {
 .guided-form select:disabled { background: var(--bg); color: var(--text-muted); cursor: not-allowed; }
 .constraints-field { flex: 1; min-width: 240px; }
 
-/* ── Freetext Mode ── */
+/* -- Freetext Mode -- */
 .freetext-form { display: flex; gap: 8px; }
 .freetext-form input {
   flex: 1; padding: 12px 16px; border: 2px solid var(--border); border-radius: var(--radius-lg);
@@ -223,7 +447,7 @@ body {
 .freetext-form input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
 .freetext-form button { padding: 12px 24px; font-size: 1rem; }
 
-/* ── Browse Mode ── */
+/* -- Browse Mode -- */
 .chip-group { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
 .chip-group-label { font-size: 0.72rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
 .chip {
@@ -237,7 +461,7 @@ body {
 .chip:hover { border-color: var(--accent); color: var(--accent); }
 .chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
-/* ── Results ── */
+/* -- Results -- */
 .results-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
 .results-header h2 { font-family: var(--font-display); font-size: 1.05rem; font-weight: 600; color: var(--accent); }
 
@@ -265,7 +489,7 @@ body {
 .card.ai-generated:hover { box-shadow: 3px 3px 0 var(--purple), var(--shadow-lg); }
 .card.selected { box-shadow: 0 0 0 2px var(--accent), 2px 2px 0 var(--border); border-color: var(--accent); }
 .card.selected::after {
-  content: '✓'; position: absolute; top: -8px; right: 10px; color: #fff;
+  content: '?'; position: absolute; top: -8px; right: 10px; color: #fff;
   background: var(--accent); border-radius: 50%; width: 18px; height: 18px;
   display: flex; align-items: center; justify-content: center;
   font-weight: 700; font-size: 0.7rem; box-shadow: var(--shadow-sm);
@@ -303,7 +527,7 @@ body {
 .card-add button.remove-action { background: var(--danger-light); border-color: var(--danger); color: var(--danger); }
 .card-add button.remove-action:hover { background: var(--danger); color: #fff; }
 
-/* ── Bundle Sidebar ── */
+/* -- Bundle Sidebar -- */
 .bundle-sidebar {
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
   padding: 16px; position: sticky; top: 80px;
@@ -329,7 +553,7 @@ body {
 .bundle-download .btn { width: 100%; justify-content: center; }
 .bundle-count-footer { font-size: 0.72rem; color: var(--text-muted); text-align: center; margin-top: 6px; }
 
-/* ── Refinement Bar ── */
+/* -- Refinement Bar -- */
 .refinement-bar {
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
   padding: 12px 16px; margin-bottom: 18px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
@@ -343,7 +567,7 @@ body {
 }
 .refinement-bar input:focus { outline: none; border-color: var(--accent); }
 
-/* ── Gaps Section ── */
+/* -- Gaps Section -- */
 .gaps-section { margin-bottom: 20px; }
 .gap-card {
   background: var(--warning-light); border: 1px dashed var(--warning); border-radius: var(--radius-lg);
@@ -353,7 +577,7 @@ body {
 .gap-card .gap-text { flex: 1; font-size: 0.9rem; font-weight: 500; min-width: 200px; }
 .gap-card .gap-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
-/* ── Loading / Empty / Error ── */
+/* -- Loading / Empty / Error -- */
 .loading-spinner {
   display: flex; align-items: center; justify-content: center; gap: 10px;
   padding: 40px; color: var(--text-muted); font-size: 0.9rem;
@@ -376,7 +600,7 @@ body {
   padding: 12px 18px; margin-bottom: 16px; color: var(--danger); font-size: 0.875rem; font-weight: 500;
 }
 
-/* ── Suggestion Cards ── */
+/* -- Suggestion Cards -- */
 .suggestion-card {
   background: var(--success-light); border: 1px solid var(--success); border-radius: var(--radius);
   padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px;
@@ -384,7 +608,7 @@ body {
 }
 .suggestion-card .sugg-text { font-size: 0.85rem; flex: 1; min-width: 200px; }
 
-/* ── Download Progress ── */
+/* -- Download Progress -- */
 .download-overlay {
   position: fixed; inset: 0; background: rgba(43,32,19,0.45);
   display: flex; align-items: center; justify-content: center; z-index: 200;
@@ -396,7 +620,7 @@ body {
 .download-dialog .spinner { width: 36px; height: 36px; margin: 0 auto 16px; }
 .download-dialog p { font-size: 0.95rem; color: var(--text); font-family: var(--font-display); }
 
-/* ── Sign-in Prompt ── */
+/* -- Sign-in Prompt -- */
 .auth-overlay {
   position: fixed; inset: 0; background: rgba(43,32,19,0.45);
   display: flex; align-items: center; justify-content: center; z-index: 200;
@@ -412,7 +636,7 @@ body {
 .auth-dialog .auth-note { font-size: 0.72rem; color: var(--text-muted); margin-top: 12px; font-style: italic; border-top: 1px solid var(--border); padding-top: 10px; }
 .auth-status { font-size: 0.75rem; color: var(--success); margin-left: 8px; display: inline-flex; align-items: center; gap: 4px; }
 
-/* ── Utility ── */
+/* -- Utility -- */
 .hidden { display: none !important; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
 .divider { width: 1px; height: 20px; background: var(--border); margin: 0 8px; }
@@ -423,14 +647,14 @@ body {
 
 <div class="header">
   <div class="header-brand">
-    <span class="icon">📚</span>
+    <span class="icon">??</span>
     <span>Teacher's Pet</span>
   </div>
   <div class="header-actions">
     <span class="auth-status hidden" id="authStatus">&#128274; Signed in</span>
     <button class="btn btn-ghost btn-sm hidden" id="signOutBtn" onclick="signOut()">Sign out</button>
     <button class="btn btn-primary" id="bundleBtn" disabled onclick="triggerBundle()">
-      📦 Bundle & Download
+      ?? Bundle & Download
       <span class="bundle-badge" id="bundleCount" style="display:none">0</span>
     </button>
   </div>
@@ -438,15 +662,15 @@ body {
 
 <div class="tab-bar">
   <button class="tab active" data-tab="guided" onclick="switchTab('guided')">
-    🎯 I know my outcome
+    ?? I know my outcome
     <span class="tab-subtitle">Guided search</span>
   </button>
   <button class="tab" data-tab="freetext" onclick="switchTab('freetext')">
-    🔍 I remember a resource
+    ?? I remember a resource
     <span class="tab-subtitle">Free-text search</span>
   </button>
   <button class="tab" data-tab="browse" onclick="switchTab('browse')">
-    ✨ Surprise me
+    ? Surprise me
     <span class="tab-subtitle">Browse catalogue</span>
   </button>
 </div>
@@ -458,7 +682,7 @@ body {
       <div class="field">
         <label for="gSubject">Subject</label>
         <select id="gSubject" disabled onchange="onGuidedSubjectChange()">
-          <option value="">— Loading curriculum... —</option>
+          <option value="">� Loading curriculum... �</option>
           <option value="Language">Language (Primary Language Curriculum)</option>
           <option value="Maths">Maths (Primary Maths Curriculum)</option>
         </select>
@@ -466,19 +690,19 @@ body {
       <div class="field">
         <label for="gStrand">Strand</label>
         <select id="gStrand" disabled onchange="onGuidedStrandChange()">
-          <option value="">— Select subject first —</option>
+          <option value="">� Select subject first �</option>
         </select>
       </div>
       <div class="field">
         <label for="gStage">Stage</label>
         <select id="gStage" disabled onchange="onGuidedStageChange()">
-          <option value="">— Select strand first —</option>
+          <option value="">� Select strand first �</option>
         </select>
       </div>
       <div class="field">
         <label for="gOutcome">Outcome</label>
         <select id="gOutcome" disabled onchange="onGuidedOutcomeChange()">
-          <option value="">— Select stage first —</option>
+          <option value="">� Select stage first �</option>
         </select>
       </div>
       <div class="field constraints-field">
@@ -486,7 +710,7 @@ body {
         <input type="text" id="gConstraints" placeholder="e.g. prefer games, EAL-friendly, group work">
       </div>
       <button type="submit" class="btn btn-primary" id="gSearchBtn" disabled>
-        🔎 Search
+        ?? Search
       </button>
     </form>
   </div>
@@ -494,8 +718,8 @@ body {
   <!-- Freetext Mode Panel -->
   <div class="mode-panel hidden" id="panel-freetext">
     <form class="freetext-form" onsubmit="return freetextSearch(event)">
-      <input type="text" id="ftQuery" placeholder="Describe the resource you're looking for — any detail helps" autocomplete="off">
-      <button type="submit" class="btn btn-primary">🔎 Search</button>
+      <input type="text" id="ftQuery" placeholder="Describe the resource you're looking for � any detail helps" autocomplete="off">
+      <button type="submit" class="btn btn-primary">?? Search</button>
     </form>
   </div>
 
@@ -514,7 +738,7 @@ body {
   <!-- Results Area -->
   <div class="results-area" id="resultsArea">
     <div class="empty-state" id="emptyState">
-      <div class="empty-icon">🗂️</div>
+      <div class="empty-icon">???</div>
       <p>Pick a mode above, three ways in: know your outcome, remember a resource, or just browse.</p>
     </div>
     <div id="resultsContainer" class="hidden"></div>
@@ -537,20 +761,20 @@ body {
       <button class="btn btn-primary" onclick="signInAndBundle()">Sign in with Microsoft</button>
       <button class="btn btn-secondary" onclick="bundleWithoutFiles()">Continue without files</button>
     </div>
-    <p class="auth-note" id="authDialogNote">Without sign-in: the bundle will contain your lesson summary, any AI-generated plans, and the AI disclosure README — but not your actual teaching resource files.</p>
+    <p class="auth-note" id="authDialogNote">Without sign-in: the bundle will contain your lesson summary, any AI-generated plans, and the AI disclosure README � but not your actual teaching resource files.</p>
   </div>
 </div>
 
 <script>
-/* ═══════════════════════════════════════════════
+/* -----------------------------------------------
    CONFIGURATION
-   ═══════════════════════════════════════════════ */
+   ----------------------------------------------- */
 var WORKER_URL = 'https://teachers-pet.dan-m-kelly.workers.dev';
 var TAXONOMY_BASE = 'https://raw.githubusercontent.com/danmkelly/CustEngageCA3/main/taxonomy';
 
-/* ═══════════════════════════════════════════════
+/* -----------------------------------------------
    MSAL AUTHENTICATION (bundle file download)
-   ═══════════════════════════════════════════════ */
+   ----------------------------------------------- */
 var msalConfig = {
   auth: {
     clientId: '40565c94-9e7f-45df-b13b-40b9e39405df',
@@ -564,9 +788,9 @@ var loginRequest = { scopes: ['Files.Read', 'User.Read'] };
 
 var pendingBundleData = null;
 
-/* ═══════════════════════════════════════════════
+/* -----------------------------------------------
    APPLICATION STATE
-   ═══════════════════════════════════════════════ */
+   ----------------------------------------------- */
 var state = {
   activeMode: 'guided',
   taxonomies: { language: null, maths: null },
@@ -589,15 +813,15 @@ function objKeys(o) { var a = []; for (var k in o) { if (o.hasOwnProperty(k)) a.
 function objValues(o) { var a = []; for (var k in o) { if (o.hasOwnProperty(k)) a.push(o[k]); } return a; }
 function objHas(o, k) { return o.hasOwnProperty(k); }
 
-/* ═══════════════════════════════════════════════
+/* -----------------------------------------------
    GUIDED MODE DROPDOWNS
-   ═══════════════════════════════════════════════ */
+   ----------------------------------------------- */
 function populateGuidedDropdowns() {
   var lang = state.taxonomies.language;
   var maths = state.taxonomies.maths;
   if (!lang || !maths) return;
   var subjEl = document.getElementById('gSubject');
-  subjEl.options[0].textContent = '— Select —';
+  subjEl.options[0].textContent = '� Select �';
   subjEl.disabled = false;
 }
 
@@ -614,11 +838,11 @@ function onGuidedSubjectChange() {
   state.guidedSelections.stage = '';
   state.guidedSelections.outcome = '';
 
-  strandEl.innerHTML = '<option value="">— Select strand —</option>';
+  strandEl.innerHTML = '<option value="">� Select strand �</option>';
   strandEl.disabled = !val;
-  stageEl.innerHTML = '<option value="">— Select strand first —</option>';
+  stageEl.innerHTML = '<option value="">� Select strand first �</option>';
   stageEl.disabled = true;
-  outEl.innerHTML = '<option value="">— Select stage first —</option>';
+  outEl.innerHTML = '<option value="">� Select stage first �</option>';
   outEl.disabled = true;
 
   if (val && ((lang && lang.strands[val]) || (maths && maths.strands[val]))) {
@@ -644,9 +868,9 @@ function onGuidedStrandChange() {
   state.guidedSelections.stage = '';
   state.guidedSelections.outcome = '';
 
-  stageEl.innerHTML = '<option value="">— Select stage —</option>';
+  stageEl.innerHTML = '<option value="">� Select stage �</option>';
   stageEl.disabled = !val;
-  outEl.innerHTML = '<option value="">— Select stage first —</option>';
+  outEl.innerHTML = '<option value="">� Select stage first �</option>';
   outEl.disabled = true;
 
   if (!val) { updateGuidedSearchBtn(); return; }
@@ -676,7 +900,7 @@ function onGuidedStageChange() {
   state.guidedSelections.stage = val;
   state.guidedSelections.outcome = '';
 
-  outEl.innerHTML = '<option value="">— Select outcome —</option>';
+  outEl.innerHTML = '<option value="">� Select outcome �</option>';
   outEl.disabled = !val;
   if (!val) { updateGuidedSearchBtn(); return; }
 
@@ -723,9 +947,9 @@ function onGuidedOutcomeChange() {
   updateGuidedSearchBtn();
 }
 
-/* ═══════════════════════════════════════════════
+/* -----------------------------------------------
    TAB SWITCHING
-   ═══════════════════════════════════════════════ */
+   ----------------------------------------------- */
 function switchTab(mode) {
   state.activeMode = mode;
   var tabs = document.querySelectorAll('.tab');
@@ -742,9 +966,9 @@ function switchTab(mode) {
   }
 }
 
-/* ═══════════════════════════════════════════════
+/* -----------------------------------------------
    CATALOGUE LOADER
-   ═══════════════════════════════════════════════ */
+   ----------------------------------------------- */
 function loadCatalogue() {
   if (state.catalogue.length > 0) return;
   state.loading.catalogue = true;
@@ -765,9 +989,9 @@ function loadCatalogue() {
   xhr.send();
 }
 
-/* ═══════════════════════════════════════════════
+/* -----------------------------------------------
    BROWSE CHIPS
-   ═══════════════════════════════════════════════ */
+   ----------------------------------------------- */
 function buildBrowseChips() {
   var subjects = [{ key: 'Literacy', label: 'Literacy' }, { key: 'Maths', label: 'Maths' }];
   var grades = [{ key: 'Infants', label: 'Infants' }, { key: '1st-2nd', label: '1st\u20132nd' }, { key: '3rd-4th', label: '3rd\u20134th' }, { key: '5th-6th', label: '5th\u20136th' }];
@@ -842,9 +1066,9 @@ function renderBrowseResults() {
   renderResults();
 }
 
-/* ═══════════════════════════════════════════════
+/* -----------------------------------------------
    SEARCH FUNCTIONS
-   ═══════════════════════════════════════════════ */
+   ----------------------------------------------- */
 function guidedSearch(e) {
   e.preventDefault();
   var s = state.guidedSelections;
@@ -852,7 +1076,7 @@ function guidedSearch(e) {
   try { outcomeData = JSON.parse(s.outcome); } catch(ex) { showError('Please select a valid outcome.'); return false; }
   state.lastQuery = {
     type: 'guided',
-    query: [s.subject, s.strand, outcomeData.code, (outcomeData.label || outcomeData.name)].filter(Boolean).join(' — '),
+    query: [s.subject, s.strand, outcomeData.code, (outcomeData.label || outcomeData.name)].filter(Boolean).join(' � '),
     subject: s.subject,
     strand: s.strand,
     stage: s.stage,
@@ -922,9 +1146,9 @@ function hideResultsLoading() {
   }
 }
 
-/* ═══════════════════════════════════════════════
+/* -----------------------------------------------
    EVENT DELEGATION
-   ═══════════════════════════════════════════════ */
+   ----------------------------------------------- */
 function handleResultClick(e) {
   var target = e.target;
   while (target && target !== document.getElementById('resultsContainer')) {
@@ -966,9 +1190,9 @@ function handleResultClick(e) {
   }
 }
 
-/* ═══════════════════════════════════════════════
+/* -----------------------------------------------
    RESULTS RENDERING
-   ═══════════════════════════════════════════════ */
+   ----------------------------------------------- */
 function renderResults() {
   var emptyEl = document.getElementById('emptyState');
   var container = document.getElementById('resultsContainer');
@@ -1103,7 +1327,7 @@ function renderResultCardHTML(r) {
   if (r.confidence != null) badges += '<span class="badge badge-confidence">' + Math.round(r.confidence * 100) + '% match</span>';
 
   var addClass = isSelected ? ' remove-action' : '';
-  var addText = isSelected ? '− Remove' : '+ Add to bundle';
+  var addText = isSelected ? '- Remove' : '+ Add to bundle';
 
   var expandHtml = '';
   if (isAi && fullText.length > 140) {
@@ -1222,9 +1446,9 @@ function applyRefinements() {
   }
 }
 
-/* ═══════════════════════════════════════════════
+/* -----------------------------------------------
    CARD ACTIONS
-   ═══════════════════════════════════════════════ */
+   ----------------------------------------------- */
 function toggleSelect(id) {
   if (objHas(state.selectedIds, id)) {
     delete state.selectedIds[id];
@@ -1238,9 +1462,9 @@ function toggleSelect(id) {
   }));
 }
 
-/* ═══════════════════════════════════════════════
+/* -----------------------------------------------
    GAP ACTIONS
-   ═══════════════════════════════════════════════ */
+   ----------------------------------------------- */
 function searchCurriculumOnline(code, label, stage) {
   var url = 'https://curriculumonline.ie/search/?q=' + encodeURIComponent(code + ' ' + label);
   window.open(url, '_blank');
@@ -1307,9 +1531,9 @@ function restoreGapButtons(gapCard, code, label, stage) {
   }
 }
 
-/* ═══════════════════════════════════════════════
+/* -----------------------------------------------
    BUNDLE & DOWNLOAD
-   ═══════════════════════════════════════════════ */
+   ----------------------------------------------- */
 function updateHeaderBundleCount() {
   var total = objSize(state.selectedIds);
   var badge = document.getElementById('bundleCount');
@@ -1319,11 +1543,11 @@ function updateHeaderBundleCount() {
     badge.style.display = 'inline-flex';
     badge.textContent = total;
     btn.disabled = false;
-    btn.innerHTML = '📦 Bundle & Download <span class="bundle-badge">' + total + '</span>';
+    btn.innerHTML = '?? Bundle & Download <span class="bundle-badge">' + total + '</span>';
   } else {
     badge.style.display = 'none';
     btn.disabled = true;
-    btn.innerHTML = '📦 Bundle & Download';
+    btn.innerHTML = '?? Bundle & Download';
   }
 }
     badge.style.display = 'none';
@@ -1344,7 +1568,7 @@ function triggerBundle() {
     return;
   }
 
-  // Signed in — proceed directly
+  // Signed in � proceed directly
   doBundle(null);
 }
 
@@ -1378,7 +1602,7 @@ function doBundle(accessToken) {
 
   // Build summary_md from current results
   var summaryLines = [];
-  summaryLines.push('# Teacher\'s Pet — Resource Bundle');
+  summaryLines.push('# Teacher\'s Pet � Resource Bundle');
   summaryLines.push('');
   if (state.lastQuery) {
     summaryLines.push('**Query:** ' + (state.lastQuery.query || 'Catalogue browse'));
@@ -1455,9 +1679,9 @@ function updateAuthUI() {
     document.getElementById('signOutBtn').classList.add('hidden');
   }
 }
-/* ═══════════════════════════════════════════════
+/* -----------------------------------------------
    UTILITY FUNCTIONS
-   ═══════════════════════════════════════════════ */
+   ----------------------------------------------- */
 function esc(str) {
   if (!str) return '';
   return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -1478,9 +1702,9 @@ function showError(msg) {
   setTimeout(function() { if (banner.parentNode) banner.remove(); }, 15000);
 }
 
-/* ═══════════════════════════════════════════════
+/* -----------------------------------------------
    INITIALISATION
-   ═══════════════════════════════════════════════ */
+   ----------------------------------------------- */
 document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('resultsContainer').addEventListener('click', handleResultClick);
   document.getElementById('bundleBtn').addEventListener('click', triggerBundle);
@@ -1509,24 +1733,13 @@ document.addEventListener('DOMContentLoaded', function() {
   initTaxonomies();
 
   function initTaxonomies() {
-    state.taxonomies.language = window.__tax && window.__tax.language || null;
-    state.taxonomies.maths = window.__tax && window.__tax.maths || null;
-    if (state.taxonomies.language && state.taxonomies.maths) {
-      populateGuidedDropdowns();
-    } else {
-      // Taxonomies still loading — keep checking
-      var check = setInterval(function() {
-        state.taxonomies.language = window.__tax && window.__tax.language || null;
-        state.taxonomies.maths = window.__tax && window.__tax.maths || null;
-        if (state.taxonomies.language && state.taxonomies.maths) {
-          clearInterval(check);
-          populateGuidedDropdowns();
-        }
-      }, 100);
-    }
+    state.taxonomies.language = EMBED_LANG;
+    state.taxonomies.maths = EMBED_MATHS;
+    populateGuidedDropdowns();
   }
 });
 </script>
 
 </body>
 </html>
+
