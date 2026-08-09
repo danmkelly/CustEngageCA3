@@ -1193,6 +1193,12 @@ function handleResultClick(e) {
 /* -----------------------------------------------
    RESULTS RENDERING
    ----------------------------------------------- */
+function forceRefresh() {
+  state.refinementChips['_force'] = true;
+  applyRefinements();
+  delete state.refinementChips['_force'];
+}
+
 function renderResults() {
   var emptyEl = document.getElementById('emptyState');
   var container = document.getElementById('resultsContainer');
@@ -1278,12 +1284,7 @@ function renderResults() {
         var id = btn.getAttribute('data-id');
         if (objHas(state.selectedIds, id)) { delete state.selectedIds[id]; }
         else { state.selectedIds[id] = true; }
-        updateHeaderBundleCount();
-        // Defer DOM updates to let click event complete
-        setTimeout(function() {
-          updateBundleSidebar();
-          updateCardButton(id);
-        }, 0);
+        forceRefresh();
         return false;
       };
     })(btns[b]);
@@ -1293,13 +1294,8 @@ function renderResults() {
     (function(btn) {
       btn.onclick = function(e) {
         if (e) { e.preventDefault(); e.stopPropagation(); }
-        var rid = btn.getAttribute('data-id');
-        delete state.selectedIds[rid];
-        updateHeaderBundleCount();
-        setTimeout(function() {
-          updateBundleSidebar();
-          updateCardButton(rid);
-        }, 0);
+        delete state.selectedIds[btn.getAttribute('data-id')];
+        forceRefresh();
         return false;
       };
     })(rmvs[r]);
