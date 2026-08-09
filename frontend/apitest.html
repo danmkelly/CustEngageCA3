@@ -1,0 +1,26 @@
+<!DOCTYPE html><html><body>
+<h2>API Test</h2>
+<button onclick="test()">Run Test</button>
+<pre id="out"></pre>
+<script>
+function test() {
+  var out = document.getElementById('out');
+  out.textContent = 'Calling API...';
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', 'https://teachers-pet.dan-m-kelly.workers.dev/api/query');
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  xhr.onload = function() {
+    var data = JSON.parse(xhr.responseText);
+    var resources = data.resources || data.results || [];
+    out.textContent = 'Status: ' + xhr.status + '\n' +
+      'resources field: ' + (data.resources ? data.resources.length + ' items' : 'NOT PRESENT') + '\n' +
+      'results field: ' + (data.results ? data.results.length + ' items' : 'NOT PRESENT') + '\n' +
+      'Loaded: ' + resources.length + ' resources\n\n' +
+      'First 3 files:\n' + resources.slice(0,3).map(function(r){ return '  ' + (r.filename||'?'); }).join('\n') + '\n\n' +
+      'Response keys: ' + Object.keys(data).join(', ');
+  };
+  xhr.onerror = function() { out.textContent = 'NETWORK ERROR'; };
+  xhr.send(JSON.stringify({query:'phonics cvc'}));
+}
+</script>
+</body></html>
