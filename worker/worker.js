@@ -266,6 +266,26 @@ async function downloadFromOneDrive(env, onedrivePath) {
   return resp.arrayBuffer();
 }
 
+/**
+ * Download a file from OneDrive using a delegated (user) access token.
+ * Used when the frontend provides an MSAL token via Authorization header.
+ * @param {string} delegatedToken — OAuth2 token from MSAL.js (delegated, Files.Read scope)
+ * @param {string} onedrivePath — relative path from Teaching Resources root
+ */
+async function downloadFromOneDriveWithToken(delegatedToken, onedrivePath) {
+  var encodedPath = encodeURIComponent(onedrivePath);
+  var url = MS_GRAPH_BASE + "/me/drive/root:/Teaching Resources/" + encodedPath + ":/content";
+  var resp = await fetch(url, {
+    headers: { Authorization: "Bearer " + delegatedToken },
+  });
+  if (!resp.ok) {
+    throw new Error(
+      "Failed to download \"" + onedrivePath + "\" (delegated): " + resp.status
+    );
+  }
+  return resp.arrayBuffer();
+}
+
 // --------------------------------------------------------------------------
 // DEEPSEEK API INTEGRATION
 // --------------------------------------------------------------------------
@@ -1231,6 +1251,15 @@ async function handleBundle(request, env) {
   }
 
   var runId = body.run_id || generateRunId();
+
+  // Extract delegated token from Authorization header (MSAL.js, for file downloads)
+  var delegatedToken = null;
+  var authHeader = request.headers.get("Authorization");
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    delegatedToken = authHeader.substring(7);
+    console.log("[Bundle] Delegated token provided — using for file downloads");
+  }
+
   var catalogue;
 
   try {
@@ -1264,7 +1293,12 @@ async function handleBundle(request, env) {
     }
 
     try {
-      var fileData = await downloadFromOneDrive(env, row.onedrive_path);
+      var fileData;
+      if (delegatedToken) {
+        fileData = await downloadFromOneDriveWithToken(delegatedToken, row.onedrive_path);
+      } else {
+        fileData = await downloadFromOneDrive(env, row.onedrive_path);
+      }
       var cleanFilename = row.filename || ("resource-" + resId + ".pdf");
       zip.file(cleanFilename, new Uint8Array(fileData));
     } catch (err) {

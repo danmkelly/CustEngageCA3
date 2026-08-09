@@ -31,11 +31,17 @@
   .issue-pill.open { border-color: var(--amber); color: var(--amber); }
   .issue-pill.fixed { border-color: var(--green); color: var(--green); }
   .issue-pill.known { border-color: var(--muted); color: var(--muted); }
-  .tabs { display: flex; flex-wrap: wrap; gap: 0; margin: 1rem 0 0; border-bottom: 2px solid var(--border); }
-  .tab-btn { padding: 0.45rem 0.9rem; font-size: 0.8rem; font-weight: 600; background: none; border: none; border-bottom: 2px solid transparent; margin-bottom: -2px; cursor: pointer; color: var(--muted); transition: color 0.15s, border-color 0.15s; font-family: var(--font); }
-  .tab-btn:hover { color: var(--text); }
-  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); font-family: var(--font-display); }
-  .tab-panel { display: none; padding-top: 0.6rem; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 0; margin: 1rem 0 0; background: transparent; }
+  .tab-btn { padding: 0.45rem 1rem; font-size: 0.8rem; font-weight: 600; background: var(--surface); border: 1px solid var(--border); border-radius: 6px 6px 0 0; cursor: pointer; color: var(--muted); transition: all 0.12s ease; font-family: var(--font); position: relative; margin-right: 2px; margin-bottom: -1px; }
+  .tab-btn:hover { color: var(--text); background: #fff; border-color: var(--accent); }
+  .tab-btn.active { color: var(--accent); background: var(--surface); border-color: var(--accent); border-bottom-color: var(--surface); font-family: var(--font-display); font-weight: 700; z-index: 1; box-shadow: 0 -2px 0 var(--accent); }
+  .tab-label { display: block; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+  .tab-btn.active .tab-label { color: var(--accent); }
+  .tab-desc { display: block; font-size: 0.82rem; }
+  .issues-compact { margin: 0.8rem 0; }
+  .issues-compact h3 { font-size: 0.9rem; margin-bottom: 0.3rem; color: var(--accent); }
+  .issues-compact table { font-size: 0.75rem; margin: 0; }
+  .tab-panel { display: none; padding-top: 0.8rem; }
   .tab-panel.active { display: block; }
   table { width: 100%; border-collapse: collapse; margin: 0.6rem 0 0.9rem; font-size: 0.8rem; }
   th, td { padding: 0.4rem 0.55rem; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
@@ -101,15 +107,37 @@
   <span class="issue-pill known">4 Known limitations (documented)</span>
 </div>
 
-<p><strong>Overall:</strong> Teacher's Pet demonstrates strong alignment with the module across all three pillars. It operationalises the Five Innovators as a live Ops pipeline, satisfies PEAS/BDI agent specification with defined handoff boundaries, implements trust calibration (Lee & See 2004) through confidence scores and explicit limitations, and anchors to the module's responsible-innovation framework (Stilgoe et al. 2013) with a structured GOVERNANCE.md. The UX — three search modes with client-side refinement — reflects CASA-aware design principles adapted for a concierge interface rather than a chatbot. <strong>Seven bugs were found and fixed during this Keelin audit; three open items remain</strong> (bundle OneDrive downloads, catalogue data quality in progress, no persistent state). None are academic assessment blockers.</p>
+<p><strong>Overall:</strong> Teacher's Pet demonstrates strong alignment with the module across all three pillars. It operationalises the Five Innovators as a live Ops pipeline, satisfies PEAS/BDI agent specification with defined handoff boundaries, implements trust calibration (Lee & See 2004) through confidence scores and explicit limitations, and anchors to the module's responsible-innovation framework (Stilgoe et al. 2013) with a structured GOVERNANCE.md. The UX — three search modes with client-side refinement — reflects CASA-aware design principles adapted for a concierge interface rather than a chatbot. <strong>Seven bugs were found and fixed during this Keelin audit; three open items remain</strong> below. None are academic assessment blockers.</p>
+
+<div class="issues-compact" id="openIssues">
+  <h3 style="margin:1rem 0 0.4rem 0;">Open Issues</h3>
+  <table>
+    <tr><th style="width:50px">ID</th><th style="width:70px">Impact</th><th>Issue</th><th style="width:100px">Action</th></tr>
+    <tr>
+      <td>O01</td><td><span class="sev-high">HIGH</span></td>
+      <td><strong>Bundle can't download resource files.</strong> Personal OneDrive doesn't support app-only MS Graph auth. Zip contains README + generated plans only.</td>
+      <td>MSAL.js delegated auth (in progress)</td>
+    </tr>
+    <tr>
+      <td>O02</td><td><span class="sev-med">MED</span></td>
+      <td><strong>Catalogue data quality.</strong> 2,895 rows at folder-level confidence (0.5). Most fields empty. Populator running in parallel session.</td>
+      <td>Wait for catalogue_populator.py (other session)</td>
+    </tr>
+    <tr>
+      <td>O03</td><td><span class="sev-low">LOW</span></td>
+      <td><strong>No persistent session state.</strong> Selections, thumbs, and search history lost on page refresh. In-memory only.</td>
+      <td>localStorage persistence (deferred)</td>
+    </tr>
+  </table>
+</div>
 
 <!-- TABS -->
 <div class="tabs">
-  <button class="tab-btn active" onclick="showTab('pillar1')">Pillar 1 — Engagement</button>
-  <button class="tab-btn" onclick="showTab('pillar2')">Pillar 2 — Intelligence</button>
-  <button class="tab-btn" onclick="showTab('pillar3')">Pillar 3 — Partnership</button>
-  <button class="tab-btn" onclick="showTab('functional')">Functional QA</button>
-  <button class="tab-btn" onclick="showTab('assessment')">Assessment Map</button>
+  <button class="tab-btn active" onclick="showTab('pillar1')"><span class="tab-label">Pillar 1</span><span class="tab-desc">Engagement</span></button>
+  <button class="tab-btn" onclick="showTab('pillar2')"><span class="tab-label">Pillar 2</span><span class="tab-desc">Intelligence</span></button>
+  <button class="tab-btn" onclick="showTab('pillar3')"><span class="tab-label">Pillar 3</span><span class="tab-desc">Partnership</span></button>
+  <button class="tab-btn" onclick="showTab('functional')"><span class="tab-label">Functional</span><span class="tab-desc">QA & Findings</span></button>
+  <button class="tab-btn" onclick="showTab('assessment')"><span class="tab-label">Assessment</span><span class="tab-desc">Criteria Map</span></button>
 </div>
 
 <!-- ============================================================== -->

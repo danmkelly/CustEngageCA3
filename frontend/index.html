@@ -6,6 +6,7 @@
 <title>Teacher's Pet — Resource Discovery for Irish Primary Teachers</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://alcdn.msauth.net/browser/2.28.3/js/msal-browser.min.js"></script>
 <style>
 :root {
   --bg: #f2ecd9;
@@ -335,6 +336,22 @@ body {
 .download-dialog .spinner { width: 36px; height: 36px; margin: 0 auto 16px; }
 .download-dialog p { font-size: 0.95rem; color: var(--text); font-family: var(--font-display); }
 
+/* ── Sign-in Prompt ── */
+.auth-overlay {
+  position: fixed; inset: 0; background: rgba(43,32,19,0.45);
+  display: flex; align-items: center; justify-content: center; z-index: 200;
+}
+.auth-dialog {
+  background: var(--surface); border-radius: var(--radius-lg); padding: 28px 32px;
+  max-width: 420px; box-shadow: var(--shadow-lg); border-top: 3px solid var(--accent);
+}
+.auth-dialog h3 { font-family: var(--font-display); font-size: 1.05rem; color: var(--accent); margin-bottom: 8px; }
+.auth-dialog p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5; }
+.auth-dialog .auth-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.auth-dialog .btn { flex: 1; min-width: 120px; justify-content: center; }
+.auth-dialog .auth-note { font-size: 0.72rem; color: var(--text-muted); margin-top: 12px; font-style: italic; border-top: 1px solid var(--border); padding-top: 10px; }
+.auth-status { font-size: 0.75rem; color: var(--success); margin-left: 8px; display: inline-flex; align-items: center; gap: 4px; }
+
 /* ── Utility ── */
 .hidden { display: none !important; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
@@ -350,6 +367,8 @@ body {
     <span>Teacher's Pet</span>
   </div>
   <div class="header-actions">
+    <span class="auth-status hidden" id="authStatus">&#128274; Signed in</span>
+    <button class="btn btn-ghost btn-sm hidden" id="signOutBtn" onclick="signOut()">Sign out</button>
     <button class="btn btn-primary" id="bundleBtn" disabled onclick="triggerBundle()">
       📦 Bundle & Download
       <span class="bundle-badge" id="bundleCount" style="display:none">0</span>
@@ -450,6 +469,18 @@ body {
   </div>
 </div>
 
+<div class="auth-overlay hidden" id="authOverlay">
+  <div class="auth-dialog">
+    <h3>Bundle Download</h3>
+    <p id="authDialogMsg">To include your actual resource files in the zip, sign in with your Microsoft account so Teacher's Pet can fetch them from your OneDrive.</p>
+    <div class="auth-actions" id="authDialogActions">
+      <button class="btn btn-primary" onclick="signInAndBundle()">Sign in with Microsoft</button>
+      <button class="btn btn-secondary" onclick="bundleWithoutFiles()">Continue without files</button>
+    </div>
+    <p class="auth-note" id="authDialogNote">Without sign-in: the bundle will contain your lesson summary, any AI-generated plans, and the AI disclosure README — but not your actual teaching resource files.</p>
+  </div>
+</div>
+
 <script>
 /* ═══════════════════════════════════════════════
    CONFIGURATION
@@ -458,9 +489,25 @@ var WORKER_URL = 'https://teachers-pet.dan-m-kelly.workers.dev';
 var TAXONOMY_BASE = 'https://raw.githubusercontent.com/danmkelly/CustEngageCA3/main/taxonomy';
 
 /* ═══════════════════════════════════════════════
+   MSAL AUTHENTICATION (bundle file download)
+   ═══════════════════════════════════════════════ */
+var msalConfig = {
+  auth: {
+    clientId: '40565c94-9e7f-45df-b13b-40b9e39405df',
+    authority: 'https://login.microsoftonline.com/01699c79-d695-4c29-a55b-33f46800fa44',
+    redirectUri: window.location.origin + window.location.pathname,
+  },
+  cache: { cacheLocation: 'sessionStorage', storeAuthStateInCookie: false },
+};
+var msalInstance = new msal.PublicClientApplication(msalConfig);
+var loginRequest = { scopes: ['Files.Read', 'User.Read'] };
+
+var pendingBundleData = null;
+
+/* ═══════════════════════════════════════════════
    APPLICATION STATE
    ═══════════════════════════════════════════════ */
-var state = {
+var   state = {
   activeMode: 'guided',
   taxonomies: { language: null, maths: null },
   catalogue: [],
@@ -478,6 +525,7 @@ var state = {
   refinementText: '',
   refinementChips: {},
   lastQuery: null,
+  msalAccount: null,
 };
 
 function objSize(o) { var n = 0; for (var k in o) { if (o.hasOwnProperty(k)) n++; } return n; }
@@ -1337,6 +1385,29 @@ function triggerBundle() {
     return;
   }
 
+  // If not signed in, show the auth dialog
+  if (!state.msalAccount) {
+    document.getElementById('authOverlay').classList.remove('hidden');
+    return;
+  }
+
+  // Signed in — proceed directly
+  doBundle(null);
+}
+
+function signInAndBundle() {
+  document.getElementById('authOverlay').classList.add('hidden');
+  pendingBundleData = true;
+  msalInstance.loginRedirect(loginRequest);
+}
+
+function bundleWithoutFiles() {
+  document.getElementById('authOverlay').classList.add('hidden');
+  document.getElementById('downloadOverlay').classList.remove('hidden');
+  doBundle(null);
+}
+
+function doBundle(accessToken) {
   var overlay = document.getElementById('downloadOverlay');
   overlay.classList.remove('hidden');
 
@@ -1381,10 +1452,19 @@ function triggerBundle() {
   summaryLines.push('*Bundle assembled by Teacher\'s Pet, CA3 Final Project, August 2026.*');
 
   var summaryMd = summaryLines.join('\n');
+  var payload = {
+    resource_ids: objKeys(state.selectedIds),
+    generated_content: generatedContent,
+    summary_md: summaryMd,
+    run_id: 'bundle-' + Date.now(),
+  };
 
   var xhr = new XMLHttpRequest();
   xhr.open('POST', WORKER_URL + '/api/bundle');
   xhr.setRequestHeader('Content-Type', 'application/json');
+  if (accessToken) {
+    xhr.setRequestHeader('Authorization', 'Bearer ' + accessToken);
+  }
   xhr.responseType = 'blob';
   xhr.onload = function() {
     overlay.classList.add('hidden');
@@ -1403,14 +1483,25 @@ function triggerBundle() {
     }
   };
   xhr.onerror = function() { overlay.classList.add('hidden'); showError('Network error during download'); };
-  xhr.send(JSON.stringify({
-    resource_ids: objKeys(state.selectedIds),
-    generated_content: generatedContent,
-    summary_md: summaryMd,
-    run_id: 'bundle-' + Date.now(),
-  }));
+  xhr.send(JSON.stringify(payload));
 }
 
+function signOut() {
+  msalInstance.logoutRedirect({ postLogoutRedirectUri: window.location.origin + window.location.pathname });
+}
+
+function updateAuthUI() {
+  var accounts = msalInstance.getAllAccounts();
+  if (accounts.length > 0) {
+    state.msalAccount = accounts[0];
+    document.getElementById('authStatus').classList.remove('hidden');
+    document.getElementById('signOutBtn').classList.remove('hidden');
+  } else {
+    state.msalAccount = null;
+    document.getElementById('authStatus').classList.add('hidden');
+    document.getElementById('signOutBtn').classList.add('hidden');
+  }
+}
 /* ═══════════════════════════════════════════════
    UTILITY FUNCTIONS
    ═══════════════════════════════════════════════ */
@@ -1440,6 +1531,28 @@ function showError(msg) {
 document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('resultsContainer').addEventListener('click', handleResultClick);
   document.getElementById('bundleBtn').addEventListener('click', triggerBundle);
+
+  // MSAL redirect handling
+  msalInstance.handleRedirectPromise().then(function(response) {
+    if (response) {
+      msalInstance.setActiveAccount(response.account);
+    }
+    updateAuthUI();
+
+    // If returning from sign-in for bundle, proceed
+    if (pendingBundleData && state.msalAccount) {
+      pendingBundleData = null;
+      msalInstance.acquireTokenSilent(loginRequest).then(function(tokenResponse) {
+        document.getElementById('downloadOverlay').classList.remove('hidden');
+        doBundle(tokenResponse.accessToken);
+      }).catch(function() {
+        msalInstance.acquireTokenRedirect(loginRequest);
+      });
+    }
+  }).catch(function(err) {
+    console.error('MSAL redirect error:', err);
+  });
+
   initTaxonomies();
 });
 </script>
