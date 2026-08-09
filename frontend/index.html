@@ -1374,7 +1374,7 @@ function renderResultCardHTML(r) {
   if (r.onedrive_path) {
     var safeOdPath = r.onedrive_path.replace(/\\/g, '/').split('/').map(function(s) { return encodeURIComponent(s); }).join('/');
     var odUrl = 'https://modernisetemp-my.sharepoint.com/personal/dan_modernise_ie/Documents/NCI/Teaching%20Resources/' + safeOdPath;
-    fileLink = ' <a href="' + odUrl + '" target="_blank" rel="noopener" title="Open in OneDrive" style="font-size:0.7rem;text-decoration:none;opacity:0.6">↗</a>';
+    fileLink = '<a href="' + odUrl + '" target="_blank" rel="noopener" class="od-link" style="display:inline-block;margin-left:4px;padding:2px 8px;font-size:0.68rem;border:1px solid var(--border);border-radius:999px;color:var(--accent);text-decoration:none;vertical-align:middle">Open ↗</a>';
   }
 
   return '<div class="' + classes + '" data-id="' + esc(id) + '">' +

@@ -95,9 +95,9 @@
     <div class="detail">Pillar 3 (Partnership) — 10 frameworks</div>
   </div>
   <div class="score-card">
-    <div class="grade">3.8/5</div>
-    <div class="label">Functional Quality</div>
-    <div class="detail">7 categories · 11 findings · 0 open · 2 known</div>
+    <div class="grade">4.5/5</div>
+    <div class="label">Bundle &amp; Download</div>
+    <div class="detail">MSAL → Graph → OneDrive → zip — working end-to-end</div>
   </div>
 </div>
 
@@ -522,7 +522,7 @@
 <tr><td>V03</td><td>POST /api/query (refine)</td><td>type=refine, base_query + refinement_text → re-searches with merged context</td><td><span class="tag tag-pass">200 OK</span></td></tr>
 <tr><td>V04</td><td>POST /api/query (similar)</td><td>type=similar, description → operates as freetext search by description</td><td><span class="tag tag-pass">200 OK</span></td></tr>
 <tr><td>V05</td><td>POST /api/generate-lesson</td><td>TF4/C1 → 4,697-char markdown lesson plan (no duplicate badge after fix)</td><td><span class="tag tag-pass">200 OK</span></td></tr>
-<tr><td>V06</td><td>POST /api/bundle</td><td>2 resource_ids + generated_content → 200, application/zip with README</td><td><span class="tag tag-pass">200 OK</span></td></tr>
+<tr><td>V06</td><td>POST /api/bundle</td><td>5 resource_ids + delegated_token → 2 pre-loaded + 3 Graph API downloads → 9.5 MB application/zip with README + all files. MSAL → modernise.ie → Graph → OneDrive for Business end-to-end.</td><td><span class="tag tag-pass">200 OK</span></td></tr>
 <tr><td>V07</td><td>GET /api/catalogue</td><td>2,895 rows, all 23 fields per row (confidence, grade_band, format, etc.)</td><td><span class="tag tag-pass">200 OK</span></td></tr>
 <tr><td>V08</td><td>GET /api/taxonomy/language</td><td>Language curriculum JSON (TF codes, strands, elements, outcomes by stage)</td><td><span class="tag tag-pass">200 OK</span></td></tr>
 <tr><td>V09</td><td>GET / (frontend)</td><td>Frontend loads on GitHub Pages — 200</td><td><span class="tag tag-pass">200 OK</span></td></tr>
