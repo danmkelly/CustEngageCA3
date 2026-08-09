@@ -923,9 +923,9 @@ function renderResults() {
     parts.push('<div class="gaps-section">');
     for (var gi = 0; gi < state.gaps.length; gi++) {
       var gap = state.gaps[gi];
-      var gCode = gap.code || gap.id || '';
-      var gLabel = gap.label || gap.name || '';
-      var gStage = gap.stage || '';
+      var gCode = gap.outcome_code || gap.code || gap.id || '';
+      var gLabel = gap.description || gap.label || gap.name || '';
+      var gStage = gap.grade_band || gap.stage || '';
       parts.push(
         '<div class="gap-card" style="margin-bottom:10px">' +
         '<span class="gap-icon">&#9888;</span>' +
