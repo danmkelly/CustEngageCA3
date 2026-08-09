@@ -1292,14 +1292,13 @@ async function handleBundle(request, env) {
     try {
       var fileData;
       var cleanFilename = row.filename || ("resource-" + resId + ".pdf");
-      // Try GitHub-hosted copy first (personal OneDrive has no SPO license)
+      // Try GitHub pre-loaded first (fast, no auth)
       var ghUrl = "https://raw.githubusercontent.com/danmkelly/CustEngageCA3/main/data/resources/" + encodeURIComponent(cleanFilename);
       var ghResp = await fetch(ghUrl);
       if (ghResp.ok) {
         fileData = await ghResp.arrayBuffer();
-      } else if (delegatedToken) {
-        fileData = await downloadFromOneDriveWithToken(delegatedToken, row.onedrive_path);
       } else {
+        // App-only Graph API (modernise.ie business tenant with SPO)
         fileData = await downloadFromOneDrive(env, row.onedrive_path);
       }
       if (!fileData || fileData.byteLength === 0) {
