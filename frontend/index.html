@@ -1296,7 +1296,7 @@ function renderBundleSidebarHTML() {
           esc(r.filename || 'Untitled') +
           (isAi ? '<span class="ai-tag">[AI-Generated]</span>' : '') +
           '</span>' +
-          '<button data-id="' + esc(rid) + '">&times; Remove</button>' +
+          '<button data-action="select" data-id="' + esc(rid) + '">Remove</button>' +
           '</div>';
       }
     }
@@ -1735,43 +1735,6 @@ document.addEventListener('DOMContentLoaded', function() {
     state.taxonomies.language = EMBED_LANG;
     state.taxonomies.maths = EMBED_MATHS;
     populateGuidedDropdowns();
-  }
-});
-
-// Global handler for card-add and bundle-item buttons
-document.addEventListener('click', function(e) {
-  var t = e.target;
-  // Walk up to find if click is inside .card-add or .bundle-item
-  while (t && t !== document.documentElement) {
-    if (t.classList && t.classList.contains('card-add')) {
-      var btn = t.querySelector('button');
-      if (btn && btn.getAttribute('data-id')) {
-        e.preventDefault(); e.stopPropagation();
-        var id = btn.getAttribute('data-id');
-        if (objHas(state.selectedIds, id)) {
-          delete state.selectedIds[id];
-        } else {
-          state.selectedIds[id] = true;
-        }
-        updateHeaderBundleCount();
-        updateBundleSidebar();
-        updateCardButton(id);
-      }
-      return;
-    }
-    if (t.classList && t.classList.contains('bundle-item')) {
-      var rmv = t.querySelector('button');
-      if (rmv && rmv.getAttribute('data-id')) {
-        e.preventDefault(); e.stopPropagation();
-        var bid = rmv.getAttribute('data-id');
-        delete state.selectedIds[bid];
-        updateHeaderBundleCount();
-        updateBundleSidebar();
-        updateCardButton(bid);
-      }
-      return;
-    }
-    t = t.parentElement;
   }
 });
 
