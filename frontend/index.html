@@ -1194,9 +1194,7 @@ function handleResultClick(e) {
    RESULTS RENDERING
    ----------------------------------------------- */
 function forceRefresh() {
-  state.refinementChips['_force'] = true;
-  applyRefinements();
-  delete state.refinementChips['_force'];
+  renderResults();
 }
 
 function renderResults() {
