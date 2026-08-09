@@ -1581,8 +1581,10 @@ function doBundle() {
 
   var xhr = new XMLHttpRequest();
   xhr.open('POST', WORKER_URL + '/api/bundle');
+  xhr.timeout = 60000; // 60s for mobile — Worker downloads + zips files
   xhr.setRequestHeader('Content-Type', 'application/json');
   xhr.responseType = 'blob';
+  xhr.ontimeout = function() { overlay.classList.add('hidden'); showError('Download timed out — try with fewer files.'); };
   xhr.onload = function() {
     overlay.classList.add('hidden');
     if (xhr.status === 200) {
