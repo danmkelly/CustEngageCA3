@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Teacher's Pet � Resource Discovery for Irish Primary Teachers</title>
+<title>Teacher's Pet &#8212; Resource Discovery for Irish Primary Teachers</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://alcdn.msauth.net/browser/2.28.3/js/msal-browser.min.js"></script>
@@ -381,7 +381,7 @@ body {
   font-family: var(--font-mono); font-weight: 700; min-width: 20px; text-align: center;
 }
 
-/* -- Tabs � styled as card-catalogue drawer tabs -- */
+/* -- Tabs &#8212; styled as card-catalogue drawer tabs -- */
 .tab-bar {
   display: flex; gap: 6px;
   background: transparent;
@@ -682,7 +682,7 @@ body {
       <div class="field">
         <label for="gSubject">Subject</label>
         <select id="gSubject" disabled onchange="onGuidedSubjectChange()">
-          <option value="">� Loading curriculum... �</option>
+          <option value="">&#8212; Loading curriculum... &#8212;</option>
           <option value="Language">Language (Primary Language Curriculum)</option>
           <option value="Maths">Maths (Primary Maths Curriculum)</option>
         </select>
@@ -690,19 +690,19 @@ body {
       <div class="field">
         <label for="gStrand">Strand</label>
         <select id="gStrand" disabled onchange="onGuidedStrandChange()">
-          <option value="">� Select subject first �</option>
+          <option value="">&#8212; Select subject first &#8212;</option>
         </select>
       </div>
       <div class="field">
         <label for="gStage">Stage</label>
         <select id="gStage" disabled onchange="onGuidedStageChange()">
-          <option value="">� Select strand first �</option>
+          <option value="">&#8212; Select strand first &#8212;</option>
         </select>
       </div>
       <div class="field">
         <label for="gOutcome">Outcome</label>
         <select id="gOutcome" disabled onchange="onGuidedOutcomeChange()">
-          <option value="">� Select stage first �</option>
+          <option value="">&#8212; Select stage first &#8212;</option>
         </select>
       </div>
       <div class="field constraints-field">
@@ -718,7 +718,7 @@ body {
   <!-- Freetext Mode Panel -->
   <div class="mode-panel hidden" id="panel-freetext">
     <form class="freetext-form" onsubmit="return freetextSearch(event)">
-      <input type="text" id="ftQuery" placeholder="Describe the resource you're looking for � any detail helps" autocomplete="off">
+      <input type="text" id="ftQuery" placeholder="Describe the resource you're looking for &#8212; any detail helps" autocomplete="off">
       <button type="submit" class="btn btn-primary">?? Search</button>
     </form>
   </div>
@@ -761,7 +761,7 @@ body {
       <button class="btn btn-primary" onclick="signInAndBundle()">Sign in with Microsoft</button>
       <button class="btn btn-secondary" onclick="bundleWithoutFiles()">Continue without files</button>
     </div>
-    <p class="auth-note" id="authDialogNote">Without sign-in: the bundle will contain your lesson summary, any AI-generated plans, and the AI disclosure README � but not your actual teaching resource files.</p>
+    <p class="auth-note" id="authDialogNote">Without sign-in: the bundle will contain your lesson summary, any AI-generated plans, and the AI disclosure README &#8212; but not your actual teaching resource files.</p>
   </div>
 </div>
 
@@ -821,7 +821,7 @@ function populateGuidedDropdowns() {
   var maths = state.taxonomies.maths;
   if (!lang || !maths) return;
   var subjEl = document.getElementById('gSubject');
-  subjEl.options[0].textContent = '� Select �';
+  subjEl.options[0].innerHTML = '&#8212; Select &#8212;';
   subjEl.disabled = false;
 }
 
@@ -838,11 +838,11 @@ function onGuidedSubjectChange() {
   state.guidedSelections.stage = '';
   state.guidedSelections.outcome = '';
 
-  strandEl.innerHTML = '<option value="">� Select strand �</option>';
+  strandEl.innerHTML = '<option value="">&#8212; Select strand &#8212;</option>';
   strandEl.disabled = !val;
-  stageEl.innerHTML = '<option value="">� Select strand first �</option>';
+  stageEl.innerHTML = '<option value="">&#8212; Select strand first &#8212;</option>';
   stageEl.disabled = true;
-  outEl.innerHTML = '<option value="">� Select stage first �</option>';
+  outEl.innerHTML = '<option value="">&#8212; Select stage first &#8212;</option>';
   outEl.disabled = true;
 
   if (val && ((lang && lang.strands[val]) || (maths && maths.strands[val]))) {
@@ -868,9 +868,9 @@ function onGuidedStrandChange() {
   state.guidedSelections.stage = '';
   state.guidedSelections.outcome = '';
 
-  stageEl.innerHTML = '<option value="">� Select stage �</option>';
+  stageEl.innerHTML = '<option value="">&#8212; Select stage &#8212;</option>';
   stageEl.disabled = !val;
-  outEl.innerHTML = '<option value="">� Select stage first �</option>';
+  outEl.innerHTML = '<option value="">&#8212; Select stage first &#8212;</option>';
   outEl.disabled = true;
 
   if (!val) { updateGuidedSearchBtn(); return; }
@@ -900,7 +900,7 @@ function onGuidedStageChange() {
   state.guidedSelections.stage = val;
   state.guidedSelections.outcome = '';
 
-  outEl.innerHTML = '<option value="">� Select outcome �</option>';
+  outEl.innerHTML = '<option value="">&#8212; Select outcome &#8212;</option>';
   outEl.disabled = !val;
   if (!val) { updateGuidedSearchBtn(); return; }
 
@@ -1076,7 +1076,7 @@ function guidedSearch(e) {
   try { outcomeData = JSON.parse(s.outcome); } catch(ex) { showError('Please select a valid outcome.'); return false; }
   state.lastQuery = {
     type: 'guided',
-    query: [s.subject, s.strand, outcomeData.code, (outcomeData.label || outcomeData.name)].filter(Boolean).join(' � '),
+    query: [s.subject, s.strand, outcomeData.code, (outcomeData.label || outcomeData.name)].filter(Boolean).join(' &#8212; '),
     subject: s.subject,
     strand: s.strand,
     stage: s.stage,
@@ -1561,7 +1561,7 @@ function triggerBundle() {
     return;
   }
 
-  // Signed in � proceed directly
+  // Signed in &#8212; proceed directly
   doBundle(null);
 }
 
@@ -1595,7 +1595,7 @@ function doBundle(accessToken) {
 
   // Build summary_md from current results
   var summaryLines = [];
-  summaryLines.push('# Teacher\'s Pet � Resource Bundle');
+  summaryLines.push('# Teacher\'s Pet &#8212; Resource Bundle');
   summaryLines.push('');
   if (state.lastQuery) {
     summaryLines.push('**Query:** ' + (state.lastQuery.query || 'Catalogue browse'));
@@ -1735,4 +1735,5 @@ document.addEventListener('DOMContentLoaded', function() {
 
 </body>
 </html>
+
 
