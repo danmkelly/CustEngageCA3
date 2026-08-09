@@ -496,11 +496,28 @@ async function opsResearcher(env, params) {
     var gradeBand = (params.grade_band || "").toLowerCase().trim();
 
     if (outcomeCode || gradeBand) {
+      // Normalize gradeBand: accept both stage codes (C1) and human-readable (Infants)
+      var gradeBandNorm = "";
+      if (gradeBand) {
+        var gb = gradeBand.toLowerCase();
+        if (gb === "c1" || gb.includes("infant")) gradeBandNorm = "c1";
+        else if (gb === "c2" || gb.includes("1st") || gb.includes("first")) gradeBandNorm = "c2";
+        else if (gb === "c3" || gb.includes("3rd") || gb.includes("third")) gradeBandNorm = "c3";
+        else if (gb === "c4" || gb.includes("5th") || gb.includes("fifth")) gradeBandNorm = "c4";
+        else gradeBandNorm = gb;
+      }
       matches = catalogue.filter(function (row) {
         var rowOutcome = (row.outcome_code || "").toLowerCase();
         var rowGrade = (row.grade_band || "").toLowerCase();
+        // Normalize row grade to stage code
+        var rowGradeNorm = "";
+        if (rowGrade.includes("infant")) rowGradeNorm = "c1";
+        else if (rowGrade.includes("1st") || rowGrade.includes("first")) rowGradeNorm = "c2";
+        else if (rowGrade.includes("3rd") || rowGrade.includes("third")) rowGradeNorm = "c3";
+        else if (rowGrade.includes("5th") || rowGrade.includes("fifth")) rowGradeNorm = "c4";
+        else rowGradeNorm = rowGrade;
         var outcomeMatch = !outcomeCode || rowOutcome.includes(outcomeCode);
-        var gradeMatch = !gradeBand || rowGrade.includes(gradeBand);
+        var gradeMatch = !gradeBandNorm || rowGradeNorm.includes(gradeBandNorm);
         return outcomeMatch && gradeMatch;
       });
 
