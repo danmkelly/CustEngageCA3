@@ -256,7 +256,7 @@ async function downloadFromOneDrive(env, onedrivePath) {
   var encodedPath = encodeURIComponent(safePath);
   var resp = await graphRequest(
     env,
-    MS_GRAPH_BASE + "/users/" + env.ONEDRIVE_USER + "/drive/root:/Teaching Resources/" +
+    MS_GRAPH_BASE + "/users/" + env.ONEDRIVE_USER + "/drive/root:/NCI/Teaching Resources/" +
       encodedPath + ":/content"
   );
   if (!resp.ok) {
@@ -276,7 +276,7 @@ async function downloadFromOneDrive(env, onedrivePath) {
 async function downloadFromOneDriveWithToken(delegatedToken, onedrivePath) {
   var safePath = onedrivePath.replace(/\\/g, "/");
   var encodedPath = safePath.split("/").map(function(s) { return encodeURIComponent(s); }).join("/");
-  var url = "https://graph.microsoft.com/v1.0/me/drive/root:/Teaching Resources/" + encodedPath + ":/content";
+  var url = "https://graph.microsoft.com/v1.0/me/drive/root:/NCI/Teaching Resources/" + encodedPath + ":/content";
   var resp = await fetch(url, {
     headers: { Authorization: "Bearer " + delegatedToken },
   });
