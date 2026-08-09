@@ -845,7 +845,7 @@ async function opsMaker(env, makerSpec) {
       title:
         "Lesson Plan — " +
         (makerSpec.outcome_code || "Generated Plan"),
-      markdown: "[AI-Generated | Not Classroom-Tested]\n\n" + content,
+      markdown: content,
       confidence: 0.7,
     };
   } catch (err) {
@@ -1158,15 +1158,12 @@ async function handleQuery(request, env) {
     var seqEntry = sequence.find(function (s) {
       return s.resource && s.resource.id === m.id;
     });
-    return {
-      id: m.id,
-      filename: m.filename,
-      path: m.onedrive_path,
-      tags: m.tags,
+    return Object.assign({}, m, {
+      path: m.onedrive_path || m.path,
       rationale: seqEntry
         ? seqEntry.resource.rationale
         : "Matched via catalogue search",
-    };
+    });
   });
 
   // ── 7. Audit log (fire-and-forget, non-blocking) ──────────────────
