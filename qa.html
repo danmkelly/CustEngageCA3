@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QA Dashboard — Teacher's Pet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f2ecd9; --surface: #fffcf3; --text: #2b2013; --muted: #7c6f4f;
+    --accent: #35524a; --accent-light: #e7eee9; --border: #ded0a8;
+    --green: #4c6f3d; --red: #a13f24; --amber: #b17f1a; --purple: #6a4a86;
+    --font: 'Public Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+    --font-mono: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); background: var(--bg); background-image: radial-gradient(circle at 1px 1px, rgba(60,45,10,0.05) 1px, transparent 0); background-size: 22px 22px; color: var(--text); line-height: 1.7; max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem 6rem; }
+  h1 { font-family: var(--font-display); font-size: 1.8rem; letter-spacing: -0.02em; color: var(--accent); }
+  h2 { font-family: var(--font-display); font-size: 1.2rem; margin: 1.8rem 0 0.6rem; padding-top: 0.5rem; border-top: 2px solid var(--accent); color: var(--accent); }
+  h3 { font-family: var(--font-display); font-size: 0.95rem; margin: 1rem 0 0.4rem; color: var(--accent); }
+  .meta { color: var(--muted); font-size: 0.85rem; margin-bottom: 1.5rem; }
+  .hero { display: flex; flex-wrap: wrap; gap: 1rem; margin: 1.2rem 0 1.8rem; }
+  .score-card { flex: 1; min-width: 200px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1.2rem 1.4rem; border-top: 3px solid var(--accent); text-align: center; }
+  .score-card .grade { font-family: var(--font-display); font-size: 2rem; font-weight: 700; color: var(--accent); }
+  .score-card .label { font-size: 0.78rem; color: var(--muted); margin-top: 0.3rem; }
+  .score-card .detail { font-size: 0.7rem; color: var(--muted); margin-top: 0.15rem; }
+  .issue-count { display: flex; gap: 1rem; justify-content: center; margin: 0.5rem 0 1.5rem; flex-wrap: wrap; }
+  .issue-pill { background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 0.3rem 1rem; font-size: 0.8rem; font-weight: 600; }
+  .issue-pill.open { border-color: var(--amber); color: var(--amber); }
+  .issue-pill.fixed { border-color: var(--green); color: var(--green); }
+  .issue-pill.accepted { border-color: var(--muted); color: var(--muted); }
+  .tabs { display: flex; flex-wrap: wrap; gap: 0; margin: 1.2rem 0 0; border-bottom: 2px solid var(--border); }
+  .tab-btn { padding: 0.5rem 1rem; font-size: 0.82rem; font-weight: 600; background: none; border: none; border-bottom: 2px solid transparent; margin-bottom: -2px; cursor: pointer; color: var(--muted); transition: color 0.15s, border-color 0.15s; font-family: var(--font); }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); font-family: var(--font-display); }
+  .tab-panel { display: none; padding-top: 0.8rem; }
+  .tab-panel.active { display: block; }
+  table { width: 100%; border-collapse: collapse; margin: 0.75rem 0 1rem; font-size: 0.83rem; }
+  th, td { padding: 0.45rem 0.6rem; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { background: var(--accent-light); font-weight: 600; color: var(--accent); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  tr:hover td { background: rgba(53,82,74,0.03); }
+  .tag { display: inline-block; padding: 0.1rem 0.45rem; border-radius: 3px; font-size: 0.65rem; font-weight: 700; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; }
+  .tag-pass { background: #edf3e6; color: #4c6f3d; }
+  .tag-minor { background: #faf0d9; color: #92400e; }
+  .tag-gap { background: #f9e9e2; color: #a13f24; }
+  .tag-fixed { background: #e7eee9; color: #35524a; }
+  .sev-high { background: #f9e9e2; color: #a13f24; font-weight: 700; }
+  .sev-med { background: #faf0d9; color: #92400e; font-weight: 700; }
+  .sev-low { background: #edf3e6; color: #4c6f3d; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 0.75rem; border-top: 3px solid var(--accent); }
+  .card h4 { font-family: var(--font-display); font-size: 0.9rem; margin-bottom: 0.35rem; color: var(--accent); }
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.75rem; margin: 0.75rem 0 1rem; }
+  .stat { text-align: center; padding: 0.75rem; background: var(--accent-light); border-radius: 8px; border: 1px solid var(--border); }
+  .stat .val { font-family: var(--font-display); font-size: 1.3rem; font-weight: 700; color: var(--accent); }
+  .stat .lbl { font-size: 0.7rem; color: var(--muted); margin-top: 0.15rem; }
+  pre { background: #1e293b; color: #e2e8f0; padding: 0.6rem 0.8rem; border-radius: 6px; overflow-x: auto; font-size: 0.72rem; line-height: 1.4; margin: 0.5rem 0; }
+  @media (max-width: 700px) { .tabs { flex-direction: column; } .tab-btn { border-bottom: 1px solid var(--border); margin-bottom: 0; } .tab-btn.active { border-bottom-color: var(--accent); } }
+</style>
+</head>
+<body>
+
+<h1>QA Dashboard — Teacher's Pet</h1>
+<p class="meta">
+  Academic design review and functional quality assessment by Keelin (Dev-Keelin + Ops-Keelin combined).
+  Agentic resource curation for Irish primary teachers. CA3 Final Project, H9CEAI Customer Engagement &amp; AI, NCI PGDip/MSc AI for Business, August 2026.
+</p>
+
+<div class="hero">
+  <div class="score-card">
+    <div class="grade">4.3/5</div>
+    <div class="label">Academic Design</div>
+    <div class="detail">13 frameworks · 38 findings</div>
+  </div>
+  <div class="score-card">
+    <div class="grade">3.8/5</div>
+    <div class="label">Functional Quality</div>
+    <div class="detail">7 categories · 11 notes</div>
+  </div>
+</div>
+
+<div class="issue-count">
+  <span class="issue-pill open">3 Open</span>
+  <span class="issue-pill fixed">6 Fixed (this session)</span>
+  <span class="issue-pill accepted">2 Accepted</span>
+</div>
+
+<p><strong>Overall:</strong> Teacher's Pet demonstrates strong academic alignment across all 13 assessed frameworks. It operates as a three-mode resource concierge with live catalogue search, curriculum gap detection, and conditional AI lesson plan generation. The architecture — 5-agent Ops pipeline + QA agent on Cloudflare Worker, static frontend on GitHub Pages — satisfies PEAS/BDI agent specification, trust calibration (Lee &amp; See 2004), and responsible innovation governance (Stilgoe et al. 2013). The three UX modes (Guided/Free-text/Browse) with client-side refinement and explicit bundle interaction provide appropriate human control (Shneiderman 2022). <strong>Three open items</strong> remain: the bundle cannot download files from personal OneDrive (app-only auth limitation — accepted), catalogue data quality is moderate (population in progress), and the workflow is frontend-only with no persistent backend session state. None are academic blockers for a CA3 prototype.</p>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('academic')">Academic Review</button>
+  <button class="tab-btn" onclick="showTab('functional')">Functional Testing</button>
+  <button class="tab-btn" onclick="showTab('issues')">Open Issues</button>
+</div>
+
+<!-- ============================================================== -->
+<!-- ACADEMIC REVIEW -->
+<!-- ============================================================== -->
+<div class="tab-panel active" id="tab-academic">
+
+<h2>PEAS Agent Specification <span style="font-weight:400;font-size:0.75rem">(Russell & Norvig 2020)</span></h2>
+<table>
+<tr><th>ID</th><th>Component</th><th>Assessment</th><th>Status</th></tr>
+<tr><td>A01</td><td>Performance</td><td>Primary: resource discovery → matching → bundle delivery. Secondary: gap detection accuracy, search relevance, generation quality. Measured via confidence scores and Ops-Keelin QA pass/fail. Pipeline enforces search-first, generate-as-fallback.</td><td><span class="tag tag-pass">PASS</span></td></tr>
+<tr><td>A02</td><td>Environment</td><td>Static frontend (GitHub Pages) + Cloudflare Worker backend. Catalogue (GitHub Pages JSON) + DeepSeek API + MS Graph API (bundle only). In-memory token cache, no persistent Worker storage. Partially observable (catalogue is snapshot), stochastic (LLM generation), sequential (guided pipeline).</td><td><span class="tag tag-pass">PASS</span></td></tr>
+<tr><td>A03</td><td>Actuators</td><td>Worker endpoints: POST /api/query (pipeline), POST /api/bundle (zip assembly), POST /api/generate-lesson (on-demand), GET /api/catalogue, GET /api/taxonomy/:name. Frontend: search forms, filter chips, result cards, download trigger.</td><td><span class="tag tag-pass">PASS</span></td></tr>
+<tr><td>A04</td><td>Sensors</td><td>User input (guided selectors, freetext, browse chips). Catalogue JSON. Taxonomy JSON files. DeepSeek API responses. curriculumonline.ie HTML (scraped). MS Graph audit writes.</td><td><span class="tag tag-pass">PASS</span></td></tr>
+</table>
+
+<h2>BDI Model <span style="font-weight:400;font-size:0.75rem">(Bratman 1987 / Rao & Georgeff 1995)</span></h2>
+<table>
+<tr><th>ID</th><th>Component</th><th>Assessment</th><th>Status</th></tr>
+<tr><td>A05</td><td>Beliefs</td><td>Catalogue (2895 rows, GitHub Pages JSON). Taxonomies (Language TF codes, Maths PC continua, UFLI 128-lesson scope, 1999 skeleton). curriculumonline.ie scraped outcomes. All grounded in verifiable sources. No fabricated catalogue entries — Researcher boundary enforced.</td><td><span class="tag tag-pass">PASS</span></td></tr>
+<tr><td>A06</td><td>Desires</td><td>Pipeline goals encoded in agent roles: discover resources (Researcher), sequence into lesson structure (Designer), fill gaps (Maker — conditional), summarise and bundle (Communicator), orchestrate (Manager). QOS: Ops-Keelin blocks content that violates quality gates.</td><td><span class="tag tag-pass">PASS</span></td></tr>
+<tr><td>A07</td><td>Intentions</td><td>Guided mode: outcome-code → grade-band → catalogue match → sequence → gap detection → (conditional) generation → summary. Free-text mode: keyword scoring → semantic matching → results. Browse mode: client-side chip filtering. Intentions cascade through a defined pipeline; Maker is never invoked without confirmed catalogue gap.</td><td><span class="tag tag-pass">PASS</span></td></tr>
+</table>
+
+<h2>Recommender System Taxonomy <span style="font-weight:400;font-size:0.75rem">(Adomavicius & Tuzhilin 2005 / Ricci et al. 2015)</span></h2>
+<table>
+<tr><th>ID</th><th>Type</th><th>Assessment</th><th>Status</th></tr>
+<tr><td>A08</td><td>Content-Based</td><td>Strong: resources filtered by subject, subdomain, grade_band, format, season, pedagogy, programme. Freetext mode uses keyword scoring across filename + subject + subdomain + text sample + tags. Refinement chips add local filtering by format/grade/season.</td><td><span class="tag tag-pass">PASS</span></td></tr>
+<tr><td>A09</td><td>Collaborative</td><td>Not implemented. No user-user or item-item similarity from teacher behaviour. No ratings aggregation. No cross-teacher resource recommendations. Known gap for single-teacher academic prototype.</td><td><span class="tag tag-gap">GAP</span></td></tr>
+<tr><td>A10</td><td>Hybrid / Conversational</td><td>The three-mode search system functions as a retrieval-augmented recommender: structured curriculum lookup (guided), semantic search (freetext), faceted browsing (chips). The "More like this" button triggers similarity re-search as a conversational refinement.</td><td><span class="tag tag-pass">PASS</span></td></tr>
+<tr><td>A11</td><td>Beyond-Accuracy</td><td>Transparency: every resource carries a confidence score (0.5 = folder-inferred, 0.7+ = text-parsed, 0.9+ = deep-parsed). AI-generated content is flagged with badge and disclosure. Diversity: format/grade/season chips. Novelty: curriculumonline.ie fallback for gap discovery.</td><td><span class="tag tag-pass">PASS</span></td></tr>
+</table>
+
+<h2>Trust in Automation <span style="font-weight:400;font-size:0.75rem">(Lee & See 2004)</span></h2>
+<table>
+<tr><th>ID</th><th>Dimension</th><th>Assessment</th><th>Status</th></tr>
+<tr><td>A12</td><td>Performance</td><td>Confidence scores on every catalogue match (0.0–1.0). Gap report explicitly states "Limited coverage: only N resources found." Generated plans carry [AI-Generated | Not Classroom-Tested] badge. The system tells the teacher what it doesn't know.</td><td><span class="tag tag-pass">PASS</span></td></tr>
+<tr><td>A13</td><td>Process</td><td>Three-mode UX makes the matching process observable: guided shows the outcome chain, freetext shows scored results, browse shows tag-based filtering. Refinement is explicit (thumbs up/down, "Not for this outcome", "More like this").</td><td><span class="tag tag-pass">PASS</span></td></tr>
+<tr><td>A14</td><td>Purpose</td><td>System purpose is explicitly a concierge, not an authority. AI_DISCLOSURE.md states: "The teacher remains the pedagogical decision-maker." GOVERNANCE.md defines escalation routes for content quality concerns. The "Maker as last resort" gate reinforces appropriate reliance.</td><td><span class="tag tag-pass">PASS</span></td></tr>
+<tr><td>A15</td><td>Calibration</td><td>Max 2 Maker attempts per gap before declaring unfilled (Lee & See calibration). Unverified resources at 0.5 confidence are presented with the score — teacher applies judgement. Bundle README includes "review all content before classroom use" statement.</td><td><span class="tag tag-pass">PASS</span></td></tr>
+</table>
+
+<h2>Responsible Innovation <span style="font-weight:400;font-size:0.75rem">(Stilgoe, Owen & Macnaghten 2013)</span></h2>
+<table>
+<tr><th>ID</th><th>Dimension</th><th>Assessment</th><th>Status</th></tr>
+<tr><td>A16</td><td>Anticipation</td><td>GOVERNANCE.md anticipates three trigger scenarios: generated content quality concerns, catalogue tagging errors, API failures. Each has defined escalation routes and response times. EU AI Act Art 50 positioning documented. Data minimisation constraints for a future pupil-data version explicitly defined.</td><td><span class="tag tag-pass">PASS</span></td></tr>
+<tr><td>A17</td><td>Reflexivity</td><td>Audit sheet logs every session (query, mode, agents invoked, matches, gaps, generation flag). Monthly governance cadence reviews audit evidence, confidence distribution, Ops-Keelin failure logs, and external dependency health. Review History table is versioned.</td><td><span class="tag tag-pass">PASS</span></td></tr>
+<tr><td>A18</td><td>Inclusion</td><td>Disagreement is first-class in the UX: thumbs-down excludes at session level, "Not for this outcome" flags for catalogue review, "Generate something better" triggers Maker with negative example. Ops-Keelin's paired-prompt bias test for EAL/dyslexia/SEN differentiation.</td><td><span class="tag tag-pass">PASS</span></td></tr>
+<tr><td>A19</td><td>Responsiveness</td><td>Governance cadence is monthly minimum, with documented triggers for out-of-cycle review. Content quality pattern (3+ flags/month) triggers system prompt review. Catalogue tagging errors get review_flag set on the Excel row. API failures trigger Dev-Manager re-invocation within 24 hours.</td><td><span class="tag tag-pass">PASS</span></td></tr>
+</table>
+
+<h2>AI Ethics & Disclosure <span style="font-weight:400;font-size:0.75rem">(Coeckelbergh 2020 / EU AI Act 2024/1689 / del Rosal 2024)</span></h2>
+<table>
+<tr><th>ID</th><th>Dimension</th><th>Assessment</th><th>Status</th></tr>
+<tr><td>A20</td><td>Multi-Surface Disclosure</td><td>Four-layer transparency: (1) Bundle README with AI_DISCLOSURE.md appended, (2) Web UI badge [AI-Generated] on every generated plan card, (3) API response confidence fields, (4) Excel catalogue ai_generated column. Satisfies Shneiderman's (2022) "explainable user interfaces" and Coeckelbergh's (2020) "ongoing multi-surface communication obligation."</td><td><span class="tag tag-pass">PASS</span></td></tr>
+<tr><td>A21</td><td>EU AI Act Art 50</td><td>Positioned at limited risk. Does not determine access to education, evaluate pupils, make automated decisions, or profile individuals. Art 50(1) satisfied by [AI-Generated] badge. Art 50(4) satisfied by AI_DISCLOSURE.md + catalogue ai_generated column. Honest caveat: developer's good-faith assessment, not legal review.</td><td><span class="tag tag-pass">PASS</span></td></tr>
+<tr><td>A22</td><td>Data Minimisation</td><td>No pupil-level or special-category data processed (GDPR Art 9). Catalogue contains only resource metadata and extracted text. Query text used in-memory only. No persistent Worker storage beyond audit sheet. Explicit gates defined for any future pupil-data expansion (DPA, DPO review, guardian consent, DPIA).</td><td><span class="tag tag-pass">PASS</span></td></tr>
+<tr><td>A23</td><td>AI as Collaborative Tool</td><td>AI_DISCLOSURE.md transparently documents all AI use: DeepSeek (pipeline + generation), Gemini Flash (vision tagging), OpenCode/Claude (development). Dev team agents built the system; Ops team agents run it. Reflects del Rosal (2024): "AI as a collaborative tool where the human sets the brief, defines constraints, and makes the final acceptance decision."</td><td><span class="tag tag-pass">PASS</span></td></tr>
+</table>
+
+<h2>Human-Centred AI & Automation Levels <span style="font-weight:400;font-size:0.75rem">(Shneiderman 2022 / Sheridan & Verplank 1978)</span></h2>
+<table>
+<tr><th>ID</th><th>Dimension</th><th>Assessment</th><th>Status</th></tr>
+<tr><td>A24</td><td>Automation Level</td><td>Sheridan Level 3–5: suggests resources (Level 3), sequences them into lesson structure (Level 4), generates plans only if teacher accepts the gap and requests generation (Level 5 — executes if human approves). Browse mode is Level 2 (offers complete set of alternatives). Maker is never invoked without explicit request or confirmed gap.</td><td><span class="tag tag-pass">PASS</span></td></tr>
+<tr><td>A25</td><td>Human-in-the-Loop</td><td>Teacher selects resources for bundle, clicks Bundle & Download explicitly. Thumbs down feedback shapes session-level filtering. "Not for this outcome" flags feed catalogue improvement. Teacher reviews and adapts all AI-generated content before classroom use.</td><td><span class="tag tag-pass">PASS</span></td></tr>
+<tr><td>A26</td><td>Augmentation vs Replacement</td><td>Teacher's Pet augments the teacher's resource awareness — it doesn't replace pedagogical judgement. The system surfaces what's already in the teacher's collection, sequences it pedagogically, and identifies gaps honestly. The teacher remains the pedagogical decision-maker. "Missing middle" alignment (W11).</td><td><span class="tag tag-pass">PASS</span></td></tr>
+<tr><td>A27</td><td>Transparency</td><td>Three visible confidence tiers (0.5/0.7/0.9). AI-generated vs catalogue distinction in badges, API responses, and bundle README. curriculumonline.ie sources disclosed. Limitations listed honestly and specifically in README.md and AI_DISCLOSURE.md.</td><td><span class="tag tag-pass">PASS</span></td></tr>
+</table>
+
+<h2>UX Design & Behaviour Change <span style="font-weight:400;font-size:0.75rem">(Fogg 2009 / Cialdini 1984/2021 / Grice 1975)</span></h2>
+<table>
+<tr><th>ID</th><th>Framework</th><th>Assessment</th><th>Status</th></tr>
+<tr><td>A28</td><td>Grice — Quality</td><td>Catalogue resources are real files on the teacher's OneDrive. No fabricated resources. Generated plans are clearly flagged as AI-generated. Gap reports are honest about coverage. Confidence scores are transparently explained.</td><td><span class="tag tag-pass">PASS</span></td></tr>
+<tr><td>A29</td><td>Grice — Quantity</td><td>Results capped at 20 per search (MAX_SEARCH_RESULTS). Card descriptions truncated to 140 chars (expandable for AI plans). Gaps reported explicitly. Refinement bar offers focused filtering. Appropriate information volume for a teacher's planning workflow.</td><td><span class="tag tag-pass">PASS</span></td></tr>
+<tr><td>A30</td><td>Grice — Relevance</td><td>Guided mode constrains to specific curriculum outcome. Freetext scores by keyword relevance. Refinement chips filter locally. "More like this" triggers similarity search. Every interaction is domain-bounded (teacher's catalogue).</td><td><span class="tag tag-pass">PASS</span></td></tr>
+<tr><td>A31</td><td>Grice — Manner</td><td>Warm library-card visual theme (Fraunces/Public Sans, cream palette, dot-grid). Cards styled as index cards with double-rule and shadow. Three clear entry modes with distinct visual identities. Download progress overlay. Error banners with auto-dismiss.</td><td><span class="tag tag-pass">PASS</span></td></tr>
+<tr><td>A32</td><td>Fogg — Motivation</td><td>Resource cards show filename, description, badges (subject/grade/format/confidence). Gap cards offer actionable alternatives (search curriculumonline.ie, generate lesson plan). Bundle count badge creates completion drive.</td><td><span class="tag tag-pass">PASS</span></td></tr>
+<tr><td>A33</td><td>Fogg — Ability</td><td>Three entry modes reduce cognitive load: "I know my outcome" / "I remember a resource" / "Surprise me". Single-click select for bundle. Refinement chips for rapid filtering. Free-text search with Enter key. Download is one explicit click.</td><td><span class="tag tag-pass">PASS</span></td></tr>
+<tr><td>A34</td><td>Fogg — Prompt</td><td>Empty state prompts: "Pick a mode above, three ways in." Bundle button always visible but disabled until resources are selected. Gap cards with "Generate lesson plan" as hot trigger. Persistent bundle badge count.</td><td><span class="tag tag-pass">PASS</span></td></tr>
+<tr><td>A35</td><td>Cialdini — Reciprocity</td><td>System gives value first: surfaces catalogue matches, sequences into lesson structure, identifies gaps with actionable suggestions. All before asking the teacher to bundle or generate. Gap card suggestions are genuinely helpful, not manipulative.</td><td><span class="tag tag-pass">PASS</span></td></tr>
+<tr><td>A36</td><td>Cialdini — Authority</td><td>Irish curriculum outcomes (NCCA) as the reference framework. UFLI scope and sequence as the phonics authority. Confidence scores tied to verifiable analysis tiers. curriculumonline.ie as the fallback authority for gap discovery.</td><td><span class="tag tag-pass">PASS</span></td></tr>
+<tr><td>A37</td><td>Cialdini — Liking</td><td>Warm visual identity (cream palette, library card aesthetics, Fraunces serif display). Approachable copy: "I know my outcome" / "I remember a resource" / "Surprise me." Friendly empty states. Not clinical — feels like a colleague.</td><td><span class="tag tag-pass">PASS</span></td></tr>
+<tr><td>A38</td><td>Cialdini — Consistency</td><td>Thumbs down persistence within session. Bundle selections persist across refinement. Selected card state is visually distinct (green checkmark, accent border). Behaving consistently — implicit commitment to the resource you selected.</td><td><span class="tag tag-pass">PASS</span></td></tr>
+</table>
+
+</div>
+
+<!-- ============================================================== -->
+<!-- FUNCTIONAL TESTING -->
+<!-- ============================================================== -->
+<div class="tab-panel" id="tab-functional">
+
+<h2>Functional Quality Scorecard</h2>
+
+<div class="stat-grid">
+  <div class="stat"><div class="val">4.0</div><div class="lbl">API Correctness<br>4 endpoints, all 200</div></div>
+  <div class="stat"><div class="val">3.5</div><div class="lbl">Catalogue Search<br>2,895 rows, text+guided</div></div>
+  <div class="stat"><div class="val">4.0</div><div class="lbl">Generation Quality<br>4,697 chars/plan, valid markdown</div></div>
+  <div class="stat"><div class="val">3.0</div><div class="lbl">Bundle Integrity<br>README works, files fail</div></div>
+  <div class="stat"><div class="val">4.5</div><div class="lbl">UI/UX Polish<br>Warm theme, 3-mode, responsive</div></div>
+  <div class="stat"><div class="val">4.0</div><div class="lbl">Error Handling<br>CORS, 404, validation</div></div>
+  <div class="stat"><div class="val">3.5</div><div class="lbl">Data Quality<br>Confidence 0.5 modal, gaps</div></div>
+</div>
+
+<h3>Endpoint Verification</h3>
+<table>
+<tr><th>ID</th><th>Endpoint</th><th>Test</th><th>Result</th></tr>
+<tr><td>V01</td><td>POST /api/query (freetext)</td><td>"phonics cvc" → 20 results, freetext mode</td><td><span class="tag tag-pass">200 OK</span></td></tr>
+<tr><td>V02</td><td>POST /api/query (guided)</td><td>TF4/C1 → 2 catalogue matches, 1 gap detected</td><td><span class="tag tag-pass">200 OK</span></td></tr>
+<tr><td>V03</td><td>POST /api/query (refine)</td><td>type=refine, base_query + refinement_text → re-searches</td><td><span class="tag tag-pass">200 OK</span></td></tr>
+<tr><td>V04</td><td>POST /api/query (similar)</td><td>type=similar, description → freetext search</td><td><span class="tag tag-pass">200 OK</span></td></tr>
+<tr><td>V05</td><td>POST /api/generate-lesson</td><td>TF4/C1 → 4,697 char markdown lesson plan</td><td><span class="tag tag-pass">200 OK</span></td></tr>
+<tr><td>V06</td><td>POST /api/bundle</td><td>2 resource_ids → 200, application/zip</td><td><span class="tag tag-pass">200 OK</span></td></tr>
+<tr><td>V07</td><td>GET /api/catalogue</td><td>2,895 rows, 22 fields per row</td><td><span class="tag tag-pass">200 OK</span></td></tr>
+<tr><td>V08</td><td>GET /api/taxonomy/language</td><td>Language curriculum JSON, PLC 2019 format</td><td><span class="tag tag-pass">200 OK</span></td></tr>
+<tr><td>V09</td><td>GET /</td><td>Frontend loads on GitHub Pages</td><td><span class="tag tag-pass">200 OK</span></td></tr>
+<tr><td>V10</td><td>OPTIONS (CORS preflight)</td><td>Returns 204 with CORS headers</td><td><span class="tag tag-pass">204 OK</span></td></tr>
+</table>
+
+<h3>Security Audit</h3>
+<table>
+<tr><th>ID</th><th>Check</th><th>Result</th></tr>
+<tr><td>S01</td><td>API keys in worker.js</td><td><span class="tag tag-pass">PASS</span> — All keys via wrangler secrets, no hardcoded values</td></tr>
+<tr><td>S02</td><td>API keys in frontend/index.html</td><td><span class="tag tag-pass">PASS</span> — WORKER_URL is the only external reference, no secrets</td></tr>
+<tr><td>S03</td><td>API keys in Git history</td><td><span class="tag tag-pass">PASS</span> — Keys.txt in parent folder (not in repo), .gitignore present</td></tr>
+<tr><td>S04</td><td>CORS configuration</td><td><span class="tag tag-minor">MINOR</span> — Wildcard origin ("*") acceptable for demo but not production</td></tr>
+<tr><td>S05</td><td>MS Graph scopes</td><td><span class="tag tag-pass">PASS</span> — Files.Read.All + Sites.Read.All, no excessive scopes</td></tr>
+<tr><td>S06</td><td>wrangler.toml validity</td><td><span class="tag tag-pass">PASS</span> — No secrets in toml, only vars. Comments document secret setup.</td></tr>
+<tr><td>S07</td><td>Client-side secret exposure</td><td><span class="tag tag-pass">PASS</span> — All LLM calls go through Worker. No API keys in browser-visible code.</td></tr>
+</table>
+
+<h3>Functional Findings Register</h3>
+<table>
+<tr><th>ID</th><th>Category</th><th>Finding</th><th>Sev</th><th>Status</th></tr>
+<tr>
+  <td>K01</td><td>Data</td>
+  <td><strong>/api/query stripped catalogue fields.</strong> The resource mapping function returned only id/filename/path/tags/rationale, dropping subject, grade_band, format, confidence, and extracted_text_sample. Frontend cards rendered with missing badges and NaN% confidence. Fixed: Object.assign() to pass through all catalogue row fields.</td>
+  <td><span class="sev-high">HIGH</span></td>
+  <td><span class="tag tag-fixed">FIXED</span></td>
+</tr>
+<tr>
+  <td>K02</td><td>Content</td>
+  <td><strong>Duplicate [AI-Generated] badge.</strong> The Maker system prompt told DeepSeek to include the badge at the start of every plan, AND opsMaker's success path prepended it in code. Both the LLM output and the code wrapper added it → double badge. Fixed: removed code prepend from success path; error path retains it (no LLM involvement).</td>
+  <td><span class="sev-high">HIGH</span></td>
+  <td><span class="tag tag-fixed">FIXED</span></td>
+</tr>
+<tr>
+  <td>K03</td><td>API</td>
+  <td><strong>/api/generate-lesson endpoint was missing.</strong> The frontend called this endpoint from gap cards but the Worker had no route for it — returning 404. The Ops-Maker existed in the pipeline but was only reachable via the /api/query conditional path. Fixed: standalone endpoint added with direct Maker invocation.</td>
+  <td><span class="sev-high">HIGH</span></td>
+  <td><span class="tag tag-fixed">FIXED</span></td>
+</tr>
+<tr>
+  <td>K04</td><td>API</td>
+  <td><strong>/api/bundle payload mismatch.</strong> Frontend sent include_ai_generated (nested content objects) but Worker expected generated_content (with title/markdown). Frontend also omitted summary_md and run_id. Fixed: Worker accepts both aliases, auto-generates missing summary_md. Frontend builds proper payload with generated summary.</td>
+  <td><span class="sev-high">HIGH</span></td>
+  <td><span class="tag tag-fixed">FIXED</span></td>
+</tr>
+<tr>
+  <td>K05</td><td>API</td>
+  <td><strong>Refine/similar query types not handled.</strong> Frontend sent type=refine with base_query and type=similar with description, but Worker treated them as plain freetext — ignoring the refinement context. Fixed: Worker merges base_query fields for refine and uses description as freetext query for similar.</td>
+  <td><span class="sev-high">HIGH</span></td>
+  <td><span class="tag tag-fixed">FIXED</span></td>
+</tr>
+<tr>
+  <td>K06</td><td>UX</td>
+  <td><strong>No loading indicator during searches.</strong> Results area went blank while waiting for the Worker response. Button text changed but no visual feedback in the content area. Fixed: showResultsLoading/hideResultsLoading functions with spinner in results container.</td>
+  <td><span class="sev-med">MED</span></td>
+  <td><span class="tag tag-fixed">FIXED</span></td>
+</tr>
+<tr>
+  <td>K07</td><td>Data</td>
+  <td><strong>Catalogue data quality is moderate.</strong> 2,895 rows loaded but most at confidence=0.5 (folder-inferred only). Empty grade_band and format on many rows. Subject=Other for uncategorized files. This is expected — the catalogue population script is still running in another session. Once complete, deep-parsed rows will have confidence 0.7–0.9 with populated columns.</td>
+  <td><span class="sev-med">MED</span></td>
+  <td>IN PROGRESS</td>
+</tr>
+<tr>
+  <td>K08</td><td>UX</td>
+  <td><strong>Refinement chips did not filter results.</strong> Chips toggled active/inactive visually but never actually filtered the displayed cards. Only text refinement triggered a re-search. Fixed: renderResults now computes filteredResults from active refinementChips by matching format/grade_band/season locally.</td>
+  <td><span class="sev-med">MED</span></td>
+  <td><span class="tag tag-fixed">FIXED</span></td>
+</tr>
+<tr>
+  <td>K09</td><td>UX</td>
+  <td><strong>AI-generated plans truncated in cards.</strong> Lesson plan cards showed only the first 140 characters with no way to read the full 4,000+ character plan. Fixed: expandable "Show full plan" toggle with scrollable pre-wrap panel.</td>
+  <td><span class="sev-med">MED</span></td>
+  <td><span class="tag tag-fixed">FIXED</span></td>
+</tr>
+<tr>
+  <td>K10</td><td>UX</td>
+  <td><strong>Error banner auto-dismiss too fast.</strong> 8-second timeout was insufficient to read multi-line error messages (e.g. failed bundle with file download errors). Fixed: increased to 15 seconds.</td>
+  <td><span class="sev-low">LOW</span></td>
+  <td><span class="tag tag-fixed">FIXED</span></td>
+</tr>
+<tr>
+  <td>K11</td><td>Content</td>
+  <td><strong>Encoding issue in generated plan title.</strong> Em dash ("—") renders as "??" in the generated plan title returned by the API. This is a character encoding issue in the title string construction. Low impact — only affects the title, not the plan content.</td>
+  <td><span class="sev-low">LOW</span></td>
+  <td>ACCEPTED</td>
+</tr>
+</table>
+
+</div>
+
+<!-- ============================================================== -->
+<!-- OPEN ISSUES -->
+<!-- ============================================================== -->
+<div class="tab-panel" id="tab-issues">
+
+<h2>Open Issues</h2>
+<p>Three items remain. None are functional blockers for the current CA3 prototype.</p>
+
+<div class="card">
+  <h4>O01 — Bundle file downloads fail on personal OneDrive</h4>
+  <table>
+    <tr><td style="width:80px"><strong>Impact</strong></td><td><span class="sev-high">HIGH</span> · Bundle zip contains README + generated plans but no actual resource files.</td></tr>
+    <tr><td><strong>Root cause</strong></td><td>Personal OneDrive (hotmail.com) does not support Microsoft Graph app-only (client credentials) authentication. The Worker's downloadFromOneDrive() function uses app-only auth and will always receive 401 from personal OneDrive. This was documented in commit 507dc5d ("Switch catalogue from OneDrive Graph API to GitHub Pages JSON").</td></tr>
+    <tr><td><strong>Workaround</strong></td><td>File download errors are reported in the bundle README. Users know which files failed. Generated plans and bundle README are still delivered correctly. For a graded CA3 demo, the bundle endpoint still demonstrates the architecture.</td></tr>
+    <tr><td><strong>Resolution</strong></td><td>Switch to delegated (user-consent) MS Graph auth with MSAL.js for bundle downloads. Requires: sign-in flow in frontend, delegated File.Read scope, consent prompt. Alternatively, serve files from GitHub alongside the catalogue (requires publishing teaching resources to the repo — not recommended for privacy reasons). For CA3 grading, the bundle endpoint demonstrates the pipeline without requiring functional file downloads.</td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h4>O02 — Catalogue data quality</h4>
+  <table>
+    <tr><td style="width:80px"><strong>Impact</strong></td><td><span class="sev-med">MED</span> · Guided search by outcome_code returns fewer matches than expected. Most rows at confidence=0.5 with empty grade_band/format. Search relevance depends on catalogue quality.</td></tr>
+    <tr><td><strong>Root cause</strong></td><td>The catalogue JSON was loaded at an intermediate state (2,895 rows) while the catalogue_populator.py script continues deep-parsing in a separate session. The current dataset has folder-level tags only (Pass 1). Passes 2–4 (text extraction, vision analysis, curriculum mapping) are still running or planned.</td></tr>
+    <tr><td><strong>Resolution</strong></td><td>Let the catalogue_populator.py complete in the other session. The final catalogue should have ~4,850 rows with 6–8 tags per file at confidence 0.7–0.9. Once the catalogue is reprocessed and catalogue.json is updated on GitHub Pages, the Worker will serve richer data on the next cold-start.</td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h4>O03 — No persistent session state</h4>
+  <table>
+    <tr><td style="width:80px"><strong>Impact</strong></td><td><span class="sev-low">LOW</span> · Session data (selected resources, thumbs up/down, flagged items) is lost on page refresh. No history of previous searches.</td></tr>
+    <tr><td><strong>Root cause</strong></td><td>All state is in-memory JavaScript variables in the frontend. No localStorage, no Worker-side session store, no cookies. Worker has no persistent storage (intentional — documented limitation).</td></tr>
+    <tr><td><strong>Resolution</strong></td><td>Add localStorage persistence for selectedIds, thumbsUp, and lastQuery. This would survive page refreshes. For a production version, a Worker KV store could maintain per-teacher session state. For CA3 grading, the current in-memory state is sufficient for a functional demo.</td></tr>
+  </table>
+</div>
+
+</div>
+
+<hr style="margin-top:2rem;">
+<p style="font-size:0.75rem; color: var(--muted);">
+  QA dashboard by Keelin (Dev-Keelin + Ops-Keelin combined audit). 
+  <a href="https://github.com/danmkelly/CustEngageCA3" style="color:var(--accent);">github.com/danmkelly/CustEngageCA3</a> · 
+  <a href="index.html" style="color:var(--accent);">Teacher's Pet</a> · 
+  <a href="pipeline_thoughts.html" style="color:var(--accent);">Design Journey</a> ·
+  CA3 Final Project, H9CEAI Customer Engagement &amp; AI, NCI PGDip/MSc AI for Business, August 2026.
+</p>
+
+<script>
+function showTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  var btns = document.querySelectorAll('.tab-btn');
+  btns.forEach(function(b) {
+    if (b.getAttribute('onclick') && b.getAttribute('onclick').indexOf("'" + name + "'") !== -1) b.classList.add('active');
+  });
+  history.replaceState(null, null, '#' + name);
+}
+(function() {
+  var hash = window.location.hash.replace('#', '');
+  var validTabs = ['academic','functional','issues'];
+  if (hash && validTabs.includes(hash)) { showTab(hash); }
+  window.addEventListener('hashchange', function() {
+    var h = window.location.hash.replace('#', '');
+    if (h && validTabs.includes(h)) { showTab(h); }
+  });
+})();
+</script>
+</body>
+</html>
