@@ -276,14 +276,15 @@ async function downloadFromOneDrive(env, onedrivePath) {
 async function downloadFromOneDriveWithToken(delegatedToken, onedrivePath) {
   var safePath = onedrivePath.replace(/\\/g, "/");
   var encodedPath = encodeURIComponent(safePath);
-  var url = MS_GRAPH_BASE + "/me/drive/root:/Teaching Resources/" + encodedPath + ":/content";
+  // Consumer OneDrive API (personal accounts) — bypasses SPO requirement
+  var url = "https://api.onedrive.com/v1.0/drive/root:/Teaching Resources/" + encodedPath + ":/content";
   var resp = await fetch(url, {
     headers: { Authorization: "Bearer " + delegatedToken },
   });
   if (!resp.ok) {
     var errText = await resp.text();
     throw new Error(
-      "Graph API " + resp.status + ": " + errText.substring(0, 200)
+      "OneDrive API " + resp.status + ": " + errText.substring(0, 200)
     );
   }
   return resp.arrayBuffer();
