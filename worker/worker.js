@@ -279,8 +279,9 @@ async function downloadFromOneDriveWithToken(delegatedToken, onedrivePath) {
     headers: { Authorization: "Bearer " + delegatedToken },
   });
   if (!resp.ok) {
+    var errText = await resp.text();
     throw new Error(
-      "Failed to download \"" + onedrivePath + "\" (delegated): " + resp.status
+      "Graph API " + resp.status + ": " + errText.substring(0, 200)
     );
   }
   return resp.arrayBuffer();
@@ -1300,10 +1301,14 @@ async function handleBundle(request, env) {
         fileData = await downloadFromOneDrive(env, row.onedrive_path);
       }
       var cleanFilename = row.filename || ("resource-" + resId + ".pdf");
+      if (!fileData || fileData.byteLength === 0) {
+        fileFetchErrors.push("Empty file: " + row.onedrive_path);
+        continue;
+      }
       zip.file(cleanFilename, new Uint8Array(fileData));
     } catch (err) {
       fileFetchErrors.push(
-        "Failed to download " + row.filename + ": " + err.message
+        "Failed to download " + row.filename + " (" + row.onedrive_path + "): " + err.message
       );
     }
   }
