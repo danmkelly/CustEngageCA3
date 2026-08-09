@@ -1156,43 +1156,48 @@ function hideResultsLoading() {
    EVENT DELEGATION
    ----------------------------------------------- */
 function handleResultClick(e) {
-  var target = e.target;
-  while (target && target !== document.getElementById('resultsContainer')) {
-    if (target.hasAttribute && target.hasAttribute('data-action')) {
-      var action = target.getAttribute('data-action');
-      var id = target.getAttribute('data-id');
-      if (action === 'select') toggleSelect(id);
-      else if (action === 'search-curriculum') {
-        var c = target.getAttribute('data-code');
-        var l = target.getAttribute('data-label');
-        var s = target.getAttribute('data-stage');
-        searchCurriculumOnline(c, l, s);
-      }
-      else if (action === 'generate-lesson') {
-        var gc = target.getAttribute('data-code');
-        var gl = target.getAttribute('data-label');
-        var gs = target.getAttribute('data-stage');
-        generateLessonPlan(gc, gl, gs, target);
-      }
-      else if (action === 'refinement-chip') {
-        var key = target.getAttribute('data-key');
-        target.classList.toggle('active');
-        if (target.classList.contains('active')) {
-          state.refinementChips[key] = true;
-        } else {
-          delete state.refinementChips[key];
-        }
-        applyRefinements();
-      }
-      else if (action === 'dismiss-suggestion') {
-        var sid = target.getAttribute('data-sid');
-        var el = document.getElementById(sid);
-        if (el) el.remove();
-      }
+  var t = e.target;
+  // Walk up from the clicked element
+  while (t) {
+    if (t.nodeType !== 1) { t = t.parentNode; continue; }
+    var action = t.getAttribute && t.getAttribute('data-action');
+    if (action) {
       e.preventDefault();
-      return;
+      if (action === 'select') {
+        var id = t.getAttribute('data-id');
+        if (objHas(state.selectedIds, id)) {
+          delete state.selectedIds[id];
+        } else {
+          state.selectedIds[id] = true;
+        }
+        updateHeaderBundleCount();
+        renderResults();
+        return;
+      }
+      if (action === 'search-curriculum') {
+        searchCurriculumOnline(t.getAttribute('data-code'), t.getAttribute('data-label'), t.getAttribute('data-stage'));
+        return;
+      }
+      if (action === 'generate-lesson') {
+        generateLessonPlan(t.getAttribute('data-code'), t.getAttribute('data-label'), t.getAttribute('data-stage'), t);
+        return;
+      }
+      if (action === 'refinement-chip') {
+        var key = t.getAttribute('data-key');
+        t.classList.toggle('active');
+        state.refinementChips[key] = t.classList.contains('active') ? true : undefined;
+        if (!state.refinementChips[key]) delete state.refinementChips[key];
+        applyRefinements();
+        return;
+      }
+      if (action === 'dismiss-suggestion') {
+        var el = document.getElementById(t.getAttribute('data-sid'));
+        if (el) el.remove();
+        return;
+      }
     }
-    target = target.parentElement;
+    if (t === document.getElementById('resultsContainer')) break;
+    t = t.parentNode;
   }
 }
 
