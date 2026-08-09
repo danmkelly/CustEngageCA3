@@ -647,14 +647,14 @@ body {
 
 <div class="header">
   <div class="header-brand">
-    <span class="icon">??</span>
+    <span class="icon">&#128218;</span>
     <span>Teacher's Pet</span>
   </div>
   <div class="header-actions">
     <span class="auth-status hidden" id="authStatus">&#128274; Signed in</span>
     <button class="btn btn-ghost btn-sm hidden" id="signOutBtn" onclick="signOut()">Sign out</button>
     <button class="btn btn-primary" id="bundleBtn" disabled onclick="triggerBundle()">
-      ?? Bundle & Download
+      &#128230; Bundle & Download
       <span class="bundle-badge" id="bundleCount" style="display:none">0</span>
     </button>
   </div>
@@ -662,15 +662,15 @@ body {
 
 <div class="tab-bar">
   <button class="tab active" data-tab="guided" onclick="switchTab('guided')">
-    ?? I know my outcome
+    &#127919; I know my outcome
     <span class="tab-subtitle">Guided search</span>
   </button>
   <button class="tab" data-tab="freetext" onclick="switchTab('freetext')">
-    ?? I remember a resource
+    &#128269; I remember a resource
     <span class="tab-subtitle">Free-text search</span>
   </button>
   <button class="tab" data-tab="browse" onclick="switchTab('browse')">
-    ? Surprise me
+    &#10024; Surprise me
     <span class="tab-subtitle">Browse catalogue</span>
   </button>
 </div>
@@ -710,7 +710,7 @@ body {
         <input type="text" id="gConstraints" placeholder="e.g. prefer games, EAL-friendly, group work">
       </div>
       <button type="submit" class="btn btn-primary" id="gSearchBtn" disabled>
-        ?? Search
+        &#128269; Search
       </button>
     </form>
   </div>
@@ -719,7 +719,7 @@ body {
   <div class="mode-panel hidden" id="panel-freetext">
     <form class="freetext-form" onsubmit="return freetextSearch(event)">
       <input type="text" id="ftQuery" placeholder="Describe the resource you're looking for - any detail helps" autocomplete="off">
-      <button type="submit" class="btn btn-primary">?? Search</button>
+      <button type="submit" class="btn btn-primary">&#128269; Search</button>
     </form>
   </div>
 
@@ -738,7 +738,7 @@ body {
   <!-- Results Area -->
   <div class="results-area" id="resultsArea">
     <div class="empty-state" id="emptyState">
-      <div class="empty-icon">???</div>
+      <div class="empty-icon">&#128451;</div>
       <p>Pick a mode above, three ways in: know your outcome, remember a resource, or just browse.</p>
     </div>
     <div id="resultsContainer" class="hidden"></div>
@@ -1546,11 +1546,11 @@ function updateHeaderBundleCount() {
     badge.style.display = 'inline-flex';
     badge.textContent = total;
     btn.disabled = false;
-    btn.innerHTML = '?? Bundle & Download <span class="bundle-badge">' + total + '</span>';
+    btn.innerHTML = '&#128230; Bundle & Download <span class="bundle-badge">' + total + '</span>';
   } else {
     badge.style.display = 'none';
     btn.disabled = true;
-    btn.innerHTML = '?? Bundle & Download';
+    btn.innerHTML = '&#128230; Bundle & Download';
   }
 }
 
