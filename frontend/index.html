@@ -1462,6 +1462,8 @@ function toggleSelect(id) {
     state.selectedIds[id] = true;
   }
   updateHeaderBundleCount();
+  renderResults();
+  return;
   updateBundleSidebar();
   updateCardButton(id);
 }
