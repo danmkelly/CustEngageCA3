@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 
 <script>
-
+console.log('Teacher\'s Pet loaded');
 var EMBED_LANG = {
   "_description": "Primary Language Curriculum (2019) â€” English strand outcomes. TF codes with stage progression.",
   "_source": "curriculumonline.ie/primary/curriculum-areas/primary-language/",
@@ -1189,6 +1189,8 @@ function showError(msg) {
    INITIALISATION
    ----------------------------------------------- */
 document.addEventListener('DOMContentLoaded', function() {
+  console.log('DOM ready');
+  try {
   document.getElementById('resultsContainer').addEventListener('click', handleResultClick);
 
   initTaxonomies();
@@ -1198,6 +1200,7 @@ document.addEventListener('DOMContentLoaded', function() {
     state.taxonomies.maths = EMBED_MATHS;
     populateGuidedDropdowns();
   }
+  } catch(e) { console.error('Init error:', e); }
 });
 
 </script>
