@@ -252,7 +252,8 @@ async function logToAuditSheet(env, auditRow) {
  * @param {string} onedrivePath — relative path from Teaching Resources root
  */
 async function downloadFromOneDrive(env, onedrivePath) {
-  var encodedPath = encodeURIComponent(onedrivePath);
+  var safePath = onedrivePath.replace(/\\/g, "/");
+  var encodedPath = encodeURIComponent(safePath);
   var resp = await graphRequest(
     env,
     MS_GRAPH_BASE + "/users/" + env.ONEDRIVE_USER + "/drive/root:/Teaching Resources/" +
@@ -273,7 +274,8 @@ async function downloadFromOneDrive(env, onedrivePath) {
  * @param {string} onedrivePath — relative path from Teaching Resources root
  */
 async function downloadFromOneDriveWithToken(delegatedToken, onedrivePath) {
-  var encodedPath = encodeURIComponent(onedrivePath);
+  var safePath = onedrivePath.replace(/\\/g, "/");
+  var encodedPath = encodeURIComponent(safePath);
   var url = MS_GRAPH_BASE + "/me/drive/root:/Teaching Resources/" + encodedPath + ":/content";
   var resp = await fetch(url, {
     headers: { Authorization: "Bearer " + delegatedToken },
