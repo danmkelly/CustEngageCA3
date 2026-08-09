@@ -423,7 +423,7 @@ body {
     <form class="guided-form" onsubmit="return guidedSearch(event)">
       <div class="field">
         <label for="gSubject">Subject</label>
-        <select id="gSubject">
+        <select id="gSubject" onchange="onGuidedSubjectChange()">
           <option value="">— Select —</option>
           <option value="Language">Language (Primary Language Curriculum)</option>
           <option value="Maths">Maths (Primary Maths Curriculum)</option>
@@ -431,19 +431,19 @@ body {
       </div>
       <div class="field">
         <label for="gStrand">Strand</label>
-        <select id="gStrand" disabled>
+        <select id="gStrand" disabled onchange="onGuidedStrandChange()">
           <option value="">— Select subject first —</option>
         </select>
       </div>
       <div class="field">
         <label for="gStage">Stage</label>
-        <select id="gStage" disabled>
+        <select id="gStage" disabled onchange="onGuidedStageChange()">
           <option value="">— Select strand first —</option>
         </select>
       </div>
       <div class="field">
         <label for="gOutcome">Outcome</label>
-        <select id="gOutcome" disabled>
+        <select id="gOutcome" disabled onchange="onGuidedOutcomeChange()">
           <option value="">— Select stage first —</option>
         </select>
       </div>
@@ -612,57 +612,62 @@ function populateGuidedDropdowns() {
   var lang = state.taxonomies.language;
   var maths = state.taxonomies.maths;
   if (!lang || !maths) return;
+  // Dropdown cascade handled by onGuidedSubjectChange/onGuidedStrandChange/onGuidedStageChange
+  // Taxonomy data is available — no further setup needed
+}
 
-  var strandsBySubject = {};
-  strandsBySubject['Language'] = Object.keys(lang.strands);
-  strandsBySubject['Maths'] = Object.keys(maths.strands);
-
-  var subjectEl = document.getElementById('gSubject');
+function onGuidedSubjectChange() {
+  var lang = state.taxonomies.language;
+  var maths = state.taxonomies.maths;
+  var val = document.getElementById('gSubject').value;
   var strandEl = document.getElementById('gStrand');
   var stageEl = document.getElementById('gStage');
   var outEl = document.getElementById('gOutcome');
 
-  subjectEl.addEventListener('change', function() {
-    var val = subjectEl.value;
-    state.guidedSelections.subject = val;
-    state.guidedSelections.strand = '';
-    state.guidedSelections.stage = '';
-    state.guidedSelections.outcome = '';
+  state.guidedSelections.subject = val;
+  state.guidedSelections.strand = '';
+  state.guidedSelections.stage = '';
+  state.guidedSelections.outcome = '';
 
-    strandEl.innerHTML = '<option value="">— Select strand —</option>';
-    strandEl.disabled = !val;
+  strandEl.innerHTML = '<option value="">— Select strand —</option>';
+  strandEl.disabled = !val;
+  stageEl.innerHTML = '<option value="">— Select strand first —</option>';
+  stageEl.disabled = true;
+  outEl.innerHTML = '<option value="">— Select stage first —</option>';
+  outEl.disabled = true;
 
-    if (val && strandsBySubject[val]) {
-      strandsBySubject[val].forEach(function(s) {
-        var opt = document.createElement('option');
-        opt.value = s;
-        opt.textContent = s;
-        strandEl.appendChild(opt);
-      });
-    }
+  if (val && ((lang && lang.strands[val]) || (maths && maths.strands[val]))) {
+    var strands = lang && lang.strands[val] ? Object.keys(lang.strands[val]) : Object.keys(maths.strands[val]);
+    strands.forEach(function(s) {
+      var opt = document.createElement('option');
+      opt.value = s; opt.textContent = s;
+      strandEl.appendChild(opt);
+    });
+  }
+  updateGuidedSearchBtn();
+}
 
-    stageEl.innerHTML = '<option value="">— Select strand first —</option>';
-    stageEl.disabled = true;
-    outEl.innerHTML = '<option value="">— Select stage first —</option>';
-    outEl.disabled = true;
-    updateGuidedSearchBtn();
-  });
+function onGuidedStrandChange() {
+  var lang = state.taxonomies.language;
+  var maths = state.taxonomies.maths;
+  var val = document.getElementById('gStrand').value;
+  var stageEl = document.getElementById('gStage');
+  var outEl = document.getElementById('gOutcome');
+  var subj = state.guidedSelections.subject;
 
-  strandEl.addEventListener('change', function() {
-    var val = strandEl.value;
-    state.guidedSelections.strand = val;
-    state.guidedSelections.stage = '';
-    state.guidedSelections.outcome = '';
+  state.guidedSelections.strand = val;
+  state.guidedSelections.stage = '';
+  state.guidedSelections.outcome = '';
 
-    stageEl.innerHTML = '<option value="">— Select stage —</option>';
-    stageEl.disabled = !val;
-    outEl.innerHTML = '<option value="">— Select stage first —</option>';
-    outEl.disabled = true;
+  stageEl.innerHTML = '<option value="">— Select stage —</option>';
+  stageEl.disabled = !val;
+  outEl.innerHTML = '<option value="">— Select stage first —</option>';
+  outEl.disabled = true;
 
-    if (!val) { updateGuidedSearchBtn(); return; }
+  if (!val) { updateGuidedSearchBtn(); return; }
 
-    var subj = state.guidedSelections.subject;
-    var stages = subj === 'Language' ? state.taxonomies.language._stages : state.taxonomies.maths._stages;
+  var stages = subj === 'Language' ? (lang && lang._stages) : (maths && maths._stages);
+  if (stages) {
     var codes = Object.keys(stages);
     for (var i = 0; i < codes.length; i++) {
       var code = codes[i];
@@ -671,64 +676,66 @@ function populateGuidedDropdowns() {
       opt.textContent = code + ': ' + stages[code];
       stageEl.appendChild(opt);
     }
+  }
+  updateGuidedSearchBtn();
+}
 
-    updateGuidedSearchBtn();
-  });
+function onGuidedStageChange() {
+  var lang = state.taxonomies.language;
+  var maths = state.taxonomies.maths;
+  var val = document.getElementById('gStage').value;
+  var outEl = document.getElementById('gOutcome');
+  var subj = state.guidedSelections.subject;
+  var strand = state.guidedSelections.strand;
 
-  stageEl.addEventListener('change', function() {
-    var val = stageEl.value;
-    state.guidedSelections.stage = val;
-    state.guidedSelections.outcome = '';
+  state.guidedSelections.stage = val;
+  state.guidedSelections.outcome = '';
 
-    outEl.innerHTML = '<option value="">— Select outcome —</option>';
-    outEl.disabled = !val;
-    if (!val) { updateGuidedSearchBtn(); return; }
+  outEl.innerHTML = '<option value="">— Select outcome —</option>';
+  outEl.disabled = !val;
+  if (!val) { updateGuidedSearchBtn(); return; }
 
-    var subj = state.guidedSelections.subject;
-    var strand = state.guidedSelections.strand;
-
-    if (subj === 'Language') {
-      var strandObj = state.taxonomies.language.strands[strand];
-      if (strandObj && strandObj.elements) {
-        var elemNames = Object.keys(strandObj.elements);
-        for (var ei = 0; ei < elemNames.length; ei++) {
-          var elemName = elemNames[ei];
-          var elemData = strandObj.elements[elemName];
-          if (elemData.outcomes) {
-            for (var oi = 0; oi < elemData.outcomes.length; oi++) {
-              var o = elemData.outcomes[oi];
-              var opt = document.createElement('option');
-              opt.value = JSON.stringify({ code: o.code, element: elemName, label: o.label });
-              opt.textContent = o.code + ': ' + o.label + ' (' + elemName + ')';
-              outEl.appendChild(opt);
-            }
+  if (subj === 'Language' && lang) {
+    var strandObj = lang.strands[strand];
+    if (strandObj && strandObj.elements) {
+      var elemNames = Object.keys(strandObj.elements);
+      for (var ei = 0; ei < elemNames.length; ei++) {
+        var elemName = elemNames[ei];
+        var elemData = strandObj.elements[elemName];
+        if (elemData.outcomes) {
+          for (var oi = 0; oi < elemData.outcomes.length; oi++) {
+            var o = elemData.outcomes[oi];
+            var opt = document.createElement('option');
+            opt.value = JSON.stringify({ code: o.code, element: elemName, label: o.label });
+            opt.textContent = o.code + ': ' + o.label + ' (' + elemName + ')';
+            outEl.appendChild(opt);
           }
         }
       }
-    } else if (subj === 'Maths') {
-      var strandObjM = state.taxonomies.maths.strands[strand];
-      if (strandObjM && strandObjM.strand_units) {
-        for (var ui = 0; ui < strandObjM.strand_units.length; ui++) {
-          var u = strandObjM.strand_units[ui];
-          var opt = document.createElement('option');
-          opt.value = JSON.stringify({ code: u.id, name: u.name });
-          opt.textContent = u.id + ': ' + u.name;
-          outEl.appendChild(opt);
-        }
+    }
+  } else if (subj === 'Maths' && maths) {
+    var strandObjM = maths.strands[strand];
+    if (strandObjM && strandObjM.strand_units) {
+      for (var ui = 0; ui < strandObjM.strand_units.length; ui++) {
+        var u = strandObjM.strand_units[ui];
+        var opt = document.createElement('option');
+        opt.value = JSON.stringify({ code: u.id, name: u.name });
+        opt.textContent = u.id + ': ' + u.name;
+        outEl.appendChild(opt);
       }
     }
-    updateGuidedSearchBtn();
-  });
-
-  outEl.addEventListener('change', function() {
-    state.guidedSelections.outcome = outEl.value;
-    updateGuidedSearchBtn();
-  });
+  }
+  updateGuidedSearchBtn();
 }
 
 function updateGuidedSearchBtn() {
   var s = state.guidedSelections;
   document.getElementById('gSearchBtn').disabled = !(s.subject && s.strand && s.stage && s.outcome);
+}
+
+function onGuidedOutcomeChange() {
+  state.guidedSelections.outcome = document.getElementById('gOutcome').value;
+  updateGuidedSearchBtn();
 }
 
 /* ═══════════════════════════════════════════════
