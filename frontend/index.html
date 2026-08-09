@@ -7,6 +7,44 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://alcdn.msauth.net/browser/2.28.3/js/msal-browser.min.js"></script>
+<script>
+/* Embedded taxonomy data — avoids async XHR race condition */
+var EMBEDDED_TAXONOMY_READY = false;
+loadTaxonomyEmbed('language');
+loadTaxonomyEmbed('maths');
+
+function loadTaxonomyEmbed(name) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', 'https://raw.githubusercontent.com/danmkelly/CustEngageCA3/main/taxonomy/' + name + '.json');
+  xhr.onload = function() {
+    if (xhr.status === 200) {
+      try { state.taxonomies[name] = JSON.parse(xhr.responseText); } catch(e) {}
+    }
+    tryEmbedDone();
+  };
+  xhr.onerror = function() {
+    // Fallback to Worker
+    var xhr2 = new XMLHttpRequest();
+    xhr2.open('GET', 'https://teachers-pet.dan-m-kelly.workers.dev/api/taxonomy/' + name);
+    xhr2.onload = function() {
+      if (xhr2.status === 200) {
+        try { state.taxonomies[name] = JSON.parse(xhr2.responseText); } catch(e) {}
+      }
+      tryEmbedDone();
+    };
+    xhr2.onerror = function() { tryEmbedDone(); };
+    xhr2.send();
+  };
+  xhr.send();
+}
+
+function tryEmbedDone() {
+  if (state.taxonomies.language && state.taxonomies.maths && !EMBEDDED_TAXONOMY_READY) {
+    EMBEDDED_TAXONOMY_READY = true;
+    populateGuidedDropdowns();
+  }
+}
+</script>
 <style>
 :root {
   --bg: #f2ecd9;
@@ -554,56 +592,6 @@ function objSize(o) { var n = 0; for (var k in o) { if (o.hasOwnProperty(k)) n++
 function objKeys(o) { var a = []; for (var k in o) { if (o.hasOwnProperty(k)) a.push(k); } return a; }
 function objValues(o) { var a = []; for (var k in o) { if (o.hasOwnProperty(k)) a.push(o[k]); } return a; }
 function objHas(o, k) { return o.hasOwnProperty(k); }
-
-/* ═══════════════════════════════════════════════
-   TAXONOMY LOADERS
-   ═══════════════════════════════════════════════ */
-function loadTaxonomy(name, cb) {
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', TAXONOMY_BASE + '/' + name + '.json');
-  xhr.onload = function() {
-    if (xhr.status === 200) {
-      try { cb(null, JSON.parse(xhr.responseText)); } catch(e) { cb(e); }
-    } else {
-      // Fallback to Worker if GitHub fails
-      var xhr2 = new XMLHttpRequest();
-      xhr2.open('GET', WORKER_URL + '/api/taxonomy/' + name);
-      xhr2.onload = function() {
-        if (xhr2.status === 200) {
-          try { cb(null, JSON.parse(xhr2.responseText)); } catch(e) { cb(e); }
-        } else {
-          cb(new Error('Failed to load ' + name + ' taxonomy (' + xhr.status + '/' + xhr2.status + ')'));
-        }
-      };
-      xhr2.onerror = function() { cb(new Error('Network error loading ' + name + ' taxonomy')); };
-      xhr2.send();
-    }
-  };
-  xhr.onerror = function() { cb(new Error('Network error loading ' + name + ' taxonomy')); };
-  xhr.send();
-}
-
-function initTaxonomies() {
-  state.loading.taxonomy = true;
-  var loaded = 0;
-  function checkDone() {
-    loaded++;
-    if (loaded === 2) {
-      state.loading.taxonomy = false;
-      populateGuidedDropdowns();
-    }
-  }
-  loadTaxonomy('language', function(err, data) {
-    if (err) { showError('Could not load curriculum taxonomies: ' + err.message); checkDone(); return; }
-    state.taxonomies.language = data;
-    checkDone();
-  });
-  loadTaxonomy('maths', function(err, data) {
-    if (err) { showError('Could not load curriculum taxonomies: ' + err.message); checkDone(); return; }
-    state.taxonomies.maths = data;
-    checkDone();
-  });
-}
 
 /* ═══════════════════════════════════════════════
    GUIDED MODE DROPDOWNS
@@ -1523,6 +1511,12 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   initTaxonomies();
+
+  function initTaxonomies() {
+    if (state.taxonomies.language && state.taxonomies.maths) {
+      populateGuidedDropdowns();
+    }
+  }
 });
 </script>
 
