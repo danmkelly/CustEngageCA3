@@ -1227,6 +1227,7 @@ async function handleQuery(request, env) {
 // Response: application/zip with Content-Disposition header
 
 async function handleBundle(request, env) {
+  try {
   var body;
   try {
     body = await request.json();
@@ -1392,6 +1393,10 @@ async function handleBundle(request, env) {
       CORS_HEADERS
     ),
   });
+  } catch (err) {
+    console.error("[Bundle] Fatal: " + err.message);
+    return jsonResponse({ error: "Bundle failed", detail: err.message }, 500);
+  }
 }
 
 // ============================================================================
