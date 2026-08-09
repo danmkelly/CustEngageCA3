@@ -529,11 +529,14 @@ body {
 
 /* -- Bundle Sidebar -- */
 .bundle-sidebar {
-  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
-  padding: 16px; position: sticky; top: 80px;
-  border-top: 3px solid var(--accent); box-shadow: var(--shadow-sm);
+  background: #fdf8ec; border: 2px solid var(--accent); border-radius: var(--radius-lg);
+  padding: 18px 16px; position: sticky; top: 80px;
+  box-shadow: var(--shadow-lg);
 }
-.bundle-sidebar h3 { font-family: var(--font-display); font-size: 0.95rem; color: var(--accent); margin-bottom: 10px; }
+.bundle-sidebar h3 {
+  font-family: var(--font-display); font-size: 1rem; color: var(--accent);
+  margin-bottom: 4px; padding-bottom: 10px; border-bottom: 2px solid var(--accent);
+}
 .bundle-sidebar .bundle-empty { font-size: 0.8rem; color: var(--text-muted); font-style: italic; }
 .bundle-sidebar .bundle-item {
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
@@ -1350,7 +1353,7 @@ function renderResultCardHTML(r) {
     expandHtml +
     '<div class="card-badges">' + badges + '</div>' +
     '<div class="card-add">' +
-    '<button class="' + addClass + '" data-action="select" data-id="' + esc(id) + '">' + addText + '</button>' +
+    '<button class="' + addClass + '" onclick="toggleSelect(this.getAttribute(\'data-id\'))" data-id="' + esc(id) + '">' + addText + '</button>' +
     '</div>' +
     '</div>';
 }
