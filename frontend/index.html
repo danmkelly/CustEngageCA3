@@ -1773,7 +1773,8 @@ function updateBundleSidebar() {
 }
 
 function updateCardButton(id) {
-  var card = document.querySelector('.card[data-id="' + id.replace(/"/g, '&quot;') + '"]');
+  var cssId = id.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+  var card = document.querySelector('.card[data-id="' + cssId + '"]');
   if (!card) return;
   var isSelected = objHas(state.selectedIds, id);
   if (isSelected) {
