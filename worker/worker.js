@@ -1348,11 +1348,12 @@ async function handleBundle(request, env) {
         body.generated_content.length + "\n"
       : "") +
     (fileFetchErrors.length > 0
-      ? "\n**Download warnings:**\n" +
+      ? "\n**Files not included (available in your OneDrive):**\n" +
         fileFetchErrors
           .map(function (e) { return "- " + e; })
-          .join("\n")
-      : "");
+          .join("\n") +
+        "\n\n*These files could not be downloaded to the bundle. You already have them synced in your OneDrive at the paths shown above. Pre-loaded files in this bundle were downloaded successfully.*"
+      : "**All files downloaded successfully.**");
 
   zip.file("README.md", bundleReadme);
 
