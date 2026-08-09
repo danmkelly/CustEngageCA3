@@ -512,7 +512,7 @@ body {
 }
 
 .card-add {
-  display: flex; justify-content: flex-end; border-top: 1px dashed var(--border); padding-top: 8px;
+  display: flex; justify-content: space-between; border-top: 1px dashed var(--border); padding-top: 8px;
 }
 .card-add button {
   padding: 3px 10px; font-size: 0.72rem; border-radius: var(--radius);
@@ -523,6 +523,13 @@ body {
 .card-add button:hover { background: var(--accent); color: #fff; }
 .card-add button.remove-action { background: var(--danger-light); border-color: var(--danger); color: var(--danger); }
 .card-add button.remove-action:hover { background: var(--danger); color: #fff; }
+.od-link {
+  padding: 3px 10px; font-size: 0.72rem; border-radius: var(--radius);
+  border: 1px solid var(--accent); background: var(--accent-light);
+  cursor: pointer; font-family: var(--font); font-weight: 600; color: var(--accent);
+  text-decoration: none; transition: all 0.1s ease;
+}
+.od-link:hover { background: var(--accent); color: #fff; }
 
 /* -- Bundle Sidebar -- */
 .bundle-sidebar {
@@ -1343,8 +1350,8 @@ function renderResultCardHTML(r) {
     '<div class="card-filename">' + esc(r.filename || 'Untitled Resource') + '</div>' +
     expandHtml +
     '<div class="card-badges">' + badges + '</div>' +
-    '<div class="card-actions" style="display:flex;justify-content:space-between;align-items:center">' +
-    (r.onedrive_path ? '<a href="https://modernisetemp-my.sharepoint.com/personal/dan_modernise_ie/Documents/NCI/Teaching%20Resources/' + r.onedrive_path.replace(/\\/g, '/').split('/').map(function(s) { return encodeURIComponent(s); }).join('/') + '" target="_blank" rel="noopener" class="od-link" style="display:inline-block;padding:2px 8px;font-size:0.68rem;border:1px solid var(--border);border-radius:999px;color:var(--accent);text-decoration:none">Open in OneDrive</a>' : '<span></span>') +
+    '<div class="card-add" style="display:flex;justify-content:space-between;align-items:center">' +
+    (r.onedrive_path ? '<a href="https://modernisetemp-my.sharepoint.com/personal/dan_modernise_ie/Documents/NCI/Teaching%20Resources/' + r.onedrive_path.replace(/\\/g, '/').split('/').map(function(s) { return encodeURIComponent(s); }).join('/') + '" target="_blank" rel="noopener" class="od-link">Open in OneDrive</a>' : '<span></span>') +
     '<button class="' + addClass + '" data-action="select" data-id="' + esc(id) + '">' + addText + '</button>' +
     '</div>' +
     '</div>';
