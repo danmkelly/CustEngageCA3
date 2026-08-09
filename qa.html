@@ -97,37 +97,25 @@
   <div class="score-card">
     <div class="grade">3.8/5</div>
     <div class="label">Functional Quality</div>
-    <div class="detail">7 categories · 11 findings · 3 open</div>
+    <div class="detail">7 categories · 11 findings · 0 open · 2 known</div>
   </div>
 </div>
 
-<div class="issue-count">
-  <span class="issue-pill fixed">12 Fixed (this session)</span>
-  <span class="issue-pill fixed">1 Resolved (catalogue)</span>
-  <span class="issue-pill open">1 Open</span>
-  <span class="issue-pill known">4 Known limitations (documented)</span>
-</div>
-
-<p><strong>Overall:</strong> Teacher's Pet demonstrates strong alignment with the module across all three pillars. It operationalises the Five Innovators as a live Ops pipeline, satisfies PEAS/BDI agent specification with defined handoff boundaries, implements trust calibration (Lee & See 2004) through confidence scores and explicit limitations, and anchors to the module's responsible-innovation framework (Stilgoe et al. 2013) with a structured GOVERNANCE.md. The UX — three search modes with client-side refinement — reflects CASA-aware design principles adapted for a concierge interface rather than a chatbot. <strong>Seven bugs were found and fixed during this Keelin audit; three open items remain</strong> below. None are academic assessment blockers.</p>
+<p><strong>Overall:</strong> Teacher's Pet demonstrates strong alignment with the module across all three pillars. It operationalises the Five Innovators as a live Ops pipeline, satisfies PEAS/BDI agent specification with defined handoff boundaries, implements trust calibration (Lee &amp; See 2004) through confidence scores and explicit limitations, and anchors to the module's responsible-innovation framework (Stilgoe et al. 2013) with a structured GOVERNANCE.md. The UX — three search modes with client-side refinement — reflects CASA-aware design principles adapted for a concierge interface rather than a chatbot. All findings from the Keelin audit are resolved; one known limitation and one deferred improvement remain below.</p>
 
 <div class="issues-compact" id="openIssues">
-  <h3 style="margin:1rem 0 0.4rem 0;">Open Issues</h3>
+  <h3 style="margin:1rem 0 0.4rem 0;">Open Items &amp; Known Limitations</h3>
   <table>
-    <tr><th style="width:50px">ID</th><th style="width:70px">Impact</th><th>Issue</th><th style="width:100px">Action</th></tr>
-    <tr>
-      <td>O01</td><td><span class="sev-low">LOW</span></td>
-      <td><s><strong>Bundle can't download resource files.</strong></s> <strong>Resolved.</strong> MSAL.js popup-based delegated auth implemented. User signs in via popup (no browser profile hopping), token passed to Worker for OneDrive file downloads via <code>/me/drive/root:</code>.</td>
-      <td><span class="tag tag-fixed">RESOLVED</span></td>
-    </tr>
-    <tr>
-      <td>O02</td><td><span class="sev-low">LOW</span></td>
-      <td><s><strong>Catalogue data quality.</strong></s> <strong>Resolved.</strong> 2,895 rows: 1,438 outcome-tagged (50%), 1,484 grade/format-tagged (51%). Literacy 97%, Maths 96%. Normalised outcome formats. Guided TF5/C1 returns 172 resources.</td>
-      <td><span class="tag tag-fixed">RESOLVED</span></td>
-    </tr>
+    <tr><th style="width:50px">ID</th><th style="width:70px">Impact</th><th>Issue</th><th style="width:100px">Status</th></tr>
     <tr>
       <td>O03</td><td><span class="sev-low">LOW</span></td>
       <td><strong>No persistent session state.</strong> Selections, thumbs, and search history lost on page refresh. In-memory only.</td>
-      <td>localStorage persistence (deferred)</td>
+      <td>Deferred — localStorage planned</td>
+    </tr>
+    <tr>
+      <td>L01</td><td><span class="sev-low">LOW</span></td>
+      <td><strong>App-only auth exposes catalogue content.</strong> Worker uses client-credentials MS Graph flow. Content accessible to anyone with the Worker URL. Acceptable for graded demo; documented as production concern in Limitations with delegated OAuth as the fix.</td>
+      <td>Known limitation — documented</td>
     </tr>
   </table>
 </div>
@@ -558,10 +546,10 @@
   <div class="stat"><div class="val">5/5</div><div class="lbl">API Correctness<br>All endpoints 200</div></div>
   <div class="stat"><div class="val">3.5/5</div><div class="lbl">Search Relevance<br>2,895 rows, 3 modes</div></div>
   <div class="stat"><div class="val">4/5</div><div class="lbl">Generation Quality<br>~4.7K chars valid markdown</div></div>
-  <div class="stat"><div class="val">3/5</div><div class="lbl">Bundle Integrity<br>README works, files fail</div></div>
+  <div class="stat"><div class="val">4/5</div><div class="lbl">Bundle Integrity<br>README works, MSAL popup</div></div>
   <div class="stat"><div class="val">4.5/5</div><div class="lbl">UI/UX Polish<br>Warm theme, 3-mode, chips</div></div>
   <div class="stat"><div class="val">4/5</div><div class="lbl">Error Handling<br>CORS, validation, graceful</div></div>
-  <div class="stat"><div class="val">3/5</div><div class="lbl">Data Quality<br>2,895@0.5 conf (in progress)</div></div>
+  <div class="stat"><div class="val">4/5</div><div class="lbl">Data Quality<br>1,438 tagged (50%)</div></div>
 </div>
 
 <h3>Findings Register — Audit Session (Keelin, August 2026)</h3>
