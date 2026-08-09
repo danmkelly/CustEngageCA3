@@ -275,7 +275,8 @@ async function downloadFromOneDrive(env, onedrivePath) {
  */
 async function downloadFromOneDriveWithToken(delegatedToken, onedrivePath) {
   var safePath = onedrivePath.replace(/\\/g, "/");
-  var encodedPath = encodeURIComponent(safePath);
+  // Encode each path segment separately (don't encode / separators)
+  var encodedPath = safePath.split("/").map(function(s) { return encodeURIComponent(s); }).join("/");
   var baseUrl = "https://api.onedrive.com/v1.0/drive/root:/Teaching Resources/" + encodedPath;
   
   // Step 1: Resolve the file to get its item ID
