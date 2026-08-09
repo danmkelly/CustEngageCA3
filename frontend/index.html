@@ -1161,7 +1161,8 @@ function handleResultClick(e) {
     if (target.hasAttribute && target.hasAttribute('data-action')) {
       var action = target.getAttribute('data-action');
       var id = target.getAttribute('data-id');
-      if (action === 'search-curriculum') {
+      if (action === 'select') toggleSelect(id);
+      else if (action === 'search-curriculum') {
         var c = target.getAttribute('data-code');
         var l = target.getAttribute('data-label');
         var s = target.getAttribute('data-stage');
@@ -1350,7 +1351,7 @@ function renderResultCardHTML(r) {
     expandHtml +
     '<div class="card-badges">' + badges + '</div>' +
     '<div class="card-add">' +
-    '<button class="' + addClass + '" data-id="' + esc(id) + '">' + addText + '</button>' +
+    '<button class="' + addClass + '" data-action="select" data-id="' + esc(id) + '">' + addText + '</button>' +
     '</div>' +
     '</div>';
 }
@@ -1460,9 +1461,9 @@ function toggleSelect(id) {
   } else {
     state.selectedIds[id] = true;
   }
-  // Re-render to update card state AND bundle sidebar
   updateHeaderBundleCount();
-  renderResults();
+  updateBundleSidebar();
+  updateCardButton(id);
 }
 
 /* -----------------------------------------------
