@@ -1738,31 +1738,57 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-// Global handler for card-add buttons (survives innerHTML replacement)
+// Global handler for card-add and bundle-item buttons
 document.addEventListener('click', function(e) {
   var btn = e.target.closest('.card-add button');
   var bundleBtn = e.target.closest('.bundle-item button');
+  
   if (btn && btn.hasAttribute('data-id')) {
+    e.preventDefault(); e.stopPropagation();
     var id = btn.getAttribute('data-id');
-    e.preventDefault();
-    e.stopPropagation();
     if (objHas(state.selectedIds, id)) {
       delete state.selectedIds[id];
     } else {
       state.selectedIds[id] = true;
     }
     updateHeaderBundleCount();
-    renderResults();
+    updateBundleSidebar();
+    updateCardButton(id);
   }
+  
   if (bundleBtn && bundleBtn.hasAttribute('data-id')) {
+    e.preventDefault(); e.stopPropagation();
     var bid = bundleBtn.getAttribute('data-id');
-    e.preventDefault();
-    e.stopPropagation();
     delete state.selectedIds[bid];
     updateHeaderBundleCount();
-    renderResults();
+    updateBundleSidebar();
+    updateCardButton(bid);
   }
 });
+
+function updateBundleSidebar() {
+  var panel = document.querySelector('.bundle-panel');
+  if (panel) {
+    panel.innerHTML = renderBundleSidebarHTML();
+  }
+}
+
+function updateCardButton(id) {
+  var card = document.querySelector('.card[data-id="' + id.replace(/"/g, '&quot;') + '"]');
+  if (!card) return;
+  var isSelected = objHas(state.selectedIds, id);
+  if (isSelected) {
+    card.classList.add('selected');
+  } else {
+    card.classList.remove('selected');
+  }
+  var btn = card.querySelector('.card-add button');
+  if (btn) {
+    btn.textContent = isSelected ? '- Remove' : '+ Add to bundle';
+    if (isSelected) { btn.classList.add('remove-action'); }
+    else { btn.classList.remove('remove-action'); }
+  }
+}
 
 </script>
 </body>
