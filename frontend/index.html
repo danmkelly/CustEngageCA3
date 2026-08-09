@@ -1660,7 +1660,7 @@ function doBundle(accessToken) {
       var url = URL.createObjectURL(blob);
       var a = document.createElement('a');
       a.href = url;
-      a.download = 'teachers-pet-bundle-' + new Date().toISOString().slice(0, 10) + '.zip';
+      a.download = 'teachers-pet-bundle-' + new Date().toISOString().slice(0, 19).replace(/:/g, '-') + '.zip';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
