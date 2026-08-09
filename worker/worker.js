@@ -276,18 +276,32 @@ async function downloadFromOneDrive(env, onedrivePath) {
 async function downloadFromOneDriveWithToken(delegatedToken, onedrivePath) {
   var safePath = onedrivePath.replace(/\\/g, "/");
   var encodedPath = encodeURIComponent(safePath);
-  // Consumer OneDrive API (personal accounts) — bypasses SPO requirement
-  var url = "https://api.onedrive.com/v1.0/drive/root:/Teaching Resources/" + encodedPath + ":/content";
-  var resp = await fetch(url, {
+  var baseUrl = "https://api.onedrive.com/v1.0/drive/root:/Teaching Resources/" + encodedPath;
+  
+  // Step 1: Resolve the file to get its item ID
+  var metaResp = await fetch(baseUrl, {
     headers: { Authorization: "Bearer " + delegatedToken },
   });
-  if (!resp.ok) {
-    var errText = await resp.text();
-    throw new Error(
-      "OneDrive API " + resp.status + ": " + errText.substring(0, 200)
-    );
+  if (!metaResp.ok) {
+    var errText = await metaResp.text();
+    throw new Error("OneDrive API resolve " + metaResp.status + ": " + errText.substring(0, 200));
   }
-  return resp.arrayBuffer();
+  var meta = await metaResp.json();
+  var itemId = meta.id;
+  if (!itemId) {
+    throw new Error("OneDrive API could not resolve file ID for: " + safePath);
+  }
+  
+  // Step 2: Download by item ID
+  var downloadUrl = "https://api.onedrive.com/v1.0/drive/items/" + itemId + "/content";
+  var dlResp = await fetch(downloadUrl, {
+    headers: { Authorization: "Bearer " + delegatedToken },
+  });
+  if (!dlResp.ok) {
+    var dlErrText = await dlResp.text();
+    throw new Error("OneDrive API download " + dlResp.status + ": " + dlErrText.substring(0, 200));
+  }
+  return dlResp.arrayBuffer();
 }
 
 // --------------------------------------------------------------------------
