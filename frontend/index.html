@@ -1686,11 +1686,6 @@ function doBundle() {
   }
 
 
-  // Add background-generated lesson plan if ready
-  if (state.lessonPlan.status === 'ready' && state.lessonPlan.markdown) {
-    generatedContent.push({ title: state.lessonPlan.title, markdown: state.lessonPlan.markdown });
-  }
-
   var summaryLines = [];
   summaryLines.push('# Teacher\'s Pet - Resource Bundle');
   summaryLines.push('');
