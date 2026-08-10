@@ -745,16 +745,15 @@ var state = {
   activeMode: 'guided',
   taxonomies: { language: null, maths: null },
   catalogue: [],
-  results: [],
-  gaps: [],
+  results: { guided: [], freetext: [] },
+  gaps: { guided: [], freetext: [] },
   selectedIds: {},
-  aiGenerated: [],
+  aiGenerated: { guided: [], freetext: [] },
   loading: { taxonomy: false, catalogue: false, search: false, bundle: false, generate: false },
   guidedSelections: { subject: '', strand: '', stage: '', outcome: '' },
-  browseFilters: { subject: {}, grade: {}, format: {}, season: {} },
   refinementText: '',
   refinementChips: {},
-  lastQuery: null,
+  lastQuery: { guided: null, freetext: null },
 };
 
 function objSize(o) { var n = 0; for (var k in o) { if (o.hasOwnProperty(k)) n++; } return n; }
@@ -989,11 +988,11 @@ function performSearch() {
     if (xhr.status === 200) {
       try {
         var data = JSON.parse(xhr.responseText);
-        state.results = data.resources || data.results || [];
-        state.gaps = data.gaps || [];
+        state.results[state.activeMode] = data.resources || data.results || [];
+        state.gaps[state.activeMode] = data.gaps || [];
         // Merge auto-generated lesson plans from API response
         if (data.generated && data.generated.length > 0) {
-          state.aiGenerated = [];
+          state.aiGenerated[state.activeMode] = [];
           for (var gi = 0; gi < data.generated.length; gi++) {
             var g = data.generated[gi];
             state.aiGenerated.push({
@@ -1099,6 +1098,7 @@ function renderBundleCol() {
   for (var j = 0; j < state.aiGenerated.length; j++) {
     var a = state.aiGenerated[j]; var aid = a.id || a.filename;
     if (objHas(state.selectedIds, aid)) html += '<div class="bundle-col-item"><span>' + esc((a.filename||'LP').substring(0,45)) + ' <em style="color:var(--purple);font-size:0.65rem">[AI]</em></span><button class="rm" onclick="rmBundle(\'' + esc(aid) + '\')">x</button></div>';
+    }
   }
   itemsEl.innerHTML = html;
 }
@@ -1108,8 +1108,8 @@ function renderResults() {
   var emptyEl = document.getElementById('emptyState');
   var container = document.getElementById('resultsContainer');
 
-  var hasResults = state.results.length > 0;
-  var hasGaps = state.gaps.length > 0;
+  var hasResults = state.results[state.activeMode].length > 0;
+  var hasGaps = state.gaps[state.activeMode].length > 0;
 
   if (!hasResults && !hasGaps) {
     emptyEl.classList.remove('hidden');
@@ -1122,9 +1122,9 @@ function renderResults() {
 
   // Apply refinement chip filtering
   var activeRefinementKeys = objKeys(state.refinementChips);
-  var filteredResults = state.results;
-  if (activeRefinementKeys.length > 0 && state.activeMode !== 'browse') {
-    filteredResults = state.results.filter(function(r) {
+  var filteredResults = state.results[state.activeMode];
+  if (activeRefinementKeys.length > 0) {
+    filteredResults = state.results[state.activeMode].filter(function(r) {
       return activeRefinementKeys.some(function(key) {
         return (r.format && r.format.toLowerCase() === key.toLowerCase()) ||
                (r.grade_band && r.grade_band.toLowerCase() === key.toLowerCase()) ||
@@ -1143,8 +1143,8 @@ function renderResults() {
   // Gaps section (above the split layout)
   if (hasGaps) {
     parts.push('<div class="gaps-section">');
-    for (var gi = 0; gi < state.gaps.length; gi++) {
-      var gap = state.gaps[gi];
+    for (var gi = 0; gi < state.gaps[state.activeMode].length; gi++) {
+      var gap = state.gaps[state.activeMode][gi];
       var gCode = gap.outcome_code || gap.code || gap.id || '';
       var gLabel = gap.description || gap.label || gap.name || '';
       var gStage = gap.grade_band || gap.stage || '';
@@ -1172,8 +1172,8 @@ function renderResults() {
   // Left: results grid
   parts.push('<div class="results-panel"><div class="results-grid">');
   // AI-generated lesson plans — always shown first
-  for (var ai = 0; ai < state.aiGenerated.length; ai++) {
-    parts.push(renderResultCardHTML(state.aiGenerated[ai]));
+  for (var ai = 0; ai < state.aiGenerated[state.activeMode].length; ai++) {
+    parts.push(renderResultCardHTML(state.aiGenerated[state.activeMode][ai]));
   }
   // Catalogue results — sorted by confidence descending
   for (var vi = 0; vi < filteredResults.length; vi++) {
@@ -1272,12 +1272,6 @@ function renderResultCardHTML(r) {
   if (isAi) {
     // AI cards: show first 140 chars, action row has "Open Plan" pill
     expandHtml = '<div class="card-description">' + esc(desc) + '...</div>';
-  } else if (fullText.length > 140) {
-    expandHtml =
-      '<div class="card-description">' + esc(desc) + '... ' +
-      '<button class="btn btn-sm btn-secondary" style="margin-left:4px;font-size:0.65rem" onclick="var el=document.getElementById(\'' + safeId + '-full\');var btn=this;if(el.classList.contains(\'hidden\')){el.classList.remove(\'hidden\');btn.textContent=\'Hide plan\'}else{el.classList.add(\'hidden\');btn.textContent=\'Show full plan\'}">Show full plan</button>' +
-      '</div>' +
-      '<div class="card-description hidden" id="' + safeId + '-full" style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;max-height:260px;overflow-y:auto;font-size:0.72rem;line-height:1.5;white-space:pre-wrap;font-family:var(--font-mono)">' + esc(fullText) + '</div>';
   } else {
     expandHtml = '<div class="card-description">' + esc(desc) + '</div>';
   }
@@ -1444,7 +1438,7 @@ function generateLessonPlan(code, label, stage, btnEl) {
           confidence: 1.0,
         };
         state.results.unshift(aiCard);
-        state.aiGenerated.push(aiCard);
+        state.aiGenerated[state.activeMode].push(aiCard);
         renderResults();
       } catch(e) { showError('Could not parse generated lesson plan'); restoreGapButtons(gapCard, code, label, stage); }
     } else {
