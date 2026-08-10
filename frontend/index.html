@@ -431,7 +431,8 @@ body {
   padding: 7px 10px; border: 1px solid var(--border); border-radius: var(--radius);
   font-size: 0.85rem; font-family: var(--font); background: var(--surface); color: var(--text); width: 100%;
 }
-.guided-form .action-col { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 8px; justify-content: flex-end; }
+.guided-form .action-col { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 8px; }
+.guided-form .action-col button { margin-top: auto; }
 .guided-form .action-col input { width: 100%; }
 .guided-form select:focus, .guided-form input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-light); }
 .guided-form select:disabled { background: var(--bg); color: var(--text-muted); cursor: not-allowed; }
@@ -478,7 +479,7 @@ body {
 .layout { display: flex; gap: 20px; align-items: flex-start; }
 .content-panel { flex: 2; min-width: 0; }
 .bundle-col { flex: 1; min-width: 260px; max-width: 380px; padding-top: 0; }
-.bundle-col-inner { position: sticky; top: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px; box-shadow: var(--shadow-sm); }
+.bundle-col-inner { position: sticky; top: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px; box-shadow: var(--shadow-sm); }
 .bundle-col-inner h3 { font-family: var(--font-display); font-size: 1rem; margin-bottom: 10px; color: var(--accent); }
 .bundle-col-item { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid var(--border); font-size: 0.8rem; }
 .bundle-col-item:last-child { border-bottom: none; }
