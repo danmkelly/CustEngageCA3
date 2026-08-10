@@ -382,21 +382,18 @@ body {
 
 /* -- Tabs - styled as card-catalogue drawer tabs -- */
 .tab-bar {
-  display: flex; gap: 6px;
+  display: flex; gap: 0;
   background: transparent;
   border-bottom: 2px solid var(--accent);
   padding: 10px 24px 0;
 }
 .tab {
-  padding: 12px 22px 14px; font-size: 0.9rem; font-weight: 600;
-  cursor: pointer; border: 1px solid var(--border); border-bottom: none;
+  padding: 10px 20px 12px; font-size: 0.85rem; font-weight: 600;
+  cursor: pointer; border: 2px solid var(--accent); border-bottom: none;
   background: var(--bg); font-family: var(--font);
-  color: var(--text-muted);
-  clip-path: polygon(6% 0, 94% 0, 100% 100%, 0% 100%);
-  transition: all 0.15s ease;
-  white-space: nowrap;
-  position: relative;
-  top: 2px;
+  color: var(--text-muted); border-radius: 8px 8px 0 0;
+  transition: all 0.15s ease; white-space: nowrap;
+  margin-bottom: -2px; position: relative;
 }
 .tab:hover { color: var(--text); background: var(--surface); }
 .tab.active {
@@ -405,10 +402,10 @@ body {
   border-color: var(--accent);
   font-family: var(--font-display);
   font-weight: 600;
-  top: 0;
+  border-bottom: 2px solid var(--accent);
 }
 .tab.active .tab-subtitle { color: rgba(255,255,255,0.75); }
-.tab-subtitle { font-weight: 400; font-size: 0.72rem; color: var(--text-muted); display: block; margin-top: 2px; }
+.tab-subtitle { font-weight: 400; font-size: 0.7rem; color: var(--text-muted); display: block; margin-top: 1px; }
 
 /* -- Layout -- */
 .main { max-width: 1280px; margin: 0 auto; padding: 28px 24px; }
