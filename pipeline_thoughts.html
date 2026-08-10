@@ -343,9 +343,9 @@ Guard: generated plans must not use sounds from lessons > 54</pre>
 </div>
 
 <div class="card">
-  <h4>Decision 6: App-only Graph auth for demo, MSAL.js delegated auth for bundle downloads</h4>
-  <p>The Worker uses Azure AD app-only credentials (client credentials flow) for audit logging and catalogue reads. For bundle file downloads from OneDrive, a separate MSAL.js delegated auth flow was implemented: the user signs in via popup with <code>Files.Read</code> scope, and the delegated token is passed to the Worker which uses <code>/me/drive/root:</code> to fetch files from the user's personal OneDrive. The auth dialog offers two paths: "Sign in with Microsoft" (includes actual resource files in the zip) or "Continue without files" (zip with README + generated plans only). This solves the documented personal OneDrive app-only auth limitation (Decision 7).</p>
-  <p class="decision-made">→ Decision: Ship with app-only auth for server operations. Add MSAL.js delegated flow for bundle file downloads. Popup-based, no redirect/profile-hopping.</p>
+  <h4>Decision 6: App-only Graph auth on business tenant</h4>
+  <p>Personal OneDrive (hotmail.com) does not support app-only Microsoft Graph for file operations — no SPO license. The solution: migrate to a business tenant (modernise.ie) where app-only Graph works natively. The Worker uses Azure AD client credentials to fetch files from OneDrive for Business. No user sign-in, no MSAL.js, no popup. The bundle downloads all matched files directly. This is a documented demo tradeoff — production would use delegated OAuth for per-user scoping and audit trails.</p>
+  <p class="decision-made">→ Decision: Migrate to business tenant (modernise.ie). App-only Graph for all file operations. No user sign-in. Document delegated OAuth as the production path.</p>
 </div>
 
 <div class="card">
