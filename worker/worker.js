@@ -1250,28 +1250,6 @@ async function handleBundle(request, env) {
   // Create ZIP using JSZip
   var zip = new JSZip();
 
-  // ── Generate lesson plan (always, in background of bundle creation) ──
-  var generatedPlan = null;
-  if (body.resource_ids.length > 0) {
-    try {
-      var lpSpec = {
-        outcome_code: (body.summary_md || "").includes("TF") ? "Curriculum-aligned" : "General",
-        grade_band: "Any",
-        description: "Lesson plan synthesising " + body.resource_ids.length + " selected resources",
-        query: body.summary_md || "",
-        suggested_activity_type: "Mixed",
-        programme: "General",
-      };
-      // Timeout after 8 seconds — don't block the bundle
-      generatedPlan = await Promise.race([
-        opsMaker(env, lpSpec),
-        new Promise(function(_, reject) { setTimeout(function() { reject(new Error("Timeout")); }, 8000); })
-      ]);
-    } catch (e) {
-      console.error("[Bundle] Plan generation failed: " + e.message);
-    }
-  }
-
   // ── Add resource files from OneDrive ────────────────────────────
   var fileFetchErrors = [];
   for (var i = 0; i < body.resource_ids.length; i++) {
@@ -1318,10 +1296,6 @@ async function handleBundle(request, env) {
   }
 
   // ── Add generated lesson plans ──────────────────────────────────
-  if (generatedPlan && generatedPlan.markdown) {
-    var genFolder = zip.folder("generated");
-    genFolder.file("lesson-plan.md", generatedPlan.markdown);
-  }
   if (
     body.generated_content &&
     body.generated_content.length > 0
@@ -1344,11 +1318,9 @@ async function handleBundle(request, env) {
     "**Bundle assembled:** " + new Date().toISOString() + "\n" +
     "**Run ID:** " + runId + "\n" +
     "**Resources in bundle:** " + body.resource_ids.length + " file(s)\n" +
-    (generatedPlan && generatedPlan.markdown
-      ? "**Lesson plan:** Generated (AI-powered, review before classroom use)\n"
-      : (body.generated_content && body.generated_content.length
-        ? "**Generated plans included:** " + body.generated_content.length + "\n"
-        : "")) +
+    (body.generated_content && body.generated_content.length
+      ? "**Generated plans included:** " + body.generated_content.length + "\n"
+      : "") +
     (fileFetchErrors.length > 0
       ? "\n**Files not included (available in your OneDrive):**\n" +
         fileFetchErrors

@@ -762,8 +762,12 @@ body {
   <div class="download-dialog">
     <div class="spinner"></div>
     <p>Preparing your bundle...</p>
-    <p style="font-size:0.8rem;color:var(--text-muted)">This may take a moment</p>
+    <div class="dl-actions hidden" style="display:flex;gap:8px;justify-content:center;margin-top:12px">
+      <button class="btn btn-primary btn-sm" id="dlWaitBtn">Wait for plan</button>
+      <button class="btn btn-secondary btn-sm" id="dlSkipBtn" onclick="document.getElementById('downloadOverlay').querySelector('p').innerHTML='Preparing your bundle...';document.getElementById('downloadOverlay').querySelector('.dl-actions').classList.add('hidden');doBundle([])">Continue without</button>
+    </div>
   </div>
+</div>
 </div>
 
 <script>
@@ -1617,13 +1621,85 @@ function triggerBundle() {
     showError('Select at least one resource to bundle.');
     return;
   }
-  document.getElementById('downloadOverlay').classList.remove('hidden');
-  doBundle();
-}
-
-function doBundle() {
   var overlay = document.getElementById('downloadOverlay');
   overlay.classList.remove('hidden');
+  overlay.querySelector('p').innerHTML = 'Generating lesson plan...';
+  overlay.querySelector('.dl-actions').classList.add('hidden');
+  
+  var started = Date.now();
+  var timedOut = false;
+  var plan = null;
+  
+  function onPlanDone() {
+    timedOut = true;
+    overlay.querySelector('p').innerHTML = 'Preparing your bundle...';
+    overlay.querySelector('.dl-actions').classList.add('hidden');
+    var gc = [];
+    if (plan && plan.markdown) gc.push({ title: plan.title || 'Lesson Plan', markdown: plan.markdown });
+    doBundle(gc);
+  }
+  
+  function checkTimeout() {
+    if (timedOut) return;
+    var elapsed = (Date.now() - started) / 1000;
+    if (elapsed > 8) {
+      overlay.querySelector('p').innerHTML = 'Lesson plan taking longer than expected (DeepSeek API is slow).<br><span style="font-size:0.8rem">Wait or continue without a plan?</span>';
+      overlay.querySelector('.dl-actions').classList.remove('hidden');
+      overlay.querySelector('#dlWaitBtn').onclick = function() {
+        overlay.querySelector('.dl-actions').classList.add('hidden');
+        overlay.querySelector('p').innerHTML = 'Still generating lesson plan...';
+        setTimeout(function() {
+          if (timedOut) return;
+          if (!plan) {
+            overlay.querySelector('p').innerHTML = 'Lesson plan still not ready.<br><span style="font-size:0.8rem">Wait longer or continue without?</span>';
+            overlay.querySelector('.dl-actions').classList.remove('hidden');
+            overlay.querySelector('#dlWaitBtn').onclick = function() { overlay.querySelector('.dl-actions').classList.add('hidden'); overlay.querySelector('p').innerHTML = 'Still trying...'; setTimeout(onPlanDone, 10000); };
+          } else { onPlanDone(); }
+        }, 10000);
+      };
+    } else {
+      if (!plan) setTimeout(checkTimeout, 1000);
+    }
+  }
+  
+  // Start generating and checking
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', WORKER_URL + '/api/generate-lesson');
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  xhr.timeout = 30000;
+  xhr.onload = function() {
+    if (xhr.status === 200) {
+      try {
+        var d = JSON.parse(xhr.responseText);
+        plan = { title: d.title, markdown: d.content || d.markdown };
+        if (!timedOut) onPlanDone();
+      } catch(e) { plan = null; }
+    }
+    if (!plan && !timedOut) {
+      // Failed
+      timedOut = true;
+      overlay.querySelector('p').innerHTML = 'Lesson plan generation failed.<br><span style="font-size:0.8rem">Retry or continue without?</span>';
+      overlay.querySelector('.dl-actions').classList.remove('hidden');
+      overlay.querySelector('#dlWaitBtn').onclick = function() { overlay.classList.add('hidden'); triggerBundle(); };
+    }
+  };
+  xhr.onerror = function() {
+    if (!timedOut) {
+      timedOut = true;
+      overlay.querySelector('p').innerHTML = 'Lesson plan generation failed (network).<br><span style="font-size:0.8rem">Retry or continue without?</span>';
+      overlay.querySelector('.dl-actions').classList.remove('hidden');
+      overlay.querySelector('#dlWaitBtn').onclick = function() { overlay.classList.add('hidden'); triggerBundle(); };
+    }
+  };
+  var lq = state.lastQuery[state.activeMode] || {};
+  xhr.send(JSON.stringify({ outcome_code: lq.outcome_code || '', grade_band: lq.grade_band || lq.stage || '', query: lq.query || '', resources: objKeys(state.selectedIds) }));
+  
+  setTimeout(checkTimeout, 8000);
+}
+
+function doBundle(extraGenerated) {
+  extraGenerated = extraGenerated || [];
+  var overlay = document.getElementById('downloadOverlay');
 
   var generatedContent = [];
   for (var m = 0; m < MODES.length; m++) {
@@ -1635,10 +1711,9 @@ function doBundle() {
       }
     }
   }
-
-  // Add background-generated lesson plan if ready
-  if (state.lessonPlan.status === 'ready' && state.lessonPlan.markdown) {
-    generatedContent.push({ title: state.lessonPlan.title, markdown: state.lessonPlan.markdown });
+  // Add plan from triggerBundle's generation
+  for (var eg = 0; eg < extraGenerated.length; eg++) {
+    generatedContent.push(extraGenerated[eg]);
   }
 
   // Add background-generated lesson plan if ready
