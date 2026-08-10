@@ -721,6 +721,7 @@ body {
       <div class="chat-pane">
         <div class="chat-messages" id="chatMessages">
           <div class="chat-msg bot"><div class="chat-bubble">Hi! I'm your Teacher's Pet concierge. Describe what you're looking for and I'll find resources in your catalogue.</div></div>
+          <div class="chat-msg bot"><div class="chat-bubble">I am an AI powered bot, using the DeepSeek LLM to help you navigate your content through natural language prompts.</div></div>
         </div>
         <div class="chat-input-row">
           <input type="text" id="chatInput" placeholder="Describe the resource you need..." onkeydown="if(event.key==='Enter')sendChat()">
@@ -781,7 +782,10 @@ var state = {
   refinementText: { guided: '', freetext: '' },
   refinementChips: { guided: {}, freetext: {} },
   lastQuery: { guided: null, freetext: null },
-  chatHistory: [],
+  chatHistory: [
+    { role: 'assistant', content: 'Hi! I\'m your Teacher\'s Pet concierge. Describe what you\'re looking for and I\'ll find resources in your catalogue.' },
+    { role: 'assistant', content: 'I am an AI powered bot, using the DeepSeek LLM to help you navigate your content through natural language prompts.' }
+  ],
   lessonPlan: { status: 'idle', title: '', markdown: '' },
   lessonPlanTimer: null,
 };
