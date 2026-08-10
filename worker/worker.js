@@ -1389,9 +1389,9 @@ async function handleGenerateLesson(request, env) {
     return jsonResponse({ error: "Invalid JSON body" }, 400);
   }
 
-  var outcomeCode = body.outcome_code || "";
-  var outcomeLabel = body.outcome_label || "";
-  var stage = body.stage || "";
+  var outcomeCode = body.outcome_code || body.query || "";
+  var outcomeLabel = body.outcome_label || body.query || "";
+  var stage = body.stage || body.grade_band || "";
 
   if (!outcomeCode && !outcomeLabel) {
     return jsonResponse(
@@ -1404,12 +1404,13 @@ async function handleGenerateLesson(request, env) {
     outcome_code: outcomeCode,
     grade_band: stage,
     description:
-      "No catalogue resource available for " +
-      outcomeCode +
-      (outcomeLabel ? " (" + outcomeLabel + ")" : ""),
+      "Lesson plan for " +
+      (outcomeCode || "general curriculum") +
+      (outcomeLabel ? " (" + outcomeLabel + ")" : "") +
+      (body.resources ? " using " + body.resources.length + " selected resources" : ""),
     suggested_activity_type: mapOutcomeToActivity(outcomeCode),
     programme: "General",
-    query: outcomeLabel,
+    query: outcomeLabel || body.query || "",
   };
 
   try {

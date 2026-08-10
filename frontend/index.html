@@ -1692,7 +1692,9 @@ function triggerBundle() {
     }
   };
   var lq = state.lastQuery[state.activeMode] || {};
-  xhr.send(JSON.stringify({ outcome_code: lq.outcome_code || '', grade_band: lq.grade_band || lq.stage || '', query: lq.query || '', resources: objKeys(state.selectedIds) }));
+  var oc = lq.outcome_code || '';
+  var label = lq.outcome_label || lq.query || 'General';
+  xhr.send(JSON.stringify({ outcome_code: oc, outcome_label: label, grade_band: lq.grade_band || lq.stage || '', query: lq.query || '', resources: objKeys(state.selectedIds) }));
   
   setTimeout(checkTimeout, 8000);
 }
