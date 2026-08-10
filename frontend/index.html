@@ -795,8 +795,6 @@ var state = {
     { role: 'assistant', content: 'Hi! I\'m your Teacher\'s Pet concierge. I am an AI powered bot, using the DeepSeek LLM to help you navigate your content through natural language prompts.' },
     { role: 'assistant', content: 'Describe what you\'re looking for and I\'ll find resources in your catalogue.' }
   ],
-  lessonPlan: { status: 'idle', title: '', markdown: '' },
-  lessonPlanTimer: null,
 };
 
 function objSize(o) { var n = 0; for (var k in o) { if (o.hasOwnProperty(k)) n++; } return n; }
@@ -1259,58 +1257,6 @@ function handleResultClick(e) {
 function forceRefresh() {
   renderResults();
   renderBundleCol();
-  scheduleLessonPlan();
-}
-
-function scheduleLessonPlan() {
-  clearTimeout(state.lessonPlanTimer);
-  if (objSize(state.selectedIds) === 0) {
-    state.lessonPlan = { status: 'idle', title: '', markdown: '' };
-    return;
-  }
-  // Only reset if we had a ready plan that's now stale (items changed)
-  if (state.lessonPlan.status === 'ready') {
-    state.lessonPlan.status = 'idle';
-    state.lessonPlan.title = '';
-    state.lessonPlan.markdown = '';
-  }
-  state.lessonPlanTimer = setTimeout(generateBackgroundLessonPlan, 2000);
-}
-
-function generateBackgroundLessonPlan(cb) {
-  state.lessonPlan.status = 'generating'; state.lessonPlan.title = 'Generating...';
-  renderBundleCol();
-  // Gather context: selected resource filenames and outcome info
-  var filenames = [];
-  for (var i = 0; i < state.results.guided.length; i++) {
-    var r = state.results.guided[i]; if (objHas(state.selectedIds, r.id||r.filename)) filenames.push(r.filename);
-  }
-  for (var j = 0; j < state.results.freetext.length; j++) {
-    var r2 = state.results.freetext[j]; if (objHas(state.selectedIds, r2.id||r2.filename)) filenames.push(r2.filename);
-  }
-  var lq = state.lastQuery[state.activeMode] || {};
-  var xhr = new XMLHttpRequest();
-  xhr.open('POST', WORKER_URL + '/api/generate-lesson');
-  xhr.setRequestHeader('Content-Type', 'application/json');
-  xhr.onload = function() {
-    if (xhr.status === 200) {
-      try {
-        var data = JSON.parse(xhr.responseText);
-        state.lessonPlan.status = 'ready';
-        state.lessonPlan.title = data.title || 'Lesson Plan';
-        state.lessonPlan.markdown = data.content || data.markdown || '';
-      } catch(e) { state.lessonPlan.status = 'idle'; }
-    } else { state.lessonPlan.status = 'idle'; }
-    renderBundleCol();
-    if (cb) cb();
-  };
-  xhr.onerror = function() { state.lessonPlan.status = 'idle'; renderBundleCol(); if (cb) cb(); };
-  xhr.send(JSON.stringify({
-    outcome_code: lq.outcome_code || '',
-    grade_band: lq.grade_band || lq.stage || '',
-    query: lq.query || '',
-    resources: filenames.slice(0, 20)
-  }));
 }
 
 function renderBundleCol() {
@@ -1333,13 +1279,7 @@ function renderBundleCol() {
       if (objHas(state.selectedIds, aid)) html += '<div class="bundle-col-item"><span>' + esc((a.filename||'LP').substring(0,45)) + ' <em style="color:var(--purple);font-size:0.65rem">[AI]</em></span><button class="rm" onclick="rmBundle(\'' + esc(aid) + '\')">x</button></div>';
     }
   }
-  itemsEl.innerHTML = html + renderLessonPlanStatus();
-}
-function renderLessonPlanStatus() {
-  var lp = state.lessonPlan;
-  if (lp.status === 'generating') return '<div class="bundle-col-item" style="color:var(--accent);font-style:italic"><span>&#9203; Generating lesson plan...</span></div>';
-  if (lp.status === 'ready') return '<div class="bundle-col-item"><span>&#128214; ' + esc(lp.title.substring(0,45)) + ' <em style="color:var(--purple);font-size:0.65rem">[AI]</em></span></div>';
-  return '';
+  itemsEl.innerHTML = html;
 }
 function rmBundle(id) { delete state.selectedIds[id]; forceRefresh(); }
 
@@ -1694,6 +1634,11 @@ function doBundle() {
         generatedContent.push({ title: a.title || a.filename || 'Lesson Plan', markdown: a.extracted_text_sample || '' });
       }
     }
+  }
+
+  // Add background-generated lesson plan if ready
+  if (state.lessonPlan.status === 'ready' && state.lessonPlan.markdown) {
+    generatedContent.push({ title: state.lessonPlan.title, markdown: state.lessonPlan.markdown });
   }
 
   // Add background-generated lesson plan if ready
