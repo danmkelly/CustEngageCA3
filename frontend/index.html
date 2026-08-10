@@ -1365,7 +1365,10 @@ function renderResultCardHTML(r) {
   var addText = isSelected ? '- Remove' : '+ Add to bundle';
 
   var expandHtml = '';
-  if (isAi && fullText.length > 140) {
+  if (isAi) {
+    // AI cards: show first 140 chars, action row has "Open Plan" pill
+    expandHtml = '<div class="card-description">' + esc(desc) + '...</div>';
+  } else if (fullText.length > 140) {
     expandHtml =
       '<div class="card-description">' + esc(desc) + '... ' +
       '<button class="btn btn-sm btn-secondary" style="margin-left:4px;font-size:0.65rem" onclick="var el=document.getElementById(\'' + safeId + '-full\');var btn=this;if(el.classList.contains(\'hidden\')){el.classList.remove(\'hidden\');btn.textContent=\'Hide plan\'}else{el.classList.add(\'hidden\');btn.textContent=\'Show full plan\'}">Show full plan</button>' +
@@ -1375,14 +1378,23 @@ function renderResultCardHTML(r) {
     expandHtml = '<div class="card-description">' + esc(desc) + '</div>';
   }
 
+  var actionRow = '';
+  if (isAi) {
+    actionRow = '<div class="card-add" style="display:flex;justify-content:flex-start;align-items:center;margin-top:auto">' +
+      '<a href="#" onclick="openPlan(\'' + safeId + '\');return false" class="od-link">Open Plan</a>' +
+      '</div>';
+  } else {
+    actionRow = '<div class="card-add" style="display:flex;justify-content:space-between;align-items:center;margin-top:auto">' +
+      (r.onedrive_path ? '<a href="https://modernisetemp-my.sharepoint.com/personal/dan_modernise_ie/Documents/NCI/Teaching%20Resources/' + r.onedrive_path.replace(/\\/g, '/').split('/').map(function(s) { return encodeURIComponent(s); }).join('/') + '" target="_blank" rel="noopener" class="od-link">Open in OneDrive</a>' : '<span></span>') +
+      '<button class="' + addClass + '" data-action="select" data-id="' + esc(id) + '">' + addText + '</button>' +
+      '</div>';
+  }
+
   return '<div class="' + classes + '" data-id="' + esc(id) + '" style="display:flex;flex-direction:column">' +
     '<div class="card-filename">' + esc(r.filename || 'Untitled Resource') + '</div>' +
     expandHtml +
-    '<div class="card-badges" style="' + (isAi ? '' : '') + '">' + badges + '</div>' +
-    (!isAi ? '<div class="card-add" style="display:flex;justify-content:space-between;align-items:center;margin-top:auto">' +
-    (r.onedrive_path ? '<a href="https://modernisetemp-my.sharepoint.com/personal/dan_modernise_ie/Documents/NCI/Teaching%20Resources/' + r.onedrive_path.replace(/\\/g, '/').split('/').map(function(s) { return encodeURIComponent(s); }).join('/') + '" target="_blank" rel="noopener" class="od-link">Open in OneDrive</a>' : '<span></span>') +
-    '<button class="' + addClass + '" data-action="select" data-id="' + esc(id) + '">' + addText + '</button>' +
-    '</div>' : '') +
+    '<div class="card-badges">' + badges + '</div>' +
+    actionRow +
     '</div>';
 }
 
@@ -1645,6 +1657,29 @@ function doBundle() {
 /* -----------------------------------------------
    UTILITY FUNCTIONS
    ----------------------------------------------- */
+function openPlan(safeId) {
+  // Find the AI-generated card with matching id
+  for (var i = 0; i < state.aiGenerated.length; i++) {
+    var card = state.aiGenerated[i];
+    var cid = 'card-' + (card.id || card.filename).replace(/[^a-zA-Z0-9]/g, '-');
+    if (cid === safeId) {
+      var md = card.extracted_text_sample || '';
+      var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>' + (card.filename || 'Lesson Plan') + '</title>' +
+        '<style>body{font-family:system-ui,sans-serif;max-width:800px;margin:2rem auto;padding:0 1rem;line-height:1.7;color:#1c1917}' +
+        'h1{font-size:1.5rem}h2{font-size:1.2rem;margin-top:1.5rem}pre{background:#f5f5f4;padding:1rem;border-radius:6px;overflow-x:auto}' +
+        'code{background:#f5f5f4;padding:0.15rem 0.3rem;border-radius:3px}</style></head><body>' +
+        '<p><em>AI-Generated | Not Classroom-Tested</em></p>' +
+        md.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n## /g, '\n</div><h2>').replace(/\n# /g, '\n</div><h1>').replace(/\n\n/g, '\n</div><div>\n').replace(/\n- /g, '\n</div><li>').replace(/\n\d+\. /g, '\n</div><li>') +
+        '<div></body></html>';
+      var blob = new Blob([html], { type: 'text/html' });
+      var url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+      setTimeout(function() { URL.revokeObjectURL(url); }, 60000);
+      return;
+    }
+  }
+}
+
 function esc(str) {
   if (!str) return '';
   return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
