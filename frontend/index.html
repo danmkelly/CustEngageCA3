@@ -483,6 +483,9 @@ body {
 .bundle-col-item:last-child { border-bottom: none; }
 .bundle-col-item .rm { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 0.7rem; padding: 1px 5px; }
 @media (max-width: 900px) { .layout { flex-direction: column; } .bundle-col { max-width: none; } }
+.app-footer { text-align: center; padding: 20px 24px; font-size: 0.72rem; color: var(--text-muted); border-top: 1px solid var(--border); margin-top: 32px; }
+.app-footer a { color: var(--accent); text-decoration: none; }
+.app-footer a:hover { text-decoration: underline; }
 
 /* Cards styled as library index cards */
 .card {
@@ -748,6 +751,12 @@ body {
   <div id="bundleItems"><div class="bundle-empty">No resources selected yet.</div></div>
   <div style="margin-top:10px"><button class="btn btn-primary" style="width:100%" id="bundleBtn" disabled onclick="triggerBundle()">Download Bundle</button></div>
 </div></div></div>
+
+<div class="app-footer">
+  <a href="https://github.com/danmkelly/CustEngageCA3/blob/main/AI_DISCLOSURE.md" target="_blank">AI Disclosure</a> ·
+  <a href="https://github.com/danmkelly/CustEngageCA3/blob/main/GOVERNANCE.md" target="_blank">Governance</a> ·
+  <span>AI-powered · Not a substitute for professional judgement · Review all content before classroom use</span>
+</div>
 
 <div class="download-overlay hidden" id="downloadOverlay">
   <div class="download-dialog">
