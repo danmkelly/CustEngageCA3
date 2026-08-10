@@ -97,7 +97,7 @@
   <div class="score-card">
     <div class="grade">5/5</div>
     <div class="label">Bundle &amp; Download</div>
-    <div class="detail">10/10 deep test pass — all endpoints verified</div>
+    <div class="detail">12/12 Keelin V2.0 deep pass — all endpoints, chat context, bundles verified</div>
   </div>
 </div>
 
@@ -671,6 +671,13 @@
   <td><strong>Interactive Bot Selection.</strong> Replaced keyword freetext search with LLM-powered chat concierge. Worker POST /api/chat accepts conversation history, sends to DeepSeek with catalogue-grounded system prompt, returns natural-language reply + real catalogue resources (max 10). Frontend split layout: chat pane (40%) + results pane (60%). Context-aware across turns. CASA-compliant (bot identity disclosed in first message). Resources merge into shared bundle.</td>
   <td><span class="sev-high">HIGH</span></td>
   <td><span class="tag tag-pass">DEPLOYED</span></td>
+</tr>
+<tr>
+  <td>K19</td>
+  <td>QA</td>
+  <td><strong>V2.0 Milestone — Strict Deep Test Pass.</strong> 12/12 tests pass: chat (basic + context follow-up), guided (Language + Maths), gap detection, bundle (single + multi-resource), catalogue (2,893 rows), taxonomies, lesson plan generation, CORS, chat empty-query safeguards. Nonsense query correctly returned "I don't know" with 0 resources — catalogue-grounded behavior confirmed. All endpoints verified end-to-end against deployed Worker.</td>
+  <td><span class="sev-high">HIGH</span></td>
+  <td><span class="tag tag-pass">V2.0 SIGNED OFF</span></td>
 </tr>
 </table>
 
