@@ -712,7 +712,7 @@ body {
   <div class="results-area" id="resultsArea">
     <div class="empty-state" id="emptyState">
       <div class="empty-icon">&#128451;</div>
-      <p>Pick a mode above, three ways in: know your outcome, remember a resource, or just browse.</p>
+      <p>Select a curriculum outcome above and hit Search, or switch to the "I remember..." tab to find resources by description.</p>
     </div>
     <div id="resultsContainer" class="hidden"></div>
   </div>
@@ -920,6 +920,8 @@ function switchTab(mode) {
   var panels = document.querySelectorAll('.mode-panel');
   for (var j = 0; j < panels.length; j++) { panels[j].classList.add('hidden'); }
   document.getElementById('panel-' + mode).classList.remove('hidden');
+  renderResults();
+  renderBundleCol();
 }
 
 /* -----------------------------------------------
