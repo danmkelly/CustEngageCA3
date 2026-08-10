@@ -1589,6 +1589,7 @@ async function handleChat(request, env) {
   var resources = [];
 
   if (searchTerms.length > 0) {
+    // Semantic matching — send top 50 keyword candidates to DeepSeek for relevance ranking
     var queryStr = searchTerms.join(" ");
     var queryTerms = searchTerms
       .concat(queryStr.split(/\s+/))
@@ -1598,22 +1599,45 @@ async function handleChat(request, env) {
       return { row: row, score: scoreFreeText(row, queryTerms) };
     });
     scored.sort(function (a, b) { return b.score - a.score; });
+    var candidates = scored.slice(0, 50).filter(function (s) { return s.score > 0; });
 
-    var best = scored
-      .slice(0, 10)
-      .filter(function (s) { return s.score > 0; });
+    if (candidates.length > 0) {
+      // Build a compact catalogue summary for DeepSeek
+      var catalogueSummary = candidates.map(function (s, idx) {
+        var r = s.row;
+        return (idx + 1) + ". " + (r.filename || "?") + " | " + (r.subject || "") + " | " + (r.grade_band || "") + " | " + (r.format || "") + " | " + ((r.extracted_text_sample || "").substring(0, 80));
+      }).join("\n");
 
-    resources = best.map(function (s) {
-      return {
-        id: s.row.id,
-        filename: s.row.filename,
-        subject: s.row.subject,
-        grade_band: s.row.grade_band,
-        format: s.row.format,
-        confidence: s.row.confidence,
-        onedrive_path: s.row.onedrive_path,
-      };
-    });
+      var rankPrompt = "User query: " + lastUserMessage + "\n\nCatalogue entries:\n" + catalogueSummary + "\n\nReturn a JSON array of indices (1-based) of the 10 most relevant entries. Only include genuinely relevant matches. If nothing is relevant, return an empty array. Output ONLY the JSON array, no explanation.";
+      
+      try {
+        var rankResp = await fetch(DEEPSEEK_API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: "Bearer " + env.DEEPSEEK_API_KEY },
+          body: JSON.stringify({ model: DEEPSEEK_MODEL, messages: [{ role: "user", content: rankPrompt }], temperature: 0.1, max_tokens: 200 })
+        });
+        if (rankResp.ok) {
+          var rankData = await rankResp.json();
+          var rankText = (rankData.choices[0].message.content || "").trim();
+          if (rankText.startsWith("```")) rankText = rankText.split("```")[1];
+          var indices = JSON.parse(rankText);
+          resources = indices.map(function (i) {
+            var s = candidates[i - 1]; if (!s) return null;
+            return { id: s.row.id, filename: s.row.filename, subject: s.row.subject, grade_band: s.row.grade_band, format: s.row.format, confidence: s.row.confidence, onedrive_path: s.row.onedrive_path };
+          }).filter(Boolean).slice(0, 10);
+        }
+      } catch (e) {
+        console.error("[Chat] Semantic ranking failed, falling back to keyword: " + e.message);
+      }
+    }
+
+    // Fallback to keyword if semantic ranking produced nothing
+    if (resources.length === 0) {
+      var best = scored.slice(0, 10).filter(function (s) { return s.score > 0; });
+      resources = best.map(function (s) {
+        return { id: s.row.id, filename: s.row.filename, subject: s.row.subject, grade_band: s.row.grade_band, format: s.row.format, confidence: s.row.confidence, onedrive_path: s.row.onedrive_path };
+      });
+    }
   }
 
   return jsonResponse({
