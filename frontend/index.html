@@ -750,8 +750,7 @@ body {
   <h3>Your Bundle</h3>
   <div id="bundleItems"><div class="bundle-empty">No resources selected yet.</div></div>
   <div style="margin-top:10px"><button class="btn btn-primary" style="width:100%" id="bundleBtn" disabled onclick="triggerBundle()">Download Bundle</button></div>
-  <div style="margin-top:6px"><button class="btn btn-secondary" style="width:100%;font-size:0.75rem" id="planBtn" disabled onclick="generateStandalonePlan()">&#128214; Generate Lesson Plan</button></div>
-  <div style="font-size:0.65rem;color:var(--text-muted);text-align:center">Experimental — may fail or take time</div>
+  <div style="margin-top:6px"><button class="btn btn-secondary" style="width:100%;font-size:0.75rem" id="planBtn" disabled onclick="generateStandalonePlan()">&#128214; Generate Lesson Plan <span style="opacity:0.7;font-weight:400">(experimental)</span></button></div>
   <div id="planStatus" style="font-size:0.72rem;color:var(--text-muted);margin-top:2px;text-align:center"></div>
 </div></div></div>
 
@@ -764,7 +763,8 @@ body {
 <div class="download-overlay hidden" id="downloadOverlay">
   <div class="download-dialog">
     <div class="spinner"></div>
-    <p>Preparing your bundle...</p>
+    <p>Downloading files from your OneDrive...</p>
+    <p style="font-size:0.75rem;color:var(--text-muted)">Large bundles may take up to 30 seconds</p>
   </div>
 </div>
 </div>
@@ -1673,8 +1673,6 @@ function triggerBundle() {
 function doBundle() {
   var overlay = document.getElementById('downloadOverlay');
   overlay.classList.remove('hidden');
-
-  var overlay = document.getElementById('downloadOverlay');
 
   var generatedContent = [];
   for (var m = 0; m < MODES.length; m++) {
