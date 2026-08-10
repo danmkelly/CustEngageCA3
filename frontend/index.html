@@ -652,6 +652,23 @@ body {
 .auth-dialog .auth-note { font-size: 0.72rem; color: var(--text-muted); margin-top: 12px; font-style: italic; border-top: 1px solid var(--border); padding-top: 10px; }
 .auth-status { font-size: 0.75rem; color: var(--success); margin-left: 8px; display: inline-flex; align-items: center; gap: 4px; }
 
+/* -- Chat Layout -- */
+.chat-layout { display: flex; gap: 16px; height: 60vh; min-height: 400px; }
+.chat-pane { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.chat-messages { flex: 1; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 8px; }
+.chat-msg { display: flex; }
+.chat-msg.user { justify-content: flex-end; }
+.chat-msg.bot { justify-content: flex-start; }
+.chat-bubble { max-width: 80%; padding: 8px 12px; border-radius: 12px; font-size: 0.85rem; line-height: 1.4; }
+.chat-msg.user .chat-bubble { background: var(--accent); color: #fff; border-radius: 12px 12px 4px 12px; }
+.chat-msg.bot .chat-bubble { background: var(--surface); border: 1px solid var(--border); border-radius: 4px 12px 12px 12px; }
+.chat-input-row { display: flex; gap: 8px; padding: 8px 0 0; border-top: 1px solid var(--border); }
+.chat-input-row input { flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.85rem; font-family: var(--font); }
+.chat-input-row input:focus { outline: none; border-color: var(--accent); }
+.chat-results { flex: 1.2; overflow-y: auto; min-width: 0; }
+.chat-results .results-grid { grid-template-columns: 1fr 1fr; }
+@media (max-width: 800px) { .chat-layout { flex-direction: column; height: auto; } .chat-messages { max-height: 30vh; } }
+
 /* -- Utility -- */
 .hidden { display: none !important; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
@@ -676,8 +693,7 @@ body {
     Curriculum Guided Selection
   </button>
   <button class="tab" data-tab="freetext" onclick="switchTab('freetext')">
-    &#128269; I remember a resource
-    <span class="tab-subtitle">Free-text search</span>
+    Interactive Bot Selection
   </button>
 
 </div>
@@ -699,12 +715,22 @@ body {
     </form>
   </div>
 
-  <!-- Freetext Mode Panel -->
+  <!-- Freetext / Interactive Bot Mode Panel -->
   <div class="mode-panel hidden" id="panel-freetext">
-    <form class="freetext-form" onsubmit="return freetextSearch(event)">
-      <input type="text" id="ftQuery" placeholder="Describe the resource you're looking for - any detail helps" autocomplete="off">
-      <button type="submit" class="btn btn-primary">&#128269; Search</button>
-    </form>
+    <div class="chat-layout">
+      <div class="chat-pane">
+        <div class="chat-messages" id="chatMessages">
+          <div class="chat-msg bot"><div class="chat-bubble">Hi! I'm your Teacher's Pet concierge. Describe what you're looking for and I'll find resources in your catalogue.</div></div>
+        </div>
+        <div class="chat-input-row">
+          <input type="text" id="chatInput" placeholder="Describe the resource you need..." onkeydown="if(event.key==='Enter')sendChat()">
+          <button class="btn btn-primary" onclick="sendChat()">Send</button>
+        </div>
+      </div>
+      <div class="chat-results" id="chatResults">
+        <div class="bundle-empty" id="chatEmpty">Resources will appear here as the bot finds them.</div>
+      </div>
+    </div>
   </div>
 
   <!-- Results Area -->
@@ -755,6 +781,7 @@ var state = {
   refinementText: { guided: '', freetext: '' },
   refinementChips: { guided: {}, freetext: {} },
   lastQuery: { guided: null, freetext: null },
+  chatHistory: [],
 };
 
 function objSize(o) { var n = 0; for (var k in o) { if (o.hasOwnProperty(k)) n++; } return n; }
@@ -919,7 +946,13 @@ function switchTab(mode) {
   var panels = document.querySelectorAll('.mode-panel');
   for (var j = 0; j < panels.length; j++) { panels[j].classList.add('hidden'); }
   document.getElementById('panel-' + mode).classList.remove('hidden');
-  renderResults();
+  if (mode === 'freetext') {
+    document.getElementById('emptyState').classList.add('hidden');
+    document.getElementById('resultsContainer').classList.add('hidden');
+    renderChatResources(state.results.freetext);
+  } else {
+    renderResults();
+  }
   renderBundleCol();
 }
 
@@ -969,11 +1002,134 @@ function guidedSearch(e) {
 
 function freetextSearch(e) {
   e.preventDefault();
-  var query = document.getElementById('ftQuery').value.trim();
-  if (!query) return false;
-  state.lastQuery.freetext = { type: 'freetext', query: query };
-  performSearch();
+  sendChat();
   return false;
+}
+
+function sendChat() {
+  var input = document.getElementById('chatInput');
+  var query = input.value.trim();
+  if (!query) return;
+  input.value = '';
+  input.disabled = true;
+
+  addChatMessage('user', query);
+
+  var msgsEl = document.getElementById('chatMessages');
+  var loadingId = 'chat-loading';
+  var loadingEl = document.createElement('div');
+  loadingEl.className = 'chat-msg bot';
+  loadingEl.id = loadingId;
+  loadingEl.innerHTML = '<div class="chat-bubble"><div class="spinner" style="width:14px;height:14px;border-width:2px;display:inline-block;margin-right:6px;"></div> Thinking...</div>';
+  msgsEl.appendChild(loadingEl);
+  msgsEl.scrollTop = msgsEl.scrollHeight;
+
+  state.chatHistory.push({ role: 'user', content: query });
+  if (state.chatHistory.length > 20) state.chatHistory = state.chatHistory.slice(-20);
+
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', WORKER_URL + '/api/chat');
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  xhr.onload = function() {
+    var ld = document.getElementById(loadingId);
+    if (ld) ld.remove();
+    input.disabled = false;
+    input.focus();
+    if (xhr.status === 200) {
+      try {
+        var data = JSON.parse(xhr.responseText);
+        var reply = data.reply || data.message || 'I found some resources for you.';
+        addChatMessage('bot', reply);
+        state.chatHistory.push({ role: 'assistant', content: reply });
+        if (state.chatHistory.length > 20) state.chatHistory = state.chatHistory.slice(-20);
+        var resources = data.resources || data.results || [];
+        state.results.freetext = resources;
+        renderChatResources(resources);
+      } catch(e) {
+        addChatMessage('bot', 'Sorry, I had trouble understanding the response. Please try again.');
+        showError('Invalid response from chat API');
+      }
+    } else {
+      addChatMessage('bot', 'Sorry, something went wrong (' + xhr.status + '). Please try again.');
+    }
+  };
+  xhr.onerror = function() {
+    var ld = document.getElementById(loadingId);
+    if (ld) ld.remove();
+    input.disabled = false;
+    addChatMessage('bot', 'Network error. Please check your connection and try again.');
+  };
+  xhr.send(JSON.stringify({ messages: state.chatHistory, mode: 'chat' }));
+}
+
+function addChatMessage(role, text) {
+  var msgsEl = document.getElementById('chatMessages');
+  var div = document.createElement('div');
+  div.className = 'chat-msg ' + role;
+  div.innerHTML = '<div class="chat-bubble">' + esc(text).replace(/\n/g, '<br>') + '</div>';
+  msgsEl.appendChild(div);
+  msgsEl.scrollTop = msgsEl.scrollHeight;
+}
+
+function renderChatResources(resources) {
+  var container = document.getElementById('chatResults');
+  var emptyEl = document.getElementById('chatEmpty');
+  if (!resources || resources.length === 0) {
+    emptyEl.style.display = '';
+    container.querySelectorAll('.results-grid').forEach(function(el) { el.remove(); });
+    return;
+  }
+  emptyEl.style.display = 'none';
+  container.querySelectorAll('.results-grid').forEach(function(el) { el.remove(); });
+
+  var sorted = resources.slice().sort(function(a, b) { return (b.confidence || 0) - (a.confidence || 0); });
+  var html = '<div class="results-grid">';
+  for (var i = 0; i < sorted.length; i++) {
+    html += renderChatResultCardHTML(sorted[i]);
+  }
+  html += '</div>';
+  container.insertAdjacentHTML('beforeend', html);
+
+  var btns = container.querySelectorAll('.card-add button[data-action="select"]');
+  for (var b = 0; b < btns.length; b++) {
+    (function(btn) {
+      btn.onclick = function(e) {
+        if (e) { e.preventDefault(); e.stopPropagation(); }
+        var id = btn.getAttribute('data-id');
+        if (objHas(state.selectedIds, id)) { delete state.selectedIds[id]; }
+        else { state.selectedIds[id] = true; }
+        renderChatResources(resources);
+        renderBundleCol();
+        return false;
+      };
+    })(btns[b]);
+  }
+  renderBundleCol();
+}
+
+function renderChatResultCardHTML(r) {
+  var id = r.id || r.filename;
+  var isSelected = objHas(state.selectedIds, id);
+  var classes = 'card';
+  if (isSelected) classes += ' selected';
+  var desc = (r.description || r.extracted_text_sample || '').substring(0, 100);
+  var badges = '';
+  if (r.subject) badges += '<span class="badge badge-subject">' + esc(r.subject) + '</span>';
+  if (r.grade_band) badges += '<span class="badge badge-grade">' + esc(r.grade_band) + '</span>';
+  if (r.format) badges += '<span class="badge badge-format">' + esc(r.format) + '</span>';
+  if (r.confidence != null) badges += '<span class="badge badge-confidence">' + Math.round(r.confidence * 100) + '% match</span>';
+  var addClass = isSelected ? ' remove-action' : '';
+  var addText = isSelected ? '- Remove' : '+ Add to bundle';
+  var actionRow = '<div class="card-add" style="display:flex;justify-content:space-between;align-items:center">' +
+    (r.onedrive_path ? '<a href="https://modernisetemp-my.sharepoint.com/personal/dan_modernise_ie/Documents/NCI/Teaching%20Resources/' + r.onedrive_path.replace(/\\/g, '/').split('/').map(function(s) { return encodeURIComponent(s); }).join('/') + '" target="_blank" rel="noopener" class="od-link">Open in OneDrive</a>' : '<span></span>') +
+    '<button class="' + addClass + '" data-action="select" data-id="' + esc(id) + '">' + addText + '</button>' +
+    '</div>';
+  return '<div class="' + classes + '" style="display:flex;flex-direction:column">' +
+    '<div class="card-filename">' + esc(r.filename || 'Untitled Resource') + '</div>' +
+    '<div class="card-description">' + esc(desc) + '</div>' +
+    '<div class="card-badges" style="margin-top:auto">' + badges + '</div>' +
+    actionRow +
+    '</div>';
 }
 
 function performSearch() {
@@ -1022,8 +1178,6 @@ function performSearch() {
 function setSearchLoading(loading) {
   var btn = document.getElementById('gSearchBtn');
   if (btn) { btn.disabled = loading; btn.textContent = loading ? 'Searching...' : 'Search'; }
-  var ftBtn = document.querySelector('#panel-freetext button[type="submit"]');
-  if (ftBtn) { ftBtn.disabled = loading; ftBtn.textContent = loading ? 'Searching...' : 'Search'; }
 }
 
 function showResultsLoading() {
@@ -1111,6 +1265,7 @@ function renderBundleCol() {
 function rmBundle(id) { delete state.selectedIds[id]; forceRefresh(); }
 
 function renderResults() {
+  if (state.activeMode === 'freetext') return;
   var emptyEl = document.getElementById('emptyState');
   var container = document.getElementById('resultsContainer');
 

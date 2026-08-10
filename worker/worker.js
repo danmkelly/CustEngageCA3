@@ -1491,6 +1491,130 @@ async function handleCatalogue(request, env) {
 }
 
 // ============================================================================
+// ENDPOINT: POST /api/chat
+// ============================================================================
+// Conversational chat endpoint. Takes a message history, uses DeepSeek to
+// generate a natural language reply + search terms, then searches the
+// catalogue for matching resources. Responses are grounded in real data.
+//
+// Request:  { messages: [{role, content}], mode: "chat" }
+// Response: { reply, resources, search_terms }
+
+var CHAT_SYSTEM_PROMPT =
+  "You are a teaching resource concierge for Irish primary teachers. " +
+  "Help the teacher find resources in their catalogue. " +
+  "Be conversational and helpful. " +
+  "When you suggest resources, always reference real catalogue data that will be provided alongside your response. " +
+  "If the teacher asks for something not in the catalogue, honestly say so. " +
+  "Keep replies concise — 2-3 sentences max.\n\n" +
+  "You must respond with a JSON object containing two fields:\n" +
+  "- 'reply': Your natural language response to the teacher (2-3 sentences)\n" +
+  "- 'search_terms': An array of keyword strings to search the catalogue for relevant resources\n\n" +
+  "Output valid JSON only — no markdown, no code fences.";
+
+async function handleChat(request, env) {
+  var body;
+  try {
+    body = await request.json();
+  } catch {
+    return jsonResponse({ error: "Invalid JSON body" }, 400);
+  }
+
+  var messages = body.messages || [];
+
+  if (!messages.length) {
+    return jsonResponse({ error: "Missing required field: messages (non-empty array)" }, 400);
+  }
+
+  messages = messages.slice(-10);
+
+  var lastUserMessage = "";
+  for (var i = messages.length - 1; i >= 0; i--) {
+    if (messages[i].role === "user") {
+      lastUserMessage = messages[i].content;
+      break;
+    }
+  }
+
+  if (!lastUserMessage) {
+    return jsonResponse({ error: "No user message found in conversation" }, 400);
+  }
+
+  var conversationText = messages.map(function (m) {
+    return (m.role === "user" ? "Teacher" : "Assistant") + ": " + m.content;
+  }).join("\n");
+
+  var userPrompt =
+    "Conversation history:\n" + conversationText +
+    "\n\nBased on this conversation, provide your reply and suggested search terms as JSON.";
+
+  var deepseekResponse;
+  try {
+    deepseekResponse = await callDeepSeek(env, CHAT_SYSTEM_PROMPT, userPrompt, 0.7);
+  } catch (err) {
+    console.error("[Chat] DeepSeek error: " + err.message);
+    return jsonResponse({ error: "AI request failed", detail: err.message }, 500);
+  }
+
+  var reply;
+  var searchTerms = [];
+  try {
+    var jsonStr = deepseekResponse.trim();
+    if (jsonStr.startsWith("```")) {
+      jsonStr = jsonStr
+        .replace(/```(?:json)?\s*/g, "")
+        .replace(/```\s*$/g, "")
+        .trim();
+    }
+    var parsed = JSON.parse(jsonStr);
+    reply = parsed.reply || "Let me look that up for you.";
+    searchTerms = parsed.search_terms || [];
+    if (!Array.isArray(searchTerms)) searchTerms = [];
+  } catch (err) {
+    console.error("[Chat] Failed to parse DeepSeek JSON: " + err.message);
+    reply = "I'm having trouble understanding that request. Could you rephrase?";
+    searchTerms = lastUserMessage.split(/\s+/).filter(function (t) { return t.length > 1; });
+  }
+
+  var catalogue = await fetchCatalogue(env);
+  var resources = [];
+
+  if (searchTerms.length > 0) {
+    var queryStr = searchTerms.join(" ");
+    var queryTerms = searchTerms
+      .concat(queryStr.split(/\s+/))
+      .filter(function (t, i, arr) { return t.length > 1 && arr.indexOf(t) === i; });
+
+    var scored = catalogue.map(function (row) {
+      return { row: row, score: scoreFreeText(row, queryTerms) };
+    });
+    scored.sort(function (a, b) { return b.score - a.score; });
+
+    var best = scored
+      .slice(0, 10)
+      .filter(function (s) { return s.score > 0; });
+
+    resources = best.map(function (s) {
+      return {
+        id: s.row.id,
+        filename: s.row.filename,
+        subject: s.row.subject,
+        grade_band: s.row.grade_band,
+        format: s.row.format,
+        confidence: s.row.confidence,
+        onedrive_path: s.row.onedrive_path,
+      };
+    });
+  }
+
+  return jsonResponse({
+    reply: reply,
+    resources: resources,
+    search_terms: searchTerms,
+  });
+}
+
+// ============================================================================
 // ROUTER — Main Worker Entry Point
 // ============================================================================
 
@@ -1518,6 +1642,10 @@ export default {
         return await handleBundle(request, env);
       }
 
+      if (pathname === "/api/chat" && request.method === "POST") {
+        return await handleChat(request, env);
+      }
+
       if (pathname === "/api/generate-lesson" && request.method === "POST") {
         return await handleGenerateLesson(request, env);
       }
@@ -1543,6 +1671,7 @@ export default {
           error: "Not found",
           endpoints: [
             "POST /api/query",
+            "POST /api/chat",
             "POST /api/bundle",
             "POST /api/generate-lesson",
             "GET /api/catalogue", "GET /api/taxonomy/:name",
