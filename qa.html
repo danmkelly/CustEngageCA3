@@ -97,7 +97,7 @@
   <div class="score-card">
     <div class="grade">5/5</div>
     <div class="label">Bundle &amp; Download</div>
-    <div class="detail">12/12 Keelin V2.0 deep pass — all endpoints, chat context, bundles verified</div>
+    <div class="detail">10/10 Keelin deep pass — all endpoints, chat semantic, lesson plan, bundle verified</div>
   </div>
 </div>
 
@@ -692,6 +692,13 @@
   <td><strong>Standalone lesson plan generation — experimental.</strong> Decoupled from bundle download following reliability issues with synchronous generation blocking the bundle. Independent sidebar button generates plan via DeepSeek in background with live elapsed timer. Experimental feature: branded as "may fail or take time" in UI. DeepSeek API latency (2-15s) is outside our control; the feature owns this honestly. Generated plan available as downloadable markdown. Failure does not affect bundle — two fully isolated processes.</td>
   <td><span class="sev-med">MED</span></td>
   <td><span class="tag tag-amber">EXPERIMENTAL</span></td>
+</tr>
+<tr>
+  <td>K22</td>
+  <td>QA</td>
+  <td><strong>Post-lesson-plan-fix deep test.</strong> 10/10 tests pass: chat (basic + semantic context), guided (Language + Maths), gap detection, bundle (app-only, multi-file), catalogue (2,893 rows), taxonomies, lesson plan generation, CORS. Lesson plan decoupled from bundle — independent tile, generate+download in one click, experimental branding. Bundle download restored after state.lessonPlan TypeError fix. Chat semantic search upgraded from keyword to LLM-ranked relevance matching. All endpoints verified against deployed Worker.</td>
+  <td><span class="sev-high">HIGH</span></td>
+  <td><span class="tag tag-pass">SIGNED OFF</span></td>
 </tr>
 </table>
 
