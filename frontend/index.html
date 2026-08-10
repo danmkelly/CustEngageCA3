@@ -1265,10 +1265,15 @@ function forceRefresh() {
 function scheduleLessonPlan() {
   clearTimeout(state.lessonPlanTimer);
   if (objSize(state.selectedIds) === 0) {
-    state.lessonPlan.status = 'idle'; state.lessonPlan.title = ''; state.lessonPlan.markdown = '';
+    state.lessonPlan = { status: 'idle', title: '', markdown: '' };
     return;
   }
-  state.lessonPlan.status = 'idle'; // Will switch to 'generating' when timer fires
+  // Only reset if we had a ready plan that's now stale (items changed)
+  if (state.lessonPlan.status === 'ready') {
+    state.lessonPlan.status = 'idle';
+    state.lessonPlan.title = '';
+    state.lessonPlan.markdown = '';
+  }
   state.lessonPlanTimer = setTimeout(generateBackgroundLessonPlan, 2000);
 }
 
@@ -1673,13 +1678,26 @@ function triggerBundle() {
     return;
   }
   document.getElementById('downloadOverlay').classList.remove('hidden');
-  // If lesson plan not ready, generate it now
-  if (state.lessonPlan.status !== 'ready') {
+  if (state.lessonPlan.status === 'ready') {
+    doBundle();
+  } else if (state.lessonPlan.status === 'generating') {
+    // Plan is already being generated — poll until ready
+    var poll = setInterval(function() {
+      if (state.lessonPlan.status === 'ready' || state.lessonPlan.status === 'idle') {
+        clearInterval(poll);
+        if (state.lessonPlan.status !== 'ready') {
+          // Generation failed or completed empty — generate now
+          generateBackgroundLessonPlan(function() { doBundle(); });
+        } else {
+          doBundle();
+        }
+      }
+    }, 500);
+  } else {
+    // Idle — generate now
     clearTimeout(state.lessonPlanTimer);
     document.getElementById('downloadOverlay').querySelector('p').textContent = 'Generating lesson plan...';
     generateBackgroundLessonPlan(function() { doBundle(); });
-  } else {
-    doBundle();
   }
 }
 
