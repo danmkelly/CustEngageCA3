@@ -1262,7 +1262,11 @@ async function handleBundle(request, env) {
         suggested_activity_type: "Mixed",
         programme: "General",
       };
-      generatedPlan = await opsMaker(env, lpSpec);
+      // Timeout after 8 seconds — don't block the bundle
+      generatedPlan = await Promise.race([
+        opsMaker(env, lpSpec),
+        new Promise(function(_, reject) { setTimeout(function() { reject(new Error("Timeout")); }, 8000); })
+      ]);
     } catch (e) {
       console.error("[Bundle] Plan generation failed: " + e.message);
     }
