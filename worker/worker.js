@@ -1118,18 +1118,16 @@ async function handleQuery(request, env) {
   var sequence = designResult.sequence;
   var makerSpec = designResult.makerSpec;
 
-  // ── 4. OPS-MAKER: generate lesson plan (ALWAYS for guided mode) ──────
-  // HANDOFF: Designer -> Maker
-  // Lesson plans are a core deliverable — generated for every guided search
-  // to provide a structured teaching resource alongside catalogue matches.
+  // ── 4. OPS-MAKER: generate lesson plan for gaps ──────────────────────
+  // Only when gaps exist — keeps search fast. Bundle endpoint also generates plans.
   var generatedContent = [];
-  if (mode === "guided") {
+  if (gaps.length > 0 && mode === "guided") {
     var lpSpec = makerSpec || {
       outcome_code: params.outcome_code || "general",
       grade_band: params.grade_band || "any",
       programme: params.programme || "General",
       suggested_activity_type: "Mixed",
-      description: "Lesson plan synthesising " + matches.length + " matched catalogue resources",
+      description: "Lesson plan for uncovered outcome",
       query: params.query || "",
     };
     console.log("[Manager] Invoking Maker for run " + runId);
