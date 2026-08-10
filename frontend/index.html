@@ -912,6 +912,14 @@ function onGuidedStageChange() {
       }
     }
   }
+  // If no outcomes were added, show helpful message and disable search
+  if (outEl.options.length <= 1) {
+    var noOpt = document.createElement('option');
+    noOpt.value = ''; noOpt.textContent = 'No outcomes for this combination';
+    noOpt.disabled = true;
+    outEl.appendChild(noOpt);
+    outEl.disabled = true;
+  }
   updateGuidedSearchBtn();
 }
 
@@ -1252,12 +1260,13 @@ function renderResults() {
 
   // Left: results grid
   parts.push('<div class="results-panel"><div class="results-grid">');
-  for (var vi = 0; vi < filteredResults.length; vi++) {
-    parts.push(renderResultCardHTML(filteredResults[vi]));
-  }
-  // AI-generated lesson plans — always shown alongside catalogue results
+  // AI-generated lesson plans — always shown first
   for (var ai = 0; ai < state.aiGenerated.length; ai++) {
     parts.push(renderResultCardHTML(state.aiGenerated[ai]));
+  }
+  // Catalogue results — sorted by confidence descending
+  for (var vi = 0; vi < filteredResults.length; vi++) {
+    parts.push(renderResultCardHTML(filteredResults[vi]));
   }
   parts.push('</div></div>');
 
@@ -1350,7 +1359,7 @@ function renderResultCardHTML(r) {
   if (r.subject) badges += '<span class="badge badge-subject">' + esc(r.subject) + '</span>';
   if (r.grade_band) badges += '<span class="badge badge-grade">' + esc(r.grade_band) + '</span>';
   if (r.format) badges += '<span class="badge badge-format">' + esc(r.format) + '</span>';
-  if (r.confidence != null) badges += '<span class="badge badge-confidence">' + Math.round(r.confidence * 100) + '% match</span>';
+  if (!isAi && r.confidence != null) badges += '<span class="badge badge-confidence">' + Math.round(r.confidence * 100) + '% match</span>';
 
   var addClass = isSelected ? ' remove-action' : '';
   var addText = isSelected ? '- Remove' : '+ Add to bundle';
@@ -1366,14 +1375,14 @@ function renderResultCardHTML(r) {
     expandHtml = '<div class="card-description">' + esc(desc) + '</div>';
   }
 
-  return '<div class="' + classes + '" data-id="' + esc(id) + '">' +
+  return '<div class="' + classes + '" data-id="' + esc(id) + '" style="display:flex;flex-direction:column">' +
     '<div class="card-filename">' + esc(r.filename || 'Untitled Resource') + '</div>' +
     expandHtml +
-    '<div class="card-badges">' + badges + '</div>' +
-    '<div class="card-add" style="display:flex;justify-content:space-between;align-items:center">' +
+    '<div class="card-badges" style="' + (isAi ? '' : '') + '">' + badges + '</div>' +
+    (!isAi ? '<div class="card-add" style="display:flex;justify-content:space-between;align-items:center;margin-top:auto">' +
     (r.onedrive_path ? '<a href="https://modernisetemp-my.sharepoint.com/personal/dan_modernise_ie/Documents/NCI/Teaching%20Resources/' + r.onedrive_path.replace(/\\/g, '/').split('/').map(function(s) { return encodeURIComponent(s); }).join('/') + '" target="_blank" rel="noopener" class="od-link">Open in OneDrive</a>' : '<span></span>') +
     '<button class="' + addClass + '" data-action="select" data-id="' + esc(id) + '">' + addText + '</button>' +
-    '</div>' +
+    '</div>' : '') +
     '</div>';
 }
 
