@@ -1450,46 +1450,40 @@ function doBundle() {
   var overlay = document.getElementById('downloadOverlay');
   overlay.classList.remove('hidden');
 
-  // Build generated_content array from selected AI-generated cards
   var generatedContent = [];
   for (var m = 0; m < MODES.length; m++) {
     var allAi = state.aiGenerated[MODES[m]] || [];
     for (var i = 0; i < allAi.length; i++) {
-    var a = allAi[i];
-    if (objHas(state.selectedIds, a.id)) {
-      generatedContent.push({
-        title: a.title || a.filename || 'Lesson Plan',
-        markdown: a.extracted_text_sample || '',
-      });
+      var a = allAi[i];
+      if (objHas(state.selectedIds, a.id)) {
+        generatedContent.push({ title: a.title || a.filename || 'Lesson Plan', markdown: a.extracted_text_sample || '' });
+      }
     }
   }
 
-  // Build summary_md from current results
   var summaryLines = [];
   summaryLines.push('# Teacher\'s Pet - Resource Bundle');
   summaryLines.push('');
   var lq = state.lastQuery[state.activeMode];
-  if (lq) { summaryLines.push('**Query:** ' + (lq.query || '')); summaryLines.push('**Mode:** ' + (lq.type || '')); }
-    var lq = state.lastQuery[state.activeMode];
-    summaryLines.push('**Query:** ' + (lq.query || 'Catalogue browse'));
-    summaryLines.push('**Mode:** ' + (lq.type || 'freetext'));
+  if (lq) {
+    summaryLines.push('**Query:** ' + (lq.query || ''));
+    summaryLines.push('**Mode:** ' + (lq.type || ''));
   }
   summaryLines.push('**Resources selected:** ' + objSize(state.selectedIds));
-  if (generatedContent.length > 0) {
-    summaryLines.push('**AI-generated plans included:** ' + generatedContent.length);
-  }
+  if (generatedContent.length > 0) summaryLines.push('**AI-generated plans included:** ' + generatedContent.length);
   summaryLines.push('');
   summaryLines.push('## Selected Resources');
-  for (var m = 0; m < MODES.length; m++) {
-    var allRes = state.results[MODES[m]] || [];
+  for (var m2 = 0; m2 < MODES.length; m2++) {
+    var allRes = state.results[MODES[m2]] || [];
     for (var j = 0; j < allRes.length; j++) {
-    var r = allRes[j];
-    var rid = r.id || r.filename;
-    if (objHas(state.selectedIds, rid)) {
-      summaryLines.push('- **' + (r.filename || 'Untitled') + '**');
-      if (r.ai_generated) summaryLines.push('  - [AI-Generated | Not Classroom-Tested]');
-      if (r.subject) summaryLines.push('  - Subject: ' + r.subject);
-      if (r.grade_band) summaryLines.push('  - Grade: ' + r.grade_band);
+      var r = allRes[j];
+      var rid = r.id || r.filename;
+      if (objHas(state.selectedIds, rid)) {
+        summaryLines.push('- **' + (r.filename || 'Untitled') + '**');
+        if (r.ai_generated) summaryLines.push('  - [AI-Generated | Not Classroom-Tested]');
+        if (r.subject) summaryLines.push('  - Subject: ' + r.subject);
+        if (r.grade_band) summaryLines.push('  - Grade: ' + r.grade_band);
+      }
     }
   }
   summaryLines.push('');
@@ -1506,7 +1500,7 @@ function doBundle() {
 
   var xhr = new XMLHttpRequest();
   xhr.open('POST', WORKER_URL + '/api/bundle');
-  xhr.timeout = 60000; // 60s for mobile — Worker downloads + zips files
+  xhr.timeout = 60000;
   xhr.setRequestHeader('Content-Type', 'application/json');
   xhr.responseType = 'blob';
   xhr.ontimeout = function() { overlay.classList.add('hidden'); showError('Download timed out — try with fewer files.'); };
@@ -1522,9 +1516,7 @@ function doBundle() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-    } else {
-      showError('Download failed (' + xhr.status + ')');
-    }
+    } else { showError('Download failed (' + xhr.status + ')'); }
   };
   xhr.onerror = function() { overlay.classList.add('hidden'); showError('Network error during download'); };
   xhr.send(JSON.stringify(payload));
