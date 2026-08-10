@@ -1278,7 +1278,16 @@ async function handleBundle(request, env) {
         fileFetchErrors.push("Empty file: " + row.onedrive_path);
         continue;
       }
-      zip.file(cleanFilename, new Uint8Array(fileData));
+      // Skip files >50MB to avoid Worker memory limits
+      if (fileData.byteLength > 50 * 1024 * 1024) {
+        fileFetchErrors.push(row.filename + " skipped — file too large for bundle (" + Math.round(fileData.byteLength/1024/1024) + "MB). Available in your OneDrive.");
+        continue;
+      }
+      try {
+        zip.file(cleanFilename, new Uint8Array(fileData));
+      } catch (zipErr) {
+        fileFetchErrors.push(row.filename + " could not be added to zip (" + zipErr.message + ")");
+      }
     } catch (err) {
       fileFetchErrors.push(
         "Failed to download " + row.filename + " (" + row.onedrive_path + "): " + err.message
