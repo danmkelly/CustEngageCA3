@@ -542,27 +542,16 @@ async function opsResearcher(env, params) {
         return outcomeMatch && gradeMatch;
       });
 
-      // Gap report for guided mode
+      // Gap report — only when genuinely zero resources
       if (outcomeCode && matches.length === 0) {
         gaps.push({
           outcome_code: outcomeCode,
           description:
-            "No catalogue resources matched outcome " +
+            "No resources found for outcome " +
             outcomeCode +
-            " for grade band " +
-            (gradeBand || "any") +
-            ".",
-          discovered: false,
-        });
-      } else if (outcomeCode && matches.length < 3) {
-        gaps.push({
-          outcome_code: outcomeCode,
-          description:
-            "Limited catalogue coverage: only " +
-            matches.length +
-            " resource(s) found for outcome " +
-            outcomeCode +
-            ".",
+            " (" +
+            (gradeBand || "any grade band") +
+            ")",
           discovered: false,
         });
       }
@@ -850,8 +839,8 @@ async function opsMaker(env, makerSpec) {
     "Grade Band: " + (makerSpec.grade_band || "Not specified"),
     "Programme: " + (makerSpec.programme || "General"),
     "Suggested Activity Type: " + makerSpec.suggested_activity_type,
-    "Gap Description: " +
-      (makerSpec.description || "No catalogue resource available"),
+    "Context: " +
+      (makerSpec.description || "Synthesise a lesson plan using available catalogue resources"),
     "",
     "Additional Context: " + (makerSpec.query || "N/A"),
     "",
@@ -1142,24 +1131,23 @@ async function handleQuery(request, env) {
   var sequence = designResult.sequence;
   var makerSpec = designResult.makerSpec;
 
-  // ── 4. OPS-MAKER: generate lesson plans (CONDITIONAL) ──────────────
-  // HANDOFF: Designer -> Maker (only if gap + no discovered + teacher flag)
-  // Gate: Maker is never invoked before Researcher has run and Designer
-  //       has confirmed a gap (enforced by the pipeline, per Manager.md).
+  // ── 4. OPS-MAKER: generate lesson plan (ALWAYS for guided mode) ──────
+  // HANDOFF: Designer -> Maker
+  // Lesson plans are a core deliverable — generated for every guided search
+  // to provide a structured teaching resource alongside catalogue matches.
   var generatedContent = [];
-  var shouldGenerate =
-    makerSpec &&
-    (body.generate === true ||
-      (mode === "guided" &&
-        discovered.length === 0 &&
-        gaps.length > 0));
-
-  if (shouldGenerate) {
+  if (mode === "guided") {
+    var lpSpec = makerSpec || {
+      outcome_code: params.outcome_code || "general",
+      grade_band: params.grade_band || "any",
+      programme: params.programme || "General",
+      suggested_activity_type: "Mixed",
+      description: "Lesson plan synthesising " + matches.length + " matched catalogue resources",
+      query: params.query || "",
+    };
     console.log("[Manager] Invoking Maker for run " + runId);
-    var plan = await opsMaker(env, makerSpec);
-    if (plan) {
-      generatedContent.push(plan);
-    }
+    var plan = await opsMaker(env, lpSpec);
+    if (plan) generatedContent.push(plan);
   }
 
   // ── 5. OPS-COMMUNICATOR: build summary ────────────────────────────

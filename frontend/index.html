@@ -1093,6 +1093,22 @@ function performSearch() {
         var data = JSON.parse(xhr.responseText);
         state.results = data.resources || data.results || [];
         state.gaps = data.gaps || [];
+        // Merge auto-generated lesson plans from API response
+        if (data.generated && data.generated.length > 0) {
+          state.aiGenerated = [];
+          for (var gi = 0; gi < data.generated.length; gi++) {
+            var g = data.generated[gi];
+            state.aiGenerated.push({
+              id: 'gen-' + Date.now() + '-' + gi,
+              filename: g.title || 'Lesson Plan',
+              ai_generated: true,
+              extracted_text_sample: g.markdown || '',
+              subject: 'Lesson Plan',
+              format: 'Lesson Plan',
+              confidence: g.confidence || 0.7,
+            });
+          }
+        }
         renderResults();
       } catch(e) { showError('Invalid response from server'); }
     } else {
@@ -1216,7 +1232,7 @@ function renderResults() {
       parts.push(
         '<div class="gap-card" style="margin-bottom:10px">' +
         '<span class="gap-icon">&#9888;</span>' +
-        '<span class="gap-text">No resources found for <strong>' + esc(gCode) + ' (' + esc(gLabel) + ', ' + esc(gStage) + ')</strong></span>' +
+        '<span class="gap-text"><strong>' + esc(gLabel) + '</strong></span>' +
         '<span class="gap-actions">' +
         '<button class="btn btn-secondary btn-sm" data-action="search-curriculum" data-code="' + esc(gCode) + '" data-label="' + esc(gLabel) + '" data-stage="' + esc(gStage) + '">Search curriculumonline.ie</button>' +
         '<button class="btn btn-secondary btn-sm" data-action="generate-lesson" data-code="' + esc(gCode) + '" data-label="' + esc(gLabel) + '" data-stage="' + esc(gStage) + '">Generate lesson plan</button>' +
@@ -1238,6 +1254,10 @@ function renderResults() {
   parts.push('<div class="results-panel"><div class="results-grid">');
   for (var vi = 0; vi < filteredResults.length; vi++) {
     parts.push(renderResultCardHTML(filteredResults[vi]));
+  }
+  // AI-generated lesson plans — always shown alongside catalogue results
+  for (var ai = 0; ai < state.aiGenerated.length; ai++) {
+    parts.push(renderResultCardHTML(state.aiGenerated[ai]));
   }
   parts.push('</div></div>');
 
