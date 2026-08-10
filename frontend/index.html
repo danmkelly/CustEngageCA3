@@ -1380,11 +1380,11 @@ function renderResultCardHTML(r) {
 
   var actionRow = '';
   if (isAi) {
-    actionRow = '<div class="card-add" style="display:flex;justify-content:flex-start;align-items:center;margin-top:auto">' +
+    actionRow = '<div class="card-add" style="display:flex;justify-content:flex-start;align-items:center">' +
       '<a href="#" onclick="openPlan(\'' + safeId + '\');return false" class="od-link">Open Plan</a>' +
       '</div>';
   } else {
-    actionRow = '<div class="card-add" style="display:flex;justify-content:space-between;align-items:center;margin-top:auto">' +
+    actionRow = '<div class="card-add" style="display:flex;justify-content:space-between;align-items:center">' +
       (r.onedrive_path ? '<a href="https://modernisetemp-my.sharepoint.com/personal/dan_modernise_ie/Documents/NCI/Teaching%20Resources/' + r.onedrive_path.replace(/\\/g, '/').split('/').map(function(s) { return encodeURIComponent(s); }).join('/') + '" target="_blank" rel="noopener" class="od-link">Open in OneDrive</a>' : '<span></span>') +
       '<button class="' + addClass + '" data-action="select" data-id="' + esc(id) + '">' + addText + '</button>' +
       '</div>';
@@ -1393,7 +1393,7 @@ function renderResultCardHTML(r) {
   return '<div class="' + classes + '" data-id="' + esc(id) + '" style="display:flex;flex-direction:column">' +
     '<div class="card-filename">' + esc(r.filename || 'Untitled Resource') + '</div>' +
     expandHtml +
-    '<div class="card-badges">' + badges + '</div>' +
+    '<div class="card-badges" style="margin-top:auto">' + badges + '</div>' +
     actionRow +
     '</div>';
 }
