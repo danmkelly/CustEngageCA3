@@ -1678,27 +1678,7 @@ function triggerBundle() {
     return;
   }
   document.getElementById('downloadOverlay').classList.remove('hidden');
-  if (state.lessonPlan.status === 'ready') {
-    doBundle();
-  } else if (state.lessonPlan.status === 'generating') {
-    // Plan is already being generated — poll until ready
-    var poll = setInterval(function() {
-      if (state.lessonPlan.status === 'ready' || state.lessonPlan.status === 'idle') {
-        clearInterval(poll);
-        if (state.lessonPlan.status !== 'ready') {
-          // Generation failed or completed empty — generate now
-          generateBackgroundLessonPlan(function() { doBundle(); });
-        } else {
-          doBundle();
-        }
-      }
-    }, 500);
-  } else {
-    // Idle — generate now
-    clearTimeout(state.lessonPlanTimer);
-    document.getElementById('downloadOverlay').querySelector('p').textContent = 'Generating lesson plan...';
-    generateBackgroundLessonPlan(function() { doBundle(); });
-  }
+  doBundle();
 }
 
 function doBundle() {
