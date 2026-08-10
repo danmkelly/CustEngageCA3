@@ -686,6 +686,13 @@
   <td><span class="sev-high">HIGH</span></td>
   <td><span class="tag tag-pass">DEPLOYED</span></td>
 </tr>
+<tr>
+  <td>K21</td>
+  <td>Feature</td>
+  <td><strong>Standalone lesson plan generation — experimental.</strong> Decoupled from bundle download following reliability issues with synchronous generation blocking the bundle. Independent sidebar button generates plan via DeepSeek in background with live elapsed timer. Experimental feature: branded as "may fail or take time" in UI. DeepSeek API latency (2-15s) is outside our control; the feature owns this honestly. Generated plan available as downloadable markdown. Failure does not affect bundle — two fully isolated processes.</td>
+  <td><span class="sev-med">MED</span></td>
+  <td><span class="tag tag-amber">EXPERIMENTAL</span></td>
+</tr>
 </table>
 
 </div>
