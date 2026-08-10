@@ -411,8 +411,7 @@ body {
 .tab-subtitle { font-weight: 400; font-size: 0.72rem; color: var(--text-muted); display: block; margin-top: 2px; }
 
 /* -- Layout -- */
-.content-panel .main { max-width: none; margin: 0; padding: 28px 0; }
-main { padding: 0 24px; }
+.main { max-width: 1280px; margin: 0 auto; padding: 28px 24px; }
 .mode-panel {
   margin-bottom: 24px;
   background: var(--surface);
@@ -475,6 +474,24 @@ main { padding: 0 24px; }
 
 .results-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
 @media (max-width: 600px) { .results-grid { grid-template-columns: 1fr; } }
+
+/* Layout — two columns with sticky bundle sidebar */
+.layout { display: flex; gap: 20px; }
+.content-panel { flex: 2; min-width: 0; }
+.bundle-col { flex: 1; min-width: 260px; max-width: 380px; }
+.bundle-col-inner { position: sticky; top: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px; box-shadow: var(--shadow-sm); }
+.bundle-col-inner h3 { font-family: var(--font-display); font-size: 1rem; margin-bottom: 10px; color: var(--accent); }
+.bundle-col-item { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid var(--border); font-size: 0.8rem; }
+.bundle-col-item:last-child { border-bottom: none; }
+.bundle-col-item .rm { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 0.7rem; padding: 1px 5px; }
+/* Folder explorer */
+.folder-explorer { display: flex; gap: 14px; }
+.folder-tree { flex: 0 0 200px; overflow-y: auto; max-height: 65vh; }
+.folder-tree-item { padding: 3px 8px; cursor: pointer; font-size: 0.8rem; border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.folder-tree-item:hover { background: var(--accent-light); }
+.folder-tree-item.sel { background: var(--accent); color: #fff; font-weight: 600; }
+.folder-content { flex: 1; }
+@media (max-width: 900px) { .layout { flex-direction: column; } .bundle-col { max-width: none; } }
 
 /* Cards styled as library index cards */
 .card {
@@ -649,26 +666,6 @@ main { padding: 0 24px; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
 .divider { width: 1px; height: 20px; background: var(--border); margin: 0 8px; }
 
-
-/* Layout — two-column with persistent bundle sidebar */
-.layout { display: flex; gap: 20px; max-width: 1400px; margin: 0 auto; padding: 0 24px; }
-.content-panel { flex: 2; min-width: 0; }
-.bundle-sidebar { flex: 1; min-width: 280px; max-width: 400px; }
-.bundle-sidebar-inner { position: sticky; top: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px; box-shadow: var(--shadow-sm); }
-.bundle-sidebar-inner h3 { font-family: var(--font-display); font-size: 1rem; margin-bottom: 10px; color: var(--accent); }
-.bundle-sidebar-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 0.8rem; }
-.bundle-sidebar-item:last-child { border-bottom: none; }
-.bundle-sidebar-item .remove-item { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 0.75rem; padding: 2px 6px; }
-.bundle-empty { color: var(--text-muted); font-size: 0.8rem; text-align: center; padding: 20px 0; }
-/* Folder explorer */
-.folder-explorer { display: flex; gap: 16px; }
-.folder-tree { flex: 1; min-width: 180px; max-width: 260px; overflow-y: auto; max-height: 70vh; }
-.folder-tree-item { padding: 4px 8px; cursor: pointer; font-size: 0.82rem; border-radius: 4px; }
-.folder-tree-item:hover { background: var(--accent-light); }
-.folder-tree-item.active { background: var(--accent); color: #fff; font-weight: 600; }
-.folder-content { flex: 3; }
-@media (max-width: 900px) { .layout { flex-direction: column; } .bundle-sidebar { max-width: none; } }
-
 </style>
 </head>
 <body>
@@ -698,7 +695,7 @@ main { padding: 0 24px; }
   </button>
 </div>
 
-<main class="main">
+<div class="layout"><div class="content-panel"><main class="main">
   <!-- Guided Mode Panel -->
   <div class="mode-panel" id="panel-guided">
     <form class="guided-form" onsubmit="return guidedSearch(event)">
@@ -749,8 +746,8 @@ main { padding: 0 24px; }
   <!-- Browse Mode Panel -->
   <div class="mode-panel hidden" id="panel-browse">
     <div class="folder-explorer">
-      <div class="folder-tree" id="folderTree"><div class="bundle-empty">Loading folders...</div></div>
-      <div class="folder-content" id="folderContent"><div class="bundle-empty">Select a folder to browse its resources.</div></div>
+      <div class="folder-tree" id="folderTree"><div class="bundle-empty">Loading...</div></div>
+      <div class="folder-content" id="folderContent"><div class="bundle-empty">Select a folder to browse.</div></div>
     </div>
   </div>
 
@@ -763,12 +760,10 @@ main { padding: 0 24px; }
     <div id="resultsContainer" class="hidden"></div>
   </div>
 </main>
-</div></div><div class="bundle-sidebar"><div class="bundle-sidebar-inner" id="bundleSidebar">
-  <h3>&#128230; Your Bundle</h3>
-  <div id="bundleSidebarItems"><div class="bundle-empty">No resources selected yet.<br>Use + Add to bundle on any result.</div></div>
-  <div style="margin-top:12px">
-    <button class="btn btn-primary" style="width:100%" id="bundleSidebarBtn" disabled onclick="triggerBundle()">&#128230; Download Bundle</button>
-  </div>
+</div><div class="bundle-col"><div class="bundle-col-inner" id="bundleSidebar">
+  <h3>Your Bundle</h3>
+  <div id="bundleItems"><div class="bundle-empty">No resources selected yet.</div></div>
+  <div style="margin-top:10px"><button class="btn btn-primary" style="width:100%" id="bundleBtn" disabled onclick="triggerBundle()">Download Bundle</button></div>
 </div></div></div>
 
 <div class="download-overlay hidden" id="downloadOverlay">
@@ -969,9 +964,9 @@ function switchTab(mode) {
   document.getElementById('panel-' + mode).classList.remove('hidden');
 
   if (mode === 'browse' && state.catalogue.length === 0) {
-    loadCatalogue(function() { buildFolderTree(); });
+    loadCatalogue(function() { renderBrowseResults(); });
   } else if (mode === 'browse') {
-    buildFolderTree();
+    renderBrowseResults();
   }
 }
 
@@ -999,71 +994,67 @@ function loadCatalogue(cb) {
   xhr.send();
 }
 
-/* -----------------------------------------------
-   BROWSE CHIPS
-   ----------------------------------------------- */
-
 function buildFolderTree() {
   var tree = {}; var rows = state.catalogue;
   for (var i = 0; i < rows.length; i++) {
-    var path = rows[i].onedrive_path || ''; if (!path) continue;
-    var parts = path.replace(/\\/g, '/').split('/'); var filename = parts.pop();
-    var current = tree;
-    for (var p = 0; p < parts.length; p++) {
-      var folder = parts[p]; if (!current[folder]) current[folder] = { _files: [] };
-      current = current[folder];
+    var p = rows[i].onedrive_path || ''; if (!p) continue;
+    var parts = p.replace(/\\/g, '/').split('/'); parts.pop();
+    var cur = tree;
+    for (var j = 0; j < parts.length; j++) {
+      var f = parts[j]; if (!cur[f]) cur[f] = { _f: [] };
+      cur = cur[f];
     }
-    current._files.push(rows[i]);
+    cur._f.push(rows[i]);
   }
-  var treeEl = document.getElementById('folderTree');
-  treeEl.innerHTML = '';
-  renderFolderLevel(treeEl, tree, '', 0);
+  var el = document.getElementById('folderTree'); el.innerHTML = '';
+  renderFolderLevel(el, tree, '', 0);
 }
-function renderFolderLevel(parentEl, node, path, depth) {
-  var folders = Object.keys(node).filter(function(k) { return k[0] !== '_'; }).sort();
-  for (var i = 0; i < folders.length; i++) {
-    var f = folders[i]; var fp = path ? path + '/' + f : f; var count = node[f]._files.length;
-    var div = document.createElement('div'); div.className = 'folder-tree-item';
-    div.style.cssText = depth > 0 ? 'margin-left:' + (depth * 14) + 'px;' : '';
-    div.textContent = f + ' (' + count + ')';
-    div.onclick = (function(fpath, nd) { return function() { showFolderContents(fpath, nd._files); }; })(fp, node[f]);
-    parentEl.appendChild(div);
-    renderFolderLevel(parentEl, node[f], fp, depth + 1);
+function renderFolderLevel(parent, node, path, depth) {
+  var keys = Object.keys(node).filter(function(k) { return k[0] !== '_'; }).sort();
+  for (var i = 0; i < keys.length; i++) {
+    var k = keys[i]; var fp = path ? path + '/' + k : k; var cnt = node[k]._f.length;
+    var d = document.createElement('div'); d.className = 'folder-tree-item';
+    d.style.cssText = 'padding-left:' + (8 + depth * 12) + 'px';
+    d.textContent = k + ' (' + cnt + ')';
+    d.onclick = (function(fpath, nd, el) { return function() {
+      var prev = document.querySelector('.folder-tree-item.sel'); if (prev) prev.classList.remove('sel');
+      el.classList.add('sel'); showFolder(fpath, nd._f);
+    }; })(fp, node[k], d);
+    parent.appendChild(d);
+    renderFolderLevel(parent, node[k], fp, depth + 1);
   }
 }
-function showFolderContents(folderPath, files) {
-  var contentEl = document.getElementById('folderContent');
-  var html = '<h3 style="margin-bottom:10px">' + esc(folderPath) + ' (' + files.length + ' files)</h3>';
-  html += '<div class="results-grid" style="grid-template-columns:1fr">';
-  for (var i = 0; i < Math.min(files.length, 100); i++) html += renderBrowseFileCard(files[i]);
-  html += '</div>';
-  if (files.length > 100) html += '<p style="color:var(--text-muted)">Showing first 100 of ' + files.length + ' files.</p>';
-  contentEl.innerHTML = html;
-  var btns = contentEl.querySelectorAll('button[data-action="select"]');
+function showFolder(fpath, files) {
+  var el = document.getElementById('folderContent');
+  var h = '<h3>' + esc(fpath) + ' (' + files.length + ')</h3><div style="display:grid;grid-template-columns:1fr;gap:8px">';
+  for (var i = 0; i < Math.min(files.length, 100); i++) {
+    var r = files[i]; var id = r.id || r.filename; var sel = objHas(state.selectedIds, id);
+    h += '<div class="card" style="display:flex;flex-direction:column">' +
+      '<div class="card-filename">' + esc(r.filename||'?') + '</div>' +
+      '<div class="card-badges">' + (r.subject ? '<span class="badge badge-subject">'+esc(r.subject)+'</span>' : '') + (r.grade_band ? '<span class="badge badge-grade">'+esc(r.grade_band)+'</span>' : '') + '</div>' +
+      '<div class="card-add" style="display:flex;justify-content:space-between">' +
+      (r.onedrive_path ? '<a href="https://modernisetemp-my.sharepoint.com/personal/dan_modernise_ie/Documents/NCI/Teaching%20Resources/'+r.onedrive_path.replace(/\\/g,'/').split('/').map(function(s){return encodeURIComponent(s)}).join('/')+'" target="_blank" rel="noopener" class="od-link">Open in OneDrive</a>' : '<span></span>') +
+      '<button class="'+(sel?' remove-action':'')+'" data-action="bselect" data-id="'+esc(id)+'">'+(sel?'- Remove':'+ Add to bundle')+'</button>' +
+      '</div></div>';
+  }
+  h += '</div>';
+  if (files.length > 100) h += '<p style="color:var(--text-muted)">Showing first 100 of '+files.length+' files.</p>';
+  el.innerHTML = h;
+  var btns = el.querySelectorAll('button[data-action="bselect"]');
   for (var b = 0; b < btns.length; b++) {
-    (function(btn) {
-      btn.onclick = function(e) { e.preventDefault(); e.stopPropagation();
-        var id = btn.getAttribute('data-id');
-        if (objHas(state.selectedIds, id)) delete state.selectedIds[id]; else state.selectedIds[id] = true;
-        renderBundleSidebar(); showFolderContents(folderPath, files); return false;
-      };
-    })(btns[b]);
+    (function(btn) { btn.onclick = function(e) { e.preventDefault(); e.stopPropagation();
+      var bid = btn.getAttribute('data-id');
+      if (objHas(state.selectedIds, bid)) delete state.selectedIds[bid]; else state.selectedIds[bid] = true;
+      renderBundleCol(); showFolder(fpath, files); return false;
+    }; })(btns[b]);
   }
-}
-function renderBrowseFileCard(r) {
-  var id = r.id || r.filename; var isSel = objHas(state.selectedIds, id);
-  var badges = ''; if (r.subject) badges += '<span class="badge badge-subject">' + esc(r.subject) + '</span>';
-  if (r.grade_band) badges += '<span class="badge badge-grade">' + esc(r.grade_band) + '</span>';
-  if (r.format) badges += '<span class="badge badge-format">' + esc(r.format) + '</span>';
-  return '<div class="card" style="display:flex;flex-direction:column">' +
-    '<div class="card-filename">' + esc(r.filename || 'Untitled') + '</div>' +
-    '<div class="card-badges" style="margin-top:auto">' + badges + '</div>' +
-    '<div class="card-add" style="display:flex;justify-content:space-between;align-items:center">' +
-    (r.onedrive_path ? '<a href="https://modernisetemp-my.sharepoint.com/personal/dan_modernise_ie/Documents/NCI/Teaching%20Resources/' + r.onedrive_path.replace(/\\/g, '/').split('/').map(function(s) { return encodeURIComponent(s); }).join('/') + '" target="_blank" rel="noopener" class="od-link">Open in OneDrive</a>' : '<span></span>') +
-    '<button class="' + (isSel ? ' remove-action' : '') + '" data-action="select" data-id="' + esc(id) + '">' + (isSel ? '- Remove' : '+ Add to bundle') + '</button>' +
-    '</div></div>';
 }
 
+function renderBrowseResults() { buildFolderTree(); }
+
+/* -----------------------------------------------
+   BROWSE CHIPS
+   ----------------------------------------------- */
 function buildBrowseChips() {
   var subjects = [{ key: 'Literacy', label: 'Literacy' }, { key: 'Maths', label: 'Maths' }];
   var grades = [{ key: 'Infants', label: 'Infants' }, { key: '1st-2nd', label: '1st\u20132nd' }, { key: '3rd-4th', label: '3rd\u20134th' }, { key: '5th-6th', label: '5th\u20136th' }];
@@ -1277,29 +1268,28 @@ function handleResultClick(e) {
    ----------------------------------------------- */
 function forceRefresh() {
   renderResults();
-  renderBundleSidebar();
+  renderBundleCol();
 }
 
-function renderBundleSidebar() {
-  var itemsEl = document.getElementById('bundleSidebarItems');
-  var btn = document.getElementById('bundleSidebarBtn');
+function renderBundleCol() {
+  var itemsEl = document.getElementById('bundleItems');
+  var btn = document.getElementById('bundleBtn');
   var cnt = objSize(state.selectedIds);
   btn.disabled = cnt === 0;
-  btn.innerHTML = cnt === 0 ? '&#128230; Download Bundle' : '&#128230; Download Bundle <span class="bundle-badge">' + cnt + '</span>';
-  if (cnt === 0) { itemsEl.innerHTML = '<div class="bundle-empty">No resources selected yet.<br>Use + Add to bundle on any result.</div>'; return; }
+  btn.innerHTML = cnt === 0 ? 'Download Bundle' : 'Download Bundle (' + cnt + ')';
+  if (cnt === 0) { itemsEl.innerHTML = '<div class="bundle-empty">No resources selected yet.</div>'; return; }
   var html = '';
   for (var i = 0; i < state.results.length; i++) {
     var r = state.results[i]; var rid = r.id || r.filename;
-    if (objHas(state.selectedIds, rid)) html += '<div class="bundle-sidebar-item"><span>' + esc((r.filename || 'Untitled').substring(0,50)) + '</span><button class="remove-item" onclick="removeFromBundle(\'' + esc(rid) + '\')">x</button></div>';
+    if (objHas(state.selectedIds, rid)) html += '<div class="bundle-col-item"><span>' + esc((r.filename||'Untitled').substring(0,45)) + '</span><button class="rm" onclick="rmBundle(\'' + esc(rid) + '\')">x</button></div>';
   }
   for (var j = 0; j < state.aiGenerated.length; j++) {
     var a = state.aiGenerated[j]; var aid = a.id || a.filename;
-    if (objHas(state.selectedIds, aid)) html += '<div class="bundle-sidebar-item"><span>' + esc((a.filename || 'Lesson Plan').substring(0,50)) + ' <em style="font-size:0.7rem;color:var(--purple)">[AI]</em></span><button class="remove-item" onclick="removeFromBundle(\'' + esc(aid) + '\')">x</button></div>';
+    if (objHas(state.selectedIds, aid)) html += '<div class="bundle-col-item"><span>' + esc((a.filename||'LP').substring(0,45)) + ' <em style="color:var(--purple);font-size:0.65rem">[AI]</em></span><button class="rm" onclick="rmBundle(\'' + esc(aid) + '\')">x</button></div>';
   }
   itemsEl.innerHTML = html;
 }
-
-function removeFromBundle(id) { delete state.selectedIds[id]; renderResults(); renderBundleSidebar(); }
+function rmBundle(id) { delete state.selectedIds[id]; forceRefresh(); }
 
 function renderResults() {
   var emptyEl = document.getElementById('emptyState');
