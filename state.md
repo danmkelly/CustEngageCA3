@@ -15,7 +15,7 @@ GitHub Pages (static frontend) → Cloudflare Worker (API + agent orchestration)
 - **Frontend:** Single-page HTML/CSS/JS, served from GitHub Pages at `https://danmkelly.github.io/CustEngageCA3/frontend/index.html`
 - **Worker:** Cloudflare Worker at `teachers-pet.dan-m-kelly.workers.dev` — 6 endpoints, 5-agent pipeline, DeepSeek API, JSZip
 - **Catalogue:** 2,893 rows in `data/catalogue.json`, served from GitHub Pages, loaded by Worker at cold-start
-- **Auth:** App-only Microsoft Graph (modernise.ie business tenant). No user sign-in. Files accessed directly by Worker.
+- **Auth:** App-only Microsoft Graph on a business tenant (modernise.ie). Worker fetches OneDrive files directly — no user sign-in. Production path would use delegated OAuth via MSAL.js.
 - **Bundle:** ZIP with resource files + README + AI disclosure, streamed to browser
 
 ## Two Interaction Modes
@@ -95,7 +95,7 @@ GitHub Pages (static frontend) → Cloudflare Worker (API + agent orchestration)
 3. **No Gaeilge** — LLMs unreliable in Irish; tagged from folder only, excluded from demo
 4. **UFLI programme reference** — 128-lesson scope-and-sequence as JSON; cross-refs to curriculum outcomes
 5. **Search-first, generate-as-fallback** — Gap resolution via curriculumonline.ie search before AI generation
-6. **App-only auth** — Zero friction for demo; production would use delegated OAuth
+6. **App-only auth** — Business tenant (modernise.ie) enables zero-friction download; production path is delegated OAuth via MSAL.js
 7. **Lesson plans experimental** — Decoupled from bundle, honestly branded
 
 ## File Count

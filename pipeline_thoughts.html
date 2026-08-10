@@ -128,12 +128,12 @@
   <tr><td>V3</td><td>Gaeilge</td><td>Full Irish-language support</td><td>Excluded. Tagged from folder only. Named as deliberate exclusion.</td></tr>
   <tr><td>V4</td><td>Content generation</td><td>Tiers 1–4 (gap descriptions through worksheet generation)</td><td>Tier 2 only: lesson plan markdown. No worksheets, no images.</td></tr>
   <tr><td>V5</td><td>User model</td><td>Multi-teacher, school-wide, collaborative</td><td>Single teacher. Architecture supports extension.</td></tr>
-  <tr><td>V6</td><td>Auth</td><td>Delegated OAuth (MSAL.js)</td><td>A new authentication method was implemented for production use. Details are not documented here for security reasons. The app-only pattern enables seamless file access without user interaction.</td></tr>
+  <tr><td>V6</td><td>Auth</td><td>Delegated OAuth (MSAL.js)</td><td>App-only Microsoft Graph authentication on a business tenant (modernise.ie). Worker fetches OneDrive files directly — no user sign-in required. Acceptable for graded demo; delegated OAuth via MSAL.js is the documented production path.</td></tr>
   <tr><td>V7</td><td>Catalogue tagging</td><td>All files deep-parsed, all 18 columns populated</td><td>All in-scope files deep-parsed. Full catalogue (Decisions 1, 2).</td></tr>
   <tr><td>V8</td><td>Programme support</td><td>UFLI, Numicon, Jolly Phonics, Heggerty, school-specific</td><td>UFLI only. Others as skeletons.</td></tr>
-  <tr><td>V11</td><td>Browse/explore tab</td><td>Folder explorer with visual catalogue browsing</td><td><strong>Removed.</strong> Added engineering complexity (folder tree, recursive directory rendering, per-file card generation) without corresponding rubric value. The guided and freetext modes cover the two core teacher search patterns (curriculum-directed and recall-based). The bundle persists across tabs, providing cross-mode value.</td></tr>
-<tr><td>V9</td><td>UI polish</td><td>Responsive, accessible, offline support</td><td>Functional desktop web app. Ugly is fine; broken pipeline is not.</td></tr>
+  <tr><td>V9</td><td>UI polish</td><td>Responsive, accessible, offline support</td><td>Functional desktop web app. Ugly is fine; broken pipeline is not.</td></tr>
   <tr><td>V10</td><td>Governance</td><td>Automated bias testing, periodic audits, drift detection</td><td>Manual artefacts: GOVERNANCE.md, AI_DISCLOSURE.md, paired-prompt test (once), Manager audit sheet.</td></tr>
+<tr><td>V11</td><td>Browse/explore tab</td><td>Folder explorer with visual catalogue browsing</td><td><strong>Removed.</strong> Added engineering complexity without corresponding rubric value. Guided and freetext modes cover the two core teacher search patterns. Bundle persists across tabs.</td></tr>
 </table>
 
 <h3>Build estimate</h3>
