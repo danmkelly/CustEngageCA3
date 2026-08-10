@@ -750,8 +750,13 @@ body {
   <h3>Your Bundle</h3>
   <div id="bundleItems"><div class="bundle-empty">No resources selected yet.</div></div>
   <div style="margin-top:10px"><button class="btn btn-primary" style="width:100%" id="bundleBtn" disabled onclick="triggerBundle()">Download Bundle</button></div>
-  <div style="margin-top:6px"><button class="btn btn-secondary" style="width:100%;font-size:0.75rem" id="planBtn" disabled onclick="generateStandalonePlan()">&#128214; Generate Lesson Plan <span style="opacity:0.7;font-weight:400">(experimental)</span></button></div>
-  <div id="planStatus" style="font-size:0.72rem;color:var(--text-muted);margin-top:2px;text-align:center"></div>
+</div></div></div>
+
+<div class="bundle-col"><div class="bundle-col-inner" id="lessonPlanTile">
+  <h3>&#128214; Lesson Plan</h3>
+  <p style="font-size:0.72rem;color:var(--text-muted);margin-bottom:8px">AI-generated teaching plan based on your selected resources. Includes learning objectives, activities, differentiation, and assessment. <em>Experimental — may take time or fail. Review before classroom use.</em></p>
+  <button class="btn btn-primary" style="width:100%" id="planBtn" disabled onclick="generateAndDownloadPlan()">Generate &amp; Download Lesson Plan</button>
+  <div id="planStatus" style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;text-align:center"></div>
 </div></div></div>
 
 <div class="app-footer">
@@ -1284,7 +1289,7 @@ function renderBundleCol() {
   }
   itemsEl.innerHTML = html;
 }
-function generateStandalonePlan() {
+function generateAndDownloadPlan() {
   var btn = document.getElementById('planBtn');
   var statusEl = document.getElementById('planStatus');
   btn.disabled = true; btn.textContent = 'Generating...';
@@ -1297,8 +1302,7 @@ function generateStandalonePlan() {
   xhr.timeout = 45000;
   var elapsed = 0;
   var timer = setInterval(function() {
-    elapsed++;
-    statusEl.textContent = 'Generating plan... (' + elapsed + 's)';
+    elapsed++; statusEl.textContent = 'Generating... (' + elapsed + 's)';
   }, 1000);
   
   xhr.onload = function() {
@@ -1310,18 +1314,21 @@ function generateStandalonePlan() {
         if (md.length > 100) {
           var blob = new Blob([md], { type: 'text/markdown' });
           var url = URL.createObjectURL(blob);
-          statusEl.innerHTML = '<span style="color:var(--green)">&#10003; Plan ready</span> <a href="' + url + '" download="lesson-plan.md">Download</a>';
-          btn.textContent = 'Regenerate Plan'; btn.disabled = false;
+          var a = document.createElement('a');
+          a.href = url; a.download = 'lesson-plan.md'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          statusEl.innerHTML = '<span style="color:var(--green)">&#10003; Downloaded</span>';
+          btn.textContent = 'Regenerate & Download Lesson Plan'; btn.disabled = false;
           return;
         }
       } catch(e) {}
     }
-    statusEl.textContent = 'Generation failed.';
+    statusEl.textContent = 'Generation failed. Try again.';
     btn.textContent = 'Retry'; btn.disabled = false;
   };
   xhr.onerror = function() {
     clearInterval(timer);
-    statusEl.textContent = 'Network error.';
+    statusEl.textContent = 'Network error. Try again.';
     btn.textContent = 'Retry'; btn.disabled = false;
   };
   
@@ -1741,6 +1748,7 @@ function doBundle() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+      document.getElementById('bundleBtn').innerHTML = 'Redownload Bundle (' + objSize(state.selectedIds) + ')';
     } else { showError('Download failed (' + xhr.status + ')'); }
   };
   xhr.onerror = function() { overlay.classList.add('hidden'); showError('Network error during download'); };
