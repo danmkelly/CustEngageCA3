@@ -753,8 +753,8 @@ var state = {
   aiGenerated: { guided: [], freetext: [] },
   loading: { taxonomy: false, catalogue: false, search: false, bundle: false, generate: false },
   guidedSelections: { subject: '', strand: '', stage: '', outcome: '' },
-  refinementText: '',
-  refinementChips: {},
+  refinementText: { guided: '', freetext: '' },
+  refinementChips: { guided: {}, freetext: {} },
   lastQuery: { guided: null, freetext: null },
 };
 
@@ -1063,8 +1063,8 @@ function handleResultClick(e) {
       if (action === 'refinement-chip') {
         var key = t.getAttribute('data-key');
         t.classList.toggle('active');
-        state.refinementChips[key] = t.classList.contains('active') ? true : undefined;
-        if (!state.refinementChips[key]) delete state.refinementChips[key];
+        state.refinementChips[state.activeMode][key] = t.classList.contains('active') ? true : undefined;
+        if (!state.refinementChips[state.activeMode][key]) delete state.refinementChips[state.activeMode][key];
         applyRefinements();
         return;
       }
@@ -1128,7 +1128,7 @@ function renderResults() {
   container.classList.remove('hidden');
 
   // Apply refinement chip filtering
-  var activeRefinementKeys = objKeys(state.refinementChips);
+  var activeRefinementKeys = objKeys(state.refinementChips[state.activeMode]);
   var filteredResults = state.results[state.activeMode];
   if (activeRefinementKeys.length > 0) {
     filteredResults = state.results[state.activeMode].filter(function(r) {
@@ -1294,21 +1294,21 @@ function renderRefinementBar() {
 function setupRefinementListeners() {
   var input = document.getElementById('refinementTextInput');
   if (input) {
-    input.value = state.refinementText;
+    input.value = state.refinementText[state.activeMode] || '';
     var replaceInput = input.cloneNode(true);
     input.parentNode.replaceChild(replaceInput, input);
     replaceInput.addEventListener('input', function() {
-      state.refinementText = replaceInput.value;
+      state.refinementText[state.activeMode] = replaceInput.value;
       debounceRefinement();
     });
   }
 
-  var keys = objKeys(state.refinementChips);
+  var keys = objKeys(state.refinementChips[state.activeMode]);
   var chips = document.querySelectorAll('#refinementChips .chip');
   for (var i = 0; i < chips.length; i++) {
     var chip = chips[i];
     var key = chip.getAttribute('data-key');
-    if (objHas(state.refinementChips, key)) {
+    if (objHas(state.refinementChips[state.activeMode], key)) {
       chip.classList.add('active');
     } else {
       chip.classList.remove('active');
@@ -1323,8 +1323,8 @@ function debounceRefinement() {
 }
 
 function applyRefinements() {
-  var hasChips = objSize(state.refinementChips) > 0;
-  var hasText = state.refinementText.trim().length > 0;
+  var hasChips = objSize(state.refinementChips[state.activeMode]) > 0;
+  var hasText = (state.refinementText[state.activeMode] || '').trim().length > 0;
 
   if (state.activeMode === 'browse') {
     renderBrowseResults();
@@ -1358,8 +1358,8 @@ function applyRefinements() {
     xhr.send(JSON.stringify({
       type: 'refine',
       base_query: state.lastQuery[state.activeMode],
-      refinement_text: state.refinementText.trim(),
-      refinement_chips: objKeys(state.refinementChips),
+      refinement_text: (state.refinementText[state.activeMode] || '').trim(),
+      refinement_chips: objKeys(state.refinementChips[state.activeMode] || {}),
     }));
   } else {
     renderResults();
