@@ -412,7 +412,8 @@ body {
 
 /* -- Layout -- */
 .main { max-width: 1280px; margin: 0 auto; padding: 28px 24px; }
-.content-panel .main { max-width: none; margin: 0; padding: 20px 0 0 0; }
+.content-panel .main { max-width: none; margin: 0; padding: 0; }
+.content-panel main { padding: 0; }
 .mode-panel {
   margin-bottom: 24px;
   background: var(--surface);
@@ -425,7 +426,7 @@ body {
 
 /* -- Guided Mode -- */
 /* Guided Mode — two-column compact */
-.guided-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-start; }
+.guided-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: stretch; }
 .guided-form .fields-col { flex: 1; min-width: 280px; display: flex; flex-direction: column; gap: 8px; }
 .guided-form .fields-col select, .guided-form .action-col input {
   padding: 7px 10px; border: 1px solid var(--border); border-radius: var(--radius);
