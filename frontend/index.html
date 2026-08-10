@@ -687,39 +687,16 @@ body {
   <!-- Guided Mode Panel -->
   <div class="mode-panel" id="panel-guided">
     <form class="guided-form" onsubmit="return guidedSearch(event)">
-      <div class="field">
-        <label for="gSubject">Subject</label>
-        <select id="gSubject" disabled onchange="onGuidedSubjectChange()">
-          <option value="">- Loading curriculum... -</option>
-          <option value="Language">Language (Primary Language Curriculum)</option>
-          <option value="Maths">Maths (Primary Maths Curriculum)</option>
-        </select>
+      <div class="fields-col">
+        <select id="gSubject" disabled onchange="onGuidedSubjectChange()"><option value="">- Loading curriculum... -</option><option value="Language">Language (Primary Language Curriculum)</option><option value="Maths">Maths (Primary Maths Curriculum)</option></select>
+        <select id="gStrand" disabled onchange="onGuidedStrandChange()"><option value="">- Select subject first -</option></select>
+        <select id="gStage" disabled onchange="onGuidedStageChange()"><option value="">- Select strand first -</option></select>
+        <select id="gOutcome" disabled onchange="onGuidedOutcomeChange()"><option value="">- Select stage first -</option></select>
       </div>
-      <div class="field">
-        <label for="gStrand">Strand</label>
-        <select id="gStrand" disabled onchange="onGuidedStrandChange()">
-          <option value="">- Select subject first -</option>
-        </select>
+      <div class="action-col">
+        <input type="text" id="gConstraints" placeholder="Additional requirements (optional)" autocomplete="off">
+        <button type="submit" class="btn btn-primary" id="gSearchBtn" disabled>&#128269; Search</button>
       </div>
-      <div class="field">
-        <label for="gStage">Stage</label>
-        <select id="gStage" disabled onchange="onGuidedStageChange()">
-          <option value="">- Select strand first -</option>
-        </select>
-      </div>
-      <div class="field">
-        <label for="gOutcome">Outcome</label>
-        <select id="gOutcome" disabled onchange="onGuidedOutcomeChange()">
-          <option value="">- Select stage first -</option>
-        </select>
-      </div>
-      <div class="field constraints-field">
-        <label for="gConstraints">Additional constraints / preferences</label>
-        <input type="text" id="gConstraints" placeholder="e.g. prefer games, EAL-friendly, group work">
-      </div>
-      <button type="submit" class="btn btn-primary" id="gSearchBtn" disabled>
-        &#128269; Search
-      </button>
     </form>
   </div>
 
