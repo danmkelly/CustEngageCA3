@@ -762,6 +762,13 @@ body {
     <div id="resultsContainer" class="hidden"></div>
   </div>
 </main>
+</div></div><div class="bundle-sidebar"><div class="bundle-sidebar-inner" id="bundleSidebar">
+  <h3>&#128230; Your Bundle</h3>
+  <div id="bundleSidebarItems"><div class="bundle-empty">No resources selected yet.<br>Use + Add to bundle on any result.</div></div>
+  <div style="margin-top:12px">
+    <button class="btn btn-primary" style="width:100%" id="bundleSidebarBtn" disabled onclick="triggerBundle()">&#128230; Download Bundle</button>
+  </div>
+</div></div></div>
 
 <div class="download-overlay hidden" id="downloadOverlay">
   <div class="download-dialog">
@@ -1760,27 +1767,7 @@ function openPlan(safeId) {
       var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>' + (card.filename || 'Lesson Plan') + '</title>' +
         '<style>body{font-family:system-ui,sans-serif;max-width:800px;margin:2rem auto;padding:0 1rem;line-height:1.7;color:#1c1917}' +
         'h1{font-size:1.5rem}h2{font-size:1.2rem;margin-top:1.5rem}pre{background:#f5f5f4;padding:1rem;border-radius:6px;overflow-x:auto}' +
-        'code{background:#f5f5f4;padding:0.15rem 0.3rem;border-radius:3px}
-/* Layout — two-column with persistent bundle sidebar */
-.layout { display: flex; gap: 20px; max-width: 1400px; margin: 0 auto; padding: 0 24px; }
-.content-panel { flex: 2; min-width: 0; }
-.bundle-sidebar { flex: 1; min-width: 280px; max-width: 400px; }
-.bundle-sidebar-inner { position: sticky; top: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px; box-shadow: var(--shadow-sm); }
-.bundle-sidebar-inner h3 { font-family: var(--font-display); font-size: 1rem; margin-bottom: 10px; color: var(--accent); }
-.bundle-sidebar-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 0.8rem; }
-.bundle-sidebar-item:last-child { border-bottom: none; }
-.bundle-sidebar-item .remove-item { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 0.75rem; padding: 2px 6px; }
-.bundle-empty { color: var(--text-muted); font-size: 0.8rem; text-align: center; padding: 20px 0; }
-/* Folder explorer */
-.folder-explorer { display: flex; gap: 16px; }
-.folder-tree { flex: 1; min-width: 180px; max-width: 260px; overflow-y: auto; max-height: 70vh; }
-.folder-tree-item { padding: 4px 8px; cursor: pointer; font-size: 0.82rem; border-radius: 4px; }
-.folder-tree-item:hover { background: var(--accent-light); }
-.folder-tree-item.active { background: var(--accent); color: #fff; font-weight: 600; }
-.folder-content { flex: 3; }
-@media (max-width: 900px) { .layout { flex-direction: column; } .bundle-sidebar { max-width: none; } }
-
-</style></head><body>' +
+        'code{background:#f5f5f4;padding:0.15rem 0.3rem;border-radius:3px}</style></head><body>' +
         '<p><em>AI-Generated | Not Classroom-Tested</em></p>' +
         md.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n## /g, '\n</div><h2>').replace(/\n# /g, '\n</div><h1>').replace(/\n\n/g, '\n</div><div>\n').replace(/\n- /g, '\n</div><li>').replace(/\n\d+\. /g, '\n</div><li>') +
         '<div></body></html>';
@@ -1831,12 +1818,4 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
-
-</div></div><div class="bundle-sidebar"><div class="bundle-sidebar-inner" id="bundleSidebar">
-  <h3>&#128230; Your Bundle</h3>
-  <div id="bundleSidebarItems"><div class="bundle-empty">No resources selected yet.<br>Use + Add to bundle on any result.</div></div>
-  <div style="margin-top:12px">
-    <button class="btn btn-primary" style="width:100%" id="bundleSidebarBtn" disabled onclick="triggerBundle()">&#128230; Download Bundle</button>
-  </div>
-</div></div></div>
 
