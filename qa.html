@@ -101,7 +101,7 @@
   </div>
 </div>
 
-<p><strong>Overall:</strong> Teacher's Pet demonstrates strong alignment with the module across all three pillars. It operationalises the Five Innovators as a live Ops pipeline, satisfies PEAS/BDI agent specification with defined handoff boundaries, implements trust calibration (Lee &amp; See 2004) through confidence scores and explicit limitations, and anchors to the module's responsible-innovation framework (Stilgoe et al. 2013) with a structured GOVERNANCE.md. The UX — guided and freetext modes with a persistent bundle sidebar — reflects CASA-aware design principles adapted for a concierge interface rather than a chatbot. The Browse/explore tab was removed as it added engineering complexity without rubric value. All findings from the Keelin audit are resolved; one deferred improvement and one documented limitation remain below.</p>
+<p><strong>Overall:</strong> Teacher's Pet demonstrates strong alignment with the module across all three pillars. It operationalises the Five Innovators as a live Ops pipeline, satisfies PEAS/BDI agent specification with defined handoff boundaries, implements trust calibration (Lee &amp; See 2004) through confidence scores and explicit limitations, and anchors to the module's responsible-innovation framework (Stilgoe et al. 2013) with a structured GOVERNANCE.md. The UX — curriculum-guided mode and Interactive Bot Selection with a persistent bundle sidebar — reflects CASA-aware design principles adapted for a concierge interface. The chat-powered bot uses DeepSeek with catalogue-grounded search (no hallucinated resources) and maintains conversation context across turns. All findings from the Keelin audit are resolved; one deferred improvement and one documented limitation remain below.</p>
 
 <div class="issues-compact" id="openIssues">
   <h3 style="margin:1rem 0 0.4rem 0;">Open Items &amp; Known Limitations</h3>
@@ -517,7 +517,7 @@
 <h2>Endpoint Verification (live-tested against deployed Worker)</h2>
 <table>
 <tr><th>ID</th><th>Endpoint</th><th>Test</th><th>Result</th></tr>
-<tr><td>V01</td><td>POST /api/query (freetext)</td><td>"phonics cvc" → 20 results, mode=freetext, all 23 catalogue fields passed through in response</td><td><span class="tag tag-pass">200 OK</span></td></tr>
+<tr><td>V01</td><td>POST /api/chat</td><td>"phonics worksheets for infants" → conversational reply + 10 catalogue-grounded resources. Context-aware follow-up: "show me games instead" correctly pivots.</td><td><span class="tag tag-pass">200 OK</span></td></tr>
 <tr><td>V02</td><td>POST /api/query (guided)</td><td>TF5/C1 → 172 resources (outcome+grade matched). TF8/C4 → 0 resources, 1 gap (untagged). Grade normalisation: Infants→C1, 1st-2nd→C2 etc.</td><td><span class="tag tag-pass">200 OK</span></td></tr>
 <tr><td>V03</td><td>POST /api/query (refine)</td><td>type=refine, base_query + refinement_text → re-searches with merged context</td><td><span class="tag tag-pass">200 OK</span></td></tr>
 <tr><td>V04</td><td>POST /api/query (similar)</td><td>type=similar, description → operates as freetext search by description</td><td><span class="tag tag-pass">200 OK</span></td></tr>
@@ -664,6 +664,13 @@
   <td><strong>Deep test pass — all endpoints verified.</strong> 10/10 tests pass: freetext, guided (Language+Maths), gap detection, bundle (app-only), catalogue (2,893 rows), taxonomy, lesson plan generation, CORS. All findings resolved. Catalogue trimmed (2 Terms of Use files removed). Refinement chips per-tab. Bundle sidebar persistent.</td>
   <td><span class="sev-high">HIGH</span></td>
   <td><span class="tag tag-pass">SIGNED OFF</span></td>
+</tr>
+<tr>
+  <td>K18</td>
+  <td>Feature</td>
+  <td><strong>Interactive Bot Selection.</strong> Replaced keyword freetext search with LLM-powered chat concierge. Worker POST /api/chat accepts conversation history, sends to DeepSeek with catalogue-grounded system prompt, returns natural-language reply + real catalogue resources (max 10). Frontend split layout: chat pane (40%) + results pane (60%). Context-aware across turns. CASA-compliant (bot identity disclosed in first message). Resources merge into shared bundle.</td>
+  <td><span class="sev-high">HIGH</span></td>
+  <td><span class="tag tag-pass">DEPLOYED</span></td>
 </tr>
 </table>
 
