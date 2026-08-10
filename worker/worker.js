@@ -556,19 +556,6 @@ async function opsResearcher(env, params) {
         });
       }
 
-      // Fallback: outcome filtering found nothing — try text matching
-      if (outcomeCode && matches.length === 0 && params.query) {
-        var fbTerms = params.query.toLowerCase().replace(/[,.-]/g, " ").split(/\s+/).filter(function(t) { return t.length > 1; });
-        var fbMatches = catalogue.filter(function(row) {
-          var combined = ((row.subject || "") + " " + (row.subdomain || "") + " " + (row.extracted_text_sample || "")).toLowerCase();
-          return fbTerms.some(function(t) { return combined.includes(t); });
-        });
-        if (fbMatches.length > 0) {
-          matches = fbMatches.slice(0, MAX_SEARCH_RESULTS);
-          gaps = []; // We found resources — clear the gap
-        }
-      }
-
       // curriculumonline.ie fallback for gaps
       if (gaps.length > 0) {
         var coOutcomes = await fetchCurriculumOnlineOutcomes();
