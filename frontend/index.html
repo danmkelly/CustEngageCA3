@@ -995,7 +995,7 @@ function performSearch() {
           state.aiGenerated[state.activeMode] = [];
           for (var gi = 0; gi < data.generated.length; gi++) {
             var g = data.generated[gi];
-            state.aiGenerated.push({
+            state.aiGenerated[state.activeMode].push({
               id: 'gen-' + Date.now() + '-' + gi,
               filename: g.title || 'Lesson Plan',
               ai_generated: true,
@@ -1013,7 +1013,7 @@ function performSearch() {
     }
   };
   xhr.onerror = function() { state.loading.search = false; setSearchLoading(false); hideResultsLoading(); showError('Network error during search'); };
-  xhr.send(JSON.stringify(state.lastQuery));
+  xhr.send(JSON.stringify(state.lastQuery[state.activeMode] || state.lastQuery.guided || state.lastQuery.freetext || {}));
 }
 
 function setSearchLoading(loading) {
@@ -1345,8 +1345,8 @@ function applyRefinements() {
       if (xhr.status === 200) {
         try {
           var data = JSON.parse(xhr.responseText);
-          state.results = data.resources || data.results || [];
-          state.gaps = data.gaps || [];
+          state.results[state.activeMode] = data.resources || data.results || [];
+          state.gaps[state.activeMode] = data.gaps || [];
         } catch(e) {}
       }
       renderResults();
@@ -1354,7 +1354,7 @@ function applyRefinements() {
     xhr.onerror = function() { state.loading.search = false; hideResultsLoading(); renderResults(); };
     xhr.send(JSON.stringify({
       type: 'refine',
-      base_query: state.lastQuery,
+      base_query: state.lastQuery[state.activeMode],
       refinement_text: state.refinementText.trim(),
       refinement_chips: objKeys(state.refinementChips),
     }));
@@ -1402,13 +1402,13 @@ function generateLessonPlan(code, label, stage, btnEl) {
           id: 'ai-gen-' + Date.now(),
           filename: 'Lesson Plan: ' + label + ' (' + stage + ')',
           ai_generated: true,
-          subject: state.lastQuery ? state.lastQuery.subject : '',
+          subject: (state.lastQuery[state.activeMode] ? state.lastQuery[state.activeMode].subject : ''),
           grade_band: stage,
           format: 'Lesson_Plan',
           extracted_text_sample: data.content || data.plan || 'AI-generated lesson plan based on curriculum outcome.',
           confidence: 1.0,
         };
-        state.results.unshift(aiCard);
+        state.results[state.activeMode].unshift(aiCard);
         state.aiGenerated[state.activeMode].push(aiCard);
         renderResults();
       } catch(e) { showError('Could not parse generated lesson plan'); restoreGapButtons(gapCard, code, label, stage); }
@@ -1467,7 +1467,8 @@ function doBundle() {
   var summaryLines = [];
   summaryLines.push('# Teacher\'s Pet - Resource Bundle');
   summaryLines.push('');
-  if (state.lastQuery && state.lastQuery[state.activeMode]) {
+  var lq = state.lastQuery[state.activeMode];
+  if (lq) { summaryLines.push('**Query:** ' + (lq.query || '')); summaryLines.push('**Mode:** ' + (lq.type || '')); }
     var lq = state.lastQuery[state.activeMode];
     summaryLines.push('**Query:** ' + (lq.query || 'Catalogue browse'));
     summaryLines.push('**Mode:** ' + (lq.type || 'freetext'));
