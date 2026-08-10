@@ -423,19 +423,17 @@ body {
 .results-area { min-height: 200px; }
 
 /* -- Guided Mode -- */
-.guided-form { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; }
-.guided-form .field { display: flex; flex-direction: column; gap: 4px; min-width: 160px; }
-.guided-form label { font-size: 0.72rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.06em; }
-.guided-form select, .guided-form input {
-  padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--radius);
-  font-size: 0.875rem; font-family: var(--font); background: var(--surface);
-  color: var(--text); min-width: 160px;
+/* Guided Mode — two-column compact */
+.guided-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-start; }
+.guided-form .fields-col { flex: 1; min-width: 280px; display: flex; flex-direction: column; gap: 8px; }
+.guided-form .fields-col select, .guided-form .action-col input {
+  padding: 7px 10px; border: 1px solid var(--border); border-radius: var(--radius);
+  font-size: 0.85rem; font-family: var(--font); background: var(--surface); color: var(--text); width: 100%;
 }
-.guided-form select:focus, .guided-form input:focus {
-  outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light);
-}
+.guided-form .action-col { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 8px; }
+.guided-form .action-col input { width: 100%; }
+.guided-form select:focus, .guided-form input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-light); }
 .guided-form select:disabled { background: var(--bg); color: var(--text-muted); cursor: not-allowed; }
-.constraints-field { flex: 1; min-width: 240px; }
 
 /* -- Freetext Mode -- */
 .freetext-form { display: flex; gap: 8px; }
@@ -484,13 +482,6 @@ body {
 .bundle-col-item { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid var(--border); font-size: 0.8rem; }
 .bundle-col-item:last-child { border-bottom: none; }
 .bundle-col-item .rm { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 0.7rem; padding: 1px 5px; }
-/* Folder explorer */
-.folder-explorer { display: flex; gap: 14px; }
-.folder-tree { flex: 0 0 200px; overflow-y: auto; max-height: 65vh; }
-.folder-tree-item { padding: 3px 8px; cursor: pointer; font-size: 0.8rem; border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.folder-tree-item:hover { background: var(--accent-light); }
-.folder-tree-item.sel { background: var(--accent); color: #fff; font-weight: 600; }
-.folder-content { flex: 1; }
 @media (max-width: 900px) { .layout { flex-direction: column; } .bundle-col { max-width: none; } }
 
 /* Cards styled as library index cards */
@@ -689,10 +680,7 @@ body {
     &#128269; I remember a resource
     <span class="tab-subtitle">Free-text search</span>
   </button>
-  <button class="tab" data-tab="browse" onclick="switchTab('browse')">
-    &#10024; Surprise me
-    <span class="tab-subtitle">Browse catalogue</span>
-  </button>
+
 </div>
 
 <div class="layout"><div class="content-panel"><main class="main">
@@ -741,14 +729,6 @@ body {
       <input type="text" id="ftQuery" placeholder="Describe the resource you're looking for - any detail helps" autocomplete="off">
       <button type="submit" class="btn btn-primary">&#128269; Search</button>
     </form>
-  </div>
-
-  <!-- Browse Mode Panel -->
-  <div class="mode-panel hidden" id="panel-browse">
-    <div class="folder-explorer">
-      <div class="folder-tree" id="folderTree"><div class="bundle-empty">Loading...</div></div>
-      <div class="folder-content" id="folderContent"><div class="bundle-empty">Select a folder to browse.</div></div>
-    </div>
   </div>
 
   <!-- Results Area -->
@@ -962,19 +942,13 @@ function switchTab(mode) {
   var panels = document.querySelectorAll('.mode-panel');
   for (var j = 0; j < panels.length; j++) { panels[j].classList.add('hidden'); }
   document.getElementById('panel-' + mode).classList.remove('hidden');
-
-  if (mode === 'browse' && state.catalogue.length === 0) {
-    loadCatalogue(function() { renderBrowseResults(); });
-  } else if (mode === 'browse') {
-    renderBrowseResults();
-  }
 }
 
 /* -----------------------------------------------
    CATALOGUE LOADER
    ----------------------------------------------- */
-function loadCatalogue(cb) {
-  if (state.catalogue.length > 0) { if (cb) cb(); return; }
+function loadCatalogue() {
+  if (state.catalogue.length > 0) return;
   state.loading.catalogue = true;
   var xhr = new XMLHttpRequest();
   xhr.open('GET', WORKER_URL + '/api/catalogue');
@@ -983,7 +957,7 @@ function loadCatalogue(cb) {
       try {
         var data = JSON.parse(xhr.responseText);
         state.catalogue = data.rows || data;
-        if (cb) cb();
+        
       } catch(e) { showError('Could not parse catalogue data'); }
     } else {
       showError('Could not load resource catalogue (' + xhr.status + ')');
@@ -994,144 +968,6 @@ function loadCatalogue(cb) {
   xhr.send();
 }
 
-function buildFolderTree() {
-  var tree = {}; var rows = state.catalogue;
-  for (var i = 0; i < rows.length; i++) {
-    var p = rows[i].onedrive_path || ''; if (!p) continue;
-    var parts = p.replace(/\\/g, '/').split('/'); parts.pop();
-    var cur = tree;
-    for (var j = 0; j < parts.length; j++) {
-      var f = parts[j]; if (!cur[f]) cur[f] = { _f: [] };
-      cur = cur[f];
-    }
-    cur._f.push(rows[i]);
-  }
-  var el = document.getElementById('folderTree'); el.innerHTML = '';
-  renderFolderLevel(el, tree, '', 0);
-}
-function renderFolderLevel(parent, node, path, depth) {
-  var keys = Object.keys(node).filter(function(k) { return k[0] !== '_'; }).sort();
-  for (var i = 0; i < keys.length; i++) {
-    var k = keys[i]; var fp = path ? path + '/' + k : k; var cnt = node[k]._f.length;
-    var d = document.createElement('div'); d.className = 'folder-tree-item';
-    d.style.cssText = 'padding-left:' + (8 + depth * 12) + 'px';
-    d.textContent = k + ' (' + cnt + ')';
-    d.onclick = (function(fpath, nd, el) { return function() {
-      var prev = document.querySelector('.folder-tree-item.sel'); if (prev) prev.classList.remove('sel');
-      el.classList.add('sel'); showFolder(fpath, nd._f);
-    }; })(fp, node[k], d);
-    parent.appendChild(d);
-    renderFolderLevel(parent, node[k], fp, depth + 1);
-  }
-}
-function showFolder(fpath, files) {
-  var el = document.getElementById('folderContent');
-  var h = '<h3>' + esc(fpath) + ' (' + files.length + ')</h3><div style="display:grid;grid-template-columns:1fr;gap:8px">';
-  for (var i = 0; i < Math.min(files.length, 100); i++) {
-    var r = files[i]; var id = r.id || r.filename; var sel = objHas(state.selectedIds, id);
-    h += '<div class="card" style="display:flex;flex-direction:column">' +
-      '<div class="card-filename">' + esc(r.filename||'?') + '</div>' +
-      '<div class="card-badges">' + (r.subject ? '<span class="badge badge-subject">'+esc(r.subject)+'</span>' : '') + (r.grade_band ? '<span class="badge badge-grade">'+esc(r.grade_band)+'</span>' : '') + '</div>' +
-      '<div class="card-add" style="display:flex;justify-content:space-between">' +
-      (r.onedrive_path ? '<a href="https://modernisetemp-my.sharepoint.com/personal/dan_modernise_ie/Documents/NCI/Teaching%20Resources/'+r.onedrive_path.replace(/\\/g,'/').split('/').map(function(s){return encodeURIComponent(s)}).join('/')+'" target="_blank" rel="noopener" class="od-link">Open in OneDrive</a>' : '<span></span>') +
-      '<button class="'+(sel?' remove-action':'')+'" data-action="bselect" data-id="'+esc(id)+'">'+(sel?'- Remove':'+ Add to bundle')+'</button>' +
-      '</div></div>';
-  }
-  h += '</div>';
-  if (files.length > 100) h += '<p style="color:var(--text-muted)">Showing first 100 of '+files.length+' files.</p>';
-  el.innerHTML = h;
-  var btns = el.querySelectorAll('button[data-action="bselect"]');
-  for (var b = 0; b < btns.length; b++) {
-    (function(btn) { btn.onclick = function(e) { e.preventDefault(); e.stopPropagation();
-      var bid = btn.getAttribute('data-id');
-      if (objHas(state.selectedIds, bid)) delete state.selectedIds[bid]; else state.selectedIds[bid] = true;
-      renderBundleCol(); showFolder(fpath, files); return false;
-    }; })(btns[b]);
-  }
-}
-
-function renderBrowseResults() { buildFolderTree(); }
-
-/* -----------------------------------------------
-   BROWSE CHIPS
-   ----------------------------------------------- */
-function buildBrowseChips() {
-  var subjects = [{ key: 'Literacy', label: 'Literacy' }, { key: 'Maths', label: 'Maths' }];
-  var grades = [{ key: 'Infants', label: 'Infants' }, { key: '1st-2nd', label: '1st\u20132nd' }, { key: '3rd-4th', label: '3rd\u20134th' }, { key: '5th-6th', label: '5th\u20136th' }];
-  var formats = [{ key: 'Worksheet', label: 'Worksheet' }, { key: 'Game', label: 'Game' }, { key: 'Poster', label: 'Poster' }, { key: 'Activity', label: 'Activity' }, { key: 'Flashcards', label: 'Flashcards' }, { key: 'Assessment', label: 'Assessment' }, { key: 'Lesson_Plan', label: 'Lesson Plan' }, { key: 'Other', label: 'Other' }];
-  var seasons = [{ key: 'Christmas', label: 'Christmas' }, { key: 'Halloween', label: 'Halloween' }, { key: 'Easter', label: 'Easter' }, { key: 'St_Patricks', label: "St Patrick's" }, { key: 'Valentines', label: "Valentine's" }, { key: 'Spring', label: 'Spring' }, { key: 'Summer', label: 'Summer' }, { key: 'Back_to_School', label: 'Back to School' }, { key: 'End_of_Year', label: 'End of Year' }];
-
-  renderChipGroup('browseSubjectChips', subjects, 'subject');
-  renderChipGroup('browseGradeChips', grades, 'grade');
-  renderChipGroup('browseFormatChips', formats, 'format');
-  renderChipGroup('browseSeasonChips', seasons, 'season');
-}
-
-function renderChipGroup(containerId, chips, category) {
-  var container = document.getElementById(containerId);
-  container.innerHTML = '';
-  for (var i = 0; i < chips.length; i++) {
-    var chip = chips[i];
-    var el = document.createElement('span');
-    el.className = 'chip';
-    el.textContent = chip.label;
-    el.setAttribute('data-key', chip.key);
-    el.addEventListener('click', (function(cat, key) {
-      return function() {
-        this.classList.toggle('active');
-        if (this.classList.contains('active')) {
-          state.browseFilters[cat][key] = true;
-        } else {
-          delete state.browseFilters[cat][key];
-        }
-        renderBrowseResults();
-      };
-    })(category, chip.key));
-    container.appendChild(el);
-  }
-}
-
-function renderBrowseResults() {
-  if (state.activeMode !== 'browse') return;
-
-  var allEmpty = objSize(state.browseFilters.subject) === 0 &&
-                 objSize(state.browseFilters.grade) === 0 &&
-                 objSize(state.browseFilters.format) === 0 &&
-                 objSize(state.browseFilters.season) === 0;
-
-  if (allEmpty) {
-    document.getElementById('emptyState').classList.remove('hidden');
-    document.getElementById('resultsContainer').classList.add('hidden');
-    return;
-  }
-
-  var filtered = state.catalogue.filter(function(item) {
-    if (objSize(state.browseFilters.subject) > 0 && !objHas(state.browseFilters.subject, item.subject)) return false;
-    if (objSize(state.browseFilters.grade) > 0 && !objHas(state.browseFilters.grade, item.grade_band)) return false;
-    if (objSize(state.browseFilters.format) > 0 && !objHas(state.browseFilters.format, item.format)) return false;
-    if (objSize(state.browseFilters.season) > 0 && !objHas(state.browseFilters.season, item.season)) return false;
-
-    // Apply refinement chip filters on top of browse filters
-    var refKeys = objKeys(state.refinementChips);
-    if (refKeys.length > 0) {
-      var matches = refKeys.some(function(key) {
-        return (item.format && item.format.toLowerCase() === key.toLowerCase()) ||
-               (item.grade_band && item.grade_band.toLowerCase() === key.toLowerCase()) ||
-               (item.season && item.season.toLowerCase() === key.toLowerCase());
-      });
-      if (!matches) return false;
-    }
-    return true;
-  });
-
-  state.results = filtered;
-  state.gaps = [];
-  renderResults();
-}
-
-/* -----------------------------------------------
-   SEARCH FUNCTIONS
-   ----------------------------------------------- */
 function guidedSearch(e) {
   e.preventDefault();
   var s = state.guidedSelections;
