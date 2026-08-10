@@ -1632,7 +1632,7 @@ function triggerBundle() {
   
   function onPlanDone() {
     timedOut = true;
-    overlay.querySelector('p').innerHTML = 'Preparing your bundle...';
+    overlay.querySelector('p').innerHTML = plan ? 'Lesson plan ready. Downloading your files...' : 'Preparing your bundle...';
     overlay.querySelector('.dl-actions').classList.add('hidden');
     var gc = [];
     if (plan && plan.markdown) gc.push({ title: plan.title || 'Lesson Plan', markdown: plan.markdown });
@@ -1642,22 +1642,26 @@ function triggerBundle() {
   function checkTimeout() {
     if (timedOut) return;
     var elapsed = (Date.now() - started) / 1000;
-    if (elapsed > 8) {
+    if (elapsed > 8 && !timedOut) {
+      timedOut = true; // Prevent double-firing
       overlay.querySelector('p').innerHTML = 'Lesson plan taking longer than expected (DeepSeek API is slow).<br><span style="font-size:0.8rem">Wait or continue without a plan?</span>';
       overlay.querySelector('.dl-actions').classList.remove('hidden');
       overlay.querySelector('#dlWaitBtn').onclick = function() {
         overlay.querySelector('.dl-actions').classList.add('hidden');
         overlay.querySelector('p').innerHTML = 'Still generating lesson plan...';
+        timedOut = false; // Re-arm for second check
         setTimeout(function() {
           if (timedOut) return;
           if (!plan) {
             overlay.querySelector('p').innerHTML = 'Lesson plan still not ready.<br><span style="font-size:0.8rem">Wait longer or continue without?</span>';
             overlay.querySelector('.dl-actions').classList.remove('hidden');
-            overlay.querySelector('#dlWaitBtn').onclick = function() { overlay.querySelector('.dl-actions').classList.add('hidden'); overlay.querySelector('p').innerHTML = 'Still trying...'; setTimeout(onPlanDone, 10000); };
+            overlay.querySelector('#dlWaitBtn').onclick = function() { overlay.querySelector('.dl-actions').classList.add('hidden'); overlay.querySelector('p').innerHTML = 'Still trying...'; timedOut = false; setTimeout(function() { if (!timedOut && plan) onPlanDone(); else if (!timedOut) { overlay.querySelector('p').innerHTML = 'Could not generate plan. Downloading files...'; setTimeout(function() { doBundle([]); }, 1000); } }, 15000); };
           } else { onPlanDone(); }
         }, 10000);
       };
-    } else {
+      // If plan completes after showing the prompt, proceed automatically after 3s
+      if (plan) setTimeout(function() { if (!timedOut || (timedOut && plan)) onPlanDone(); }, 3000);
+    } else if (!timedOut) {
       if (!plan) setTimeout(checkTimeout, 1000);
     }
   }
@@ -1672,7 +1676,10 @@ function triggerBundle() {
       try {
         var d = JSON.parse(xhr.responseText);
         plan = { title: d.title, markdown: d.content || d.markdown };
+        // If plan arrives before 8s timeout, proceed immediately
         if (!timedOut) onPlanDone();
+        // If timedOut (prompt is showing), plan arrived — auto-proceed after 3s
+        else setTimeout(function() { onPlanDone(); }, 3000);
       } catch(e) { plan = null; }
     }
     if (!plan && !timedOut) {
