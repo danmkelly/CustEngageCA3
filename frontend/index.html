@@ -1269,10 +1269,10 @@ function scheduleLessonPlan() {
     return;
   }
   state.lessonPlan.status = 'idle'; // Will switch to 'generating' when timer fires
-  state.lessonPlanTimer = setTimeout(generateBackgroundLessonPlan, 5000);
+  state.lessonPlanTimer = setTimeout(generateBackgroundLessonPlan, 2000);
 }
 
-function generateBackgroundLessonPlan() {
+function generateBackgroundLessonPlan(cb) {
   state.lessonPlan.status = 'generating'; state.lessonPlan.title = 'Generating...';
   renderBundleCol();
   // Gather context: selected resource filenames and outcome info
@@ -1297,8 +1297,9 @@ function generateBackgroundLessonPlan() {
       } catch(e) { state.lessonPlan.status = 'idle'; }
     } else { state.lessonPlan.status = 'idle'; }
     renderBundleCol();
+    if (cb) cb();
   };
-  xhr.onerror = function() { state.lessonPlan.status = 'idle'; renderBundleCol(); };
+  xhr.onerror = function() { state.lessonPlan.status = 'idle'; renderBundleCol(); if (cb) cb(); };
   xhr.send(JSON.stringify({
     outcome_code: lq.outcome_code || '',
     grade_band: lq.grade_band || lq.stage || '',
@@ -1672,7 +1673,14 @@ function triggerBundle() {
     return;
   }
   document.getElementById('downloadOverlay').classList.remove('hidden');
-  doBundle();
+  // If lesson plan not ready, generate it now
+  if (state.lessonPlan.status !== 'ready') {
+    clearTimeout(state.lessonPlanTimer);
+    document.getElementById('downloadOverlay').querySelector('p').textContent = 'Generating lesson plan...';
+    generateBackgroundLessonPlan(function() { doBundle(); });
+  } else {
+    doBundle();
+  }
 }
 
 function doBundle() {
