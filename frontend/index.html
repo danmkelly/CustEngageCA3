@@ -741,6 +741,8 @@ var TAXONOMY_BASE = 'https://raw.githubusercontent.com/danmkelly/CustEngageCA3/m
 /* -----------------------------------------------
    APPLICATION STATE
    ----------------------------------------------- */
+var MODES = ['guided', 'freetext'];
+
 var state = {
   activeMode: 'guided',
   taxonomies: { language: null, maths: null },
@@ -1091,14 +1093,13 @@ function renderBundleCol() {
   btn.innerHTML = cnt === 0 ? 'Download Bundle' : 'Download Bundle (' + cnt + ')';
   if (cnt === 0) { itemsEl.innerHTML = '<div class="bundle-empty">No resources selected yet.</div>'; return; }
   var html = '';
-  var modes = ['guided', 'freetext'];
-  for (var m = 0; m < modes.length; m++) {
-    var modeResults = state.results[modes[m]] || [];
+  for (var m = 0; m < MODES.length; m++) {
+    var modeResults = state.results[MODES[m]] || [];
     for (var i = 0; i < modeResults.length; i++) {
       var r = modeResults[i]; var rid = r.id || r.filename;
       if (objHas(state.selectedIds, rid)) html += '<div class="bundle-col-item"><span>' + esc((r.filename||'Untitled').substring(0,45)) + '</span><button class="rm" onclick="rmBundle(\'' + esc(rid) + '\')">x</button></div>';
     }
-    var modeAi = state.aiGenerated[modes[m]] || [];
+    var modeAi = state.aiGenerated[MODES[m]] || [];
     for (var j = 0; j < modeAi.length; j++) {
       var a = modeAi[j]; var aid = a.id || a.filename;
       if (objHas(state.selectedIds, aid)) html += '<div class="bundle-col-item"><span>' + esc((a.filename||'LP').substring(0,45)) + ' <em style="color:var(--purple);font-size:0.65rem">[AI]</em></span><button class="rm" onclick="rmBundle(\'' + esc(aid) + '\')">x</button></div>';
@@ -1451,8 +1452,8 @@ function doBundle() {
 
   // Build generated_content array from selected AI-generated cards
   var generatedContent = [];
-  for (var m = 0; m < modes.length; m++) {
-    var allAi = state.aiGenerated[modes[m]] || [];
+  for (var m = 0; m < MODES.length; m++) {
+    var allAi = state.aiGenerated[MODES[m]] || [];
     for (var i = 0; i < allAi.length; i++) {
     var a = allAi[i];
     if (objHas(state.selectedIds, a.id)) {
@@ -1479,8 +1480,8 @@ function doBundle() {
   }
   summaryLines.push('');
   summaryLines.push('## Selected Resources');
-  for (var m = 0; m < modes.length; m++) {
-    var allRes = state.results[modes[m]] || [];
+  for (var m = 0; m < MODES.length; m++) {
+    var allRes = state.results[MODES[m]] || [];
     for (var j = 0; j < allRes.length; j++) {
     var r = allRes[j];
     var rid = r.id || r.filename;
