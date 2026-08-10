@@ -648,7 +648,32 @@ body {
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
 .divider { width: 1px; height: 20px; background: var(--border); margin: 0 8px; }
 
-</style>
+
+/* Layout */
+.layout { display: flex; gap: 20px; max-width: 1400px; margin: 0 auto; padding: 0 24px; }
+.content-panel { flex: 2; min-width: 0; }
+.bundle-sidebar { flex: 1; min-width: 280px; max-width: 400px; }
+.bundle-sidebar-inner {
+  position: sticky; top: 20px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: 16px; box-shadow: var(--shadow-sm);
+}
+.bundle-sidebar h3 { font-family: var(--font-display); font-size: 1rem; margin-bottom: 10px; color: var(--accent); }
+.bundle-sidebar-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 0.8rem; }
+.bundle-sidebar-item:last-child { border-bottom: none; }
+.bundle-sidebar-item .remove-item { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 0.75rem; padding: 2px 6px; }
+.bundle-empty { color: var(--text-muted); font-size: 0.8rem; text-align: center; padding: 20px 0; }
+
+/* Folder explorer */
+.folder-explorer { display: flex; gap: 16px; }
+.folder-tree { flex: 1; min-width: 180px; max-width: 260px; overflow-y: auto; max-height: 70vh; }
+.folder-tree-item { padding: 4px 8px; cursor: pointer; font-size: 0.82rem; border-radius: 4px; }
+.folder-tree-item:hover { background: var(--accent-light); }
+.folder-tree-item.active { background: var(--accent); color: #fff; font-weight: 600; }
+.folder-tree-item.has-children:before { content: '▸ '; }
+.folder-tree-item.expanded:before { content: '▾ '; }
+.folder-content { flex: 3; }
+@media (max-width: 900px) { .layout { flex-direction: column; } .bundle-sidebar { max-width: none; } }</style>
 </head>
 <body>
 
@@ -727,14 +752,14 @@ body {
 
   <!-- Browse Mode Panel -->
   <div class="mode-panel hidden" id="panel-browse">
-    <div class="chip-group-label">Subject</div>
-    <div class="chip-group" id="browseSubjectChips"></div>
-    <div class="chip-group-label">Grade band</div>
-    <div class="chip-group" id="browseGradeChips"></div>
-    <div class="chip-group-label">Format</div>
-    <div class="chip-group" id="browseFormatChips"></div>
-    <div class="chip-group-label">Season</div>
-    <div class="chip-group" id="browseSeasonChips"></div>
+    <div class="folder-explorer">
+      <div class="folder-tree" id="folderTree">
+        <div class="bundle-empty">Loading folders...</div>
+      </div>
+      <div class="folder-content" id="folderContent">
+        <div class="bundle-empty">Select a folder to browse its resources.</div>
+      </div>
+    </div>
   </div>
 
   <!-- Results Area -->
@@ -745,7 +770,7 @@ body {
     </div>
     <div id="resultsContainer" class="hidden"></div>
   </div>
-</main>
+</div></div> <!-- close content-panel / main -->
 
 <div class="download-overlay hidden" id="downloadOverlay">
   <div class="download-dialog">
@@ -945,26 +970,25 @@ function switchTab(mode) {
   document.getElementById('panel-' + mode).classList.remove('hidden');
 
   if (mode === 'browse' && state.catalogue.length === 0) {
-    loadCatalogue();
-  }
-  if (mode === 'browse') {
-    renderBrowseResults();
+    loadCatalogue(function() { buildFolderTree(); });
+  } else if (mode === 'browse') {
+    buildFolderTree();
   }
 }
 
 /* -----------------------------------------------
    CATALOGUE LOADER
    ----------------------------------------------- */
-function loadCatalogue() {
-  if (state.catalogue.length > 0) return;
+function loadCatalogue(cb) {
+  if (state.catalogue.length > 0) { if (cb) cb(); return; }
   state.loading.catalogue = true;
   var xhr = new XMLHttpRequest();
   xhr.open('GET', WORKER_URL + '/api/catalogue');
   xhr.onload = function() {
     if (xhr.status === 200) {
       try {
-        state.catalogue = JSON.parse(xhr.responseText);
-        buildBrowseChips();
+        state.catalogue = JSON.parse(xhr.responseText).rows || JSON.parse(xhr.responseText);
+        if (cb) cb();
       } catch(e) { showError('Could not parse catalogue data'); }
     } else {
       showError('Could not load resource catalogue (' + xhr.status + ')');
@@ -973,6 +997,93 @@ function loadCatalogue() {
   };
   xhr.onerror = function() { showError('Network error loading catalogue'); state.loading.catalogue = false; };
   xhr.send();
+}
+
+function buildFolderTree() {
+  var tree = {};
+  var rows = state.catalogue;
+  for (var i = 0; i < rows.length; i++) {
+    var path = rows[i].onedrive_path || '';
+    if (!path) continue;
+    var parts = path.replace(/\\/g, '/').split('/');
+    var filename = parts.pop();
+    var current = tree;
+    for (var p = 0; p < parts.length; p++) {
+      var folder = parts[p];
+      if (!current[folder]) current[folder] = { _files: [] };
+      current = current[folder];
+    }
+    current._files.push(rows[i]);
+  }
+  
+  var treeEl = document.getElementById('folderTree');
+  treeEl.innerHTML = '';
+  renderFolderTreeLevel(treeEl, tree, '', 0);
+}
+
+function renderFolderTreeLevel(parentEl, node, path, depth) {
+  var folders = Object.keys(node).filter(function(k) { return k[0] !== '_'; }).sort();
+  var indent = depth > 0 ? 'margin-left:' + (depth * 14) + 'px;' : '';
+  
+  for (var i = 0; i < folders.length; i++) {
+    var f = folders[i];
+    var fullPath = path ? path + '/' + f : f;
+    var count = node[f]._files.length;
+    var div = document.createElement('div');
+    div.className = 'folder-tree-item';
+    div.style.cssText = indent;
+    div.textContent = f + ' (' + count + ')';
+    div.onclick = (function(fp, nd) { return function() { showFolderContents(fp, nd._files); }; })(fullPath, node[f]);
+    parentEl.appendChild(div);
+    renderFolderTreeLevel(parentEl, node[f], fullPath, depth + 1);
+  }
+}
+
+function showFolderContents(folderPath, files) {
+  var contentEl = document.getElementById('folderContent');
+  var html = '<h3 style="margin-bottom:10px">' + esc(folderPath) + ' (' + files.length + ' files)</h3>';
+  html += '<div class="results-grid" style="grid-template-columns:1fr">';
+  for (var i = 0; i < Math.min(files.length, 100); i++) {
+    var f = files[i];
+    html += renderBrowseFileCard(f);
+  }
+  html += '</div>';
+  if (files.length > 100) html += '<p style="color:var(--text-muted)">Showing first 100 of ' + files.length + ' files.</p>';
+  contentEl.innerHTML = html;
+  // Wire up select buttons
+  var btns = contentEl.querySelectorAll('button[data-action="select"]');
+  for (var b = 0; b < btns.length; b++) {
+    (function(btn) {
+      btn.onclick = function(e) {
+        if (e) { e.preventDefault(); e.stopPropagation(); }
+        var id = btn.getAttribute('data-id');
+        if (objHas(state.selectedIds, id)) { delete state.selectedIds[id]; }
+        else { state.selectedIds[id] = true; }
+        renderBundleSidebar();
+        showFolderContents(folderPath, files);
+        return false;
+      };
+    })(btns[b]);
+  }
+}
+
+function renderBrowseFileCard(r) {
+  var id = r.id || r.filename;
+  var isSelected = objHas(state.selectedIds, id);
+  var addClass = isSelected ? ' remove-action' : '';
+  var addText = isSelected ? '- Remove' : '+ Add to bundle';
+  var badges = '';
+  if (r.subject) badges += '<span class="badge badge-subject">' + esc(r.subject) + '</span>';
+  if (r.grade_band) badges += '<span class="badge badge-grade">' + esc(r.grade_band) + '</span>';
+  if (r.format) badges += '<span class="badge badge-format">' + esc(r.format) + '</span>';
+  return '<div class="card" style="display:flex;flex-direction:column">' +
+    '<div class="card-filename">' + esc(r.filename || 'Untitled') + '</div>' +
+    '<div class="card-badges" style="margin-top:auto">' + badges + '</div>' +
+    '<div class="card-add" style="display:flex;justify-content:space-between;align-items:center">' +
+    (r.onedrive_path ? '<a href="https://modernisetemp-my.sharepoint.com/personal/dan_modernise_ie/Documents/NCI/Teaching%20Resources/' + r.onedrive_path.replace(/\\/g, '/').split('/').map(function(s) { return encodeURIComponent(s); }).join('/') + '" target="_blank" rel="noopener" class="od-link">Open in OneDrive</a>' : '<span></span>') +
+    '<button class="' + addClass + '" data-action="select" data-id="' + esc(id) + '">' + addText + '</button>' +
+    '</div>' +
+    '</div>';
 }
 
 /* -----------------------------------------------
@@ -1191,6 +1302,45 @@ function handleResultClick(e) {
    ----------------------------------------------- */
 function forceRefresh() {
   renderResults();
+  renderBundleSidebar();
+}
+
+function renderBundleSidebar() {
+  var itemsEl = document.getElementById('bundleSidebarItems');
+  var btn = document.getElementById('bundleSidebarBtn');
+  var cnt = objSize(state.selectedIds);
+  
+  btn.disabled = cnt === 0;
+  btn.innerHTML = cnt === 0 ? '&#128230; Download Bundle' : '&#128230; Download Bundle <span class="bundle-badge">' + cnt + '</span>';
+  
+  if (cnt === 0) {
+    itemsEl.innerHTML = '<div class="bundle-empty">No resources selected yet.<br>Use + Add to bundle on any result.</div>';
+    return;
+  }
+  
+  var html = '';
+  for (var i = 0; i < state.results.length; i++) {
+    var r = state.results[i];
+    var rid = r.id || r.filename;
+    if (objHas(state.selectedIds, rid)) {
+      html += '<div class="bundle-sidebar-item"><span>' + esc((r.filename || 'Untitled').substring(0,50)) + '</span><button class="remove-item" onclick="removeFromBundle(\'' + esc(rid) + '\')">x</button></div>';
+    }
+  }
+  // Also include AI-generated cards
+  for (var j = 0; j < state.aiGenerated.length; j++) {
+    var a = state.aiGenerated[j];
+    var aid = a.id || a.filename;
+    if (objHas(state.selectedIds, aid)) {
+      html += '<div class="bundle-sidebar-item"><span>' + esc((a.filename || 'Lesson Plan').substring(0,50)) + ' <em style="font-size:0.7rem;color:var(--purple)">[AI]</em></span><button class="remove-item" onclick="removeFromBundle(\'' + esc(aid) + '\')">x</button></div>';
+    }
+  }
+  itemsEl.innerHTML = html;
+}
+
+function removeFromBundle(id) {
+  delete state.selectedIds[id];
+  renderResults();
+  renderBundleSidebar();
 }
 
 function renderResults() {
@@ -1268,14 +1418,7 @@ function renderResults() {
   for (var vi = 0; vi < filteredResults.length; vi++) {
     parts.push(renderResultCardHTML(filteredResults[vi]));
   }
-  parts.push('</div></div>');
-
-  // Right: bundle sidebar
-  parts.push('<div class="bundle-panel">');
-  parts.push(renderBundleSidebarHTML());
-  parts.push('</div>');
-
-  parts.push('</div>'); // close results-layout
+  parts.push('</div></div>'); // close results-grid + results-panel
 
   container.innerHTML = parts.join('');
 
@@ -1669,7 +1812,14 @@ function openPlan(safeId) {
         'h1{font-size:1.5rem}h2{font-size:1.2rem;margin-top:1.5rem}pre{background:#f5f5f4;padding:1rem;border-radius:6px;overflow-x:auto}' +
         'code{background:#f5f5f4;padding:0.15rem 0.3rem;border-radius:3px}</style></head><body>' +
         '<p><em>AI-Generated | Not Classroom-Tested</em></p>' +
-        md.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n## /g, '\n</div><h2>').replace(/\n# /g, '\n</div><h1>').replace(/\n\n/g, '\n</div><div>\n').replace(/\n- /g, '\n</div><li>').replace(/\n\d+\. /g, '\n</div><li>') +
+        md.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n## /g, '\n</div><h2>').replace(/\n# /g, '\n</div><h1>').replace(/\n\n/g, '\n</div><div>\n').replace(/\n- /g, '\n
+</div></div><div class="bundle-sidebar"><div class="bundle-sidebar-inner" id="bundleSidebar">
+  <h3>&#128230; Your Bundle</h3>
+  <div id="bundleSidebarItems"><div class="bundle-empty">No resources selected yet.<br>Use + Add to bundle on any result.</div></div>
+  <div style="margin-top:12px">
+    <button class="btn btn-primary" style="width:100%" id="bundleSidebarBtn" disabled onclick="triggerBundle()">&#128230; Download Bundle</button>
+  </div>
+</div></div></div><li>').replace(/\n\d+\. /g, '\n</div><li>') +
         '<div></body></html>';
       var blob = new Blob([html], { type: 'text/html' });
       var url = URL.createObjectURL(blob);
