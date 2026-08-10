@@ -1043,7 +1043,13 @@ function sendChat() {
         state.chatHistory.push({ role: 'assistant', content: reply });
         if (state.chatHistory.length > 20) state.chatHistory = state.chatHistory.slice(-20);
         var resources = data.resources || data.results || [];
-        state.results.freetext = resources;
+        // Merge into existing freetext results — preserve previously selected items
+        var existing = state.results.freetext || [];
+        var existingIds = {}; for (var ei = 0; ei < existing.length; ei++) { existingIds[existing[ei].id] = true; }
+        for (var ri = 0; ri < resources.length; ri++) {
+          if (!existingIds[resources[ri].id]) { existing.push(resources[ri]); existingIds[resources[ri].id] = true; }
+        }
+        state.results.freetext = existing;
         renderChatResources(resources);
       } catch(e) {
         addChatMessage('bot', 'Sorry, I had trouble understanding the response. Please try again.');
