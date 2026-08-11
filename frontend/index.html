@@ -847,9 +847,9 @@ function onGuidedSubjectChange() {
 
   if (val && ((lang && lang.strands) || (maths && maths.strands))) {
     var strands;
-    if (lang && lang.strands) {
+    if (val === 'Language' && lang && lang.strands) {
       strands = Object.keys(lang.strands);
-    } else {
+    } else if (val === 'Maths' && maths && maths.strands) {
       strands = Object.keys(maths.strands);
     }
     strands.forEach(function(s) {
