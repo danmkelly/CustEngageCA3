@@ -90,6 +90,7 @@ GitHub Pages (static frontend) → Cloudflare Worker (API + agent orchestration)
 | `qa.html` | QA Dashboard — 40 framework assessments, 30 findings register, bot behaviour audit, reflection |
 | `pipeline_thoughts.html` | Design Journey — 18 phases, 7 tabs, architecture, decisions, agent specs |
 | `collab.html` | Agent Collaboration — Dev and Ops team case studies, non-linear flows, partnership progression |
+| `agents.html` | Agent Roster — single-table side-by-side Dev/Ops comparison, role alignment, GitHub links |
 | `README.md` | Project overview and setup instructions |
 | `GOVERNANCE.md` | Disclosure policy, escalation routes, review cadence |
 | `AI_DISCLOSURE.md` | All AI used, confidence tiers, limitations, teacher's role |
@@ -116,6 +117,7 @@ GitHub Pages (static frontend) → Cloudflare Worker (API + agent orchestration)
 - **QA page:** `qa.html` — 3-pillar framework assessment (40 frameworks), functional test table, security audit, CA3 criteria map, bot behaviour audit with LLM weakness reflection
 - **Pipeline page:** `pipeline_thoughts.html` — full design journey (18 phases), 7 tabbed decision panels
 - **Collaboration page:** `collab.html` — Dev and Ops team case studies, 10 non-linear challenge flows, partnership progression ladder
+- **Agent roster:** `agents.html` — single-table side-by-side Dev/Ops comparison, 11 agents with identities, boundaries, and GitHub links
 
 ## Key Design Decisions
 
@@ -131,7 +133,7 @@ GitHub Pages (static frontend) → Cloudflare Worker (API + agent orchestration)
 
 ## File Count
 
-~14,000 lines across: HTML (10,000: frontend, qa, pipeline, collab), JavaScript/Worker (1,900), Markdown (800), JSON (750), Python (350)
+~15,000 lines across: HTML (11,000: frontend, qa, pipeline, collab, agents), JavaScript/Worker (1,900), Markdown (800), JSON (750), Python (350)
 
 ## Milestones
 
