@@ -971,13 +971,7 @@ async function opsMaker(env, makerSpec) {
   var specKey = await hashKey(JSON.stringify(makerSpec));
   if (isRateLimited(specKey)) {
     console.log("[Maker] Rate limited — skipping duplicate generation");
-    return {
-      title: "Lesson Plan (" +
-        (makerSpec.outcome_code || makerSpec.query) + ")",
-      markdown:
-        "_Generation skipped (duplicate request within 60s window)._",
-      confidence: 0,
-    };
+    return null;
   }
 
   var userPrompt = [
@@ -1007,16 +1001,7 @@ async function opsMaker(env, makerSpec) {
     };
   } catch (err) {
     console.error("[Maker] Generation failed: " + err.message);
-    return {
-      title:
-        "Lesson Plan (" +
-        (makerSpec.outcome_code || "Fallback") + ")",
-      markdown:
-        "[AI-Generated | Not Classroom-Tested]\n\n" +
-        "**Generation failed**: " + err.message + "\n\n" +
-        "**Gap**: " + (makerSpec.description || "Unknown"),
-      confidence: 0,
-    };
+    return null;
   }
 }
 // ============================================================================
