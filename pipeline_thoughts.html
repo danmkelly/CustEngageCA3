@@ -170,12 +170,12 @@
   <tr><td><strong>Dev-Maker</strong></td><td>JS, Python, HTML/CSS, wrangler deploy, Azure AD</td><td>Deployed code: worker.js, index.html, catalogue_populator.py, taxonomy JSONs, agent .md files, wrangler.toml</td></tr>
   <tr><td><strong>Dev-Communicator</strong></td><td>Technical docs, disclosure conventions, module rubrics</td><td>README.md, GOVERNANCE.md, AI_DISCLOSURE.md, inline docs</td></tr>
   <tr><td><strong>Dev-Manager</strong></td><td>Rubric criteria, build sequencing, dependency tracking</td><td>Build plan + rubric coverage map + build log (evidence for AI Acknowledgement)</td></tr>
-  <tr><td><strong>Dev-Keelin</strong> <span class="tag tag-red">security</span></td><td>Secret detection, CORS config, Graph scope audit, rubric validation</td><td>Pass/fail security verdict with line-level violation references — nothing deploys without sign-off</td></tr>
+  <tr><td><strong>Dev-Keelin</strong> <span class="tag tag-red">security</span> <span class="tag tag-purple">qa</span></td><td>Academic (rubric coverage, agent template compliance), functional (endpoint verification, data flow integrity, UI behaviour), and security (secrets, CORS, Graph scopes)</td><td>Three-facet quality verdict — security findings always block deployment; academic/functional findings block on high severity, documented on medium/low. Nothing deploys without sign-off.</td></tr>
 </table>
 
 <h4>Dev handoffs</h4>
 <pre class="ascii">
-  Dev-Manager → Dev-Architect → Dev-Maker → Dev-Keelin (security review)
+  Dev-Manager → Dev-Architect → Dev-Maker → Dev-Keelin (academic, functional & security review)
                                                   ↓
   Dev-Communicator ← Dev-Maker ← (pass/fail)
         ↓
@@ -235,7 +235,7 @@
   Free-text mode: Researcher → Designer → Communicator (no Maker, no Ops-Keelin, no gap analysis)
 </pre>
 
-<p><strong>Why two Keelins:</strong> Dev-Keelin guards the deployment boundary (secrets, CORS, Graph scopes); Ops-Keelin guards the teacher boundary (content accuracy, bias, age checks). Their scopes don't overlap — failing one doesn't mean failing the other. Both block on fail: Dev-Keelin blocks deployment, Ops-Keelin blocks content from reaching the teacher. Trust calibration (Lee &amp; See, 2004): the system knows its limits and communicates them.</p>
+<p><strong>Why two Keelins:</strong> Dev-Keelin guards the deployment boundary across three facets — academic (rubric coverage, agent template compliance), functional (endpoints, data flow, UI behaviour), and security (secrets, CORS, Graph scopes). Security findings always block; academic/functional block on high severity. Ops-Keelin guards the teacher boundary (content accuracy, bias, age checks). Their scopes don't overlap — failing one doesn't mean failing the other. Both block on fail: Dev-Keelin blocks deployment, Ops-Keelin blocks content from reaching the teacher. Trust calibration (Lee &amp; See, 2004): the system knows its limits and communicates them.</p>
 
 <p><strong>Cross-team handoff:</strong> Dev-Manager delivers deployed Worker + populated catalogue + taxonomy JSONs + agent definitions + signed-off build log → Ops-Manager takes ownership. Dev team archived, not retired; spun back up if rubric changes or bugs found.</p>
 
@@ -355,8 +355,8 @@ Guard: generated plans must not use sounds from lessons > 54</pre>
 
 <div class="card">
   <h4>Decision 8: Split Keelin into Dev-Keelin + Ops-Keelin</h4>
-  <p>The original design had a single Keelin agent. During Claude-assisted review, it became clear that security review (what guards the deployment boundary) and content QA (what guards the teacher boundary) are fundamentally different domains. Dev-Keelin audits secrets, CORS, Graph scopes, and wrangler.toml — blocking deployment on failure. Ops-Keelin validates generated lesson plans for hallucinations, UFLI boundary violations, and paired-prompt bias — blocking content from reaching the teacher on failure. Their scopes don't overlap: failing one doesn't mean failing the other. This split reflects the module's trust calibration argument (Lee &amp; See 2004): different trust dimensions need different guards.</p>
-  <p class="decision-made">→ Decision: Two Keelins with non-overlapping scopes. Dev-Keelin in agents/dev/, Ops-Keelin in agents/ops/. Both block on fail: Dev-Keelin blocks deployment, Ops-Keelin blocks content delivery.</p>
+  <p>The original design had a single Keelin agent. During Claude-assisted review, it became clear that deployment-boundary review and teacher-boundary review are fundamentally different domains. Dev-Keelin audits across three facets — academic (rubric coverage, agent template compliance), functional (endpoints, data flow, UI behaviour), and security (secrets, CORS, Graph scopes) — blocking deployment on security findings (always) and high-severity academic/functional findings. Ops-Keelin validates generated lesson plans for hallucinations, UFLI boundary violations, and paired-prompt bias — blocking content from reaching the teacher on failure. Their scopes don't overlap: failing one doesn't mean failing the other. This split reflects the module's trust calibration argument (Lee &amp; See 2004): different trust dimensions need different guards.</p>
+  <p class="decision-made">→ Decision: Two Keelins with non-overlapping scopes. Dev-Keelin runs three-facet quality review (academic/functional/security) — security always blocks, academic/functional block on high severity. Ops-Keelin runs content QA — hallucinations, UFLI violations, bias tests always block. Dev-Keelin in agents/dev/, Ops-Keelin in agents/ops/.</p>
 </div>
 
 <div class="card">
@@ -630,7 +630,7 @@ Guard: generated plans must not use sounds from lessons > 54</pre>
 <p>Google Sheets → Excel Online (MS ecosystem). Client-side JSZip → Cloudflare Worker server-side (no exposed keys). MSAL.js auth → app-only Graph auth (no friction for demo, delegated auth as production fix). Pre-sync subset → all files bundleable (zero content limits).</p>
 
 <h3>Phase 8: Two Teams</h3>
-<p>Dev team builds once (Architect, Maker, Communicator, Manager). Ops team runs on query (Researcher, Designer, Maker, Communicator, Manager). Keelin shared as security/QA consultant. 11 agents across 6 role types prove the module's argument that agents are domain-specific, not generic.</p>
+<p>Dev team builds once (Architect, Maker, Communicator, Manager). Ops team runs on query (Researcher, Designer, Maker, Communicator, Manager). Keelin split into Dev (academic/functional/security QA) and Ops (content validation). 11 agents across 6 role types prove the module's argument that agents are domain-specific, not generic.</p>
 
 <h3>Phase 9: UX &amp; Interaction</h3>
 <p>Two entry points (Guided, Free-text) converging on one results+refinement panel. Disagreement as first-class interaction: thumbs down (session-level), "Not for this outcome" (catalogue improvement), "Generate something better" (Maker with negative example). Bundle always explicit and deliberate.</p>

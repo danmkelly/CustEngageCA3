@@ -154,7 +154,7 @@
 
 <p>Dev-Manager opened the session with a rubric-weighted priority stack. "Handoff &amp; Orchestration is 25% of the grade," the build log recorded. "Pipeline reliability is 15%. The chatbot's quality degrades both, because the chat ranking call is part of the orchestration chain. This is not a polish task — this is blocking the highest-weighted criterion."</p>
 
-<p>Manager assigned the sequence: Architect maps the search architecture first (find the structural gaps), Maker audits the code second (find the implementation gaps), Keelin reviews security third (nothing reporting a vulnerability gets deployed), and Communicator documents the full chain fourth (every fix needs traceable evidence for the rubric). The build log entry marked the status of all eight rubric criteria and gave the audit a time-box: one session, no scope expansion, "if it's not in the rubric, it's not in sprint."</p>
+<p>Manager assigned the sequence: Architect maps the search architecture first (find the structural gaps), Maker audits the code second (find the implementation gaps), Keelin reviews quality third (academic rubric coverage, functional endpoint behaviour, and security — nothing with a high-severity finding gets deployed), and Communicator documents the full chain fourth (every fix needs traceable evidence for the rubric). The build log entry marked the status of all eight rubric criteria and gave the audit a time-box: one session, no scope expansion, "if it's not in the rubric, it's not in sprint."</p>
 
 <h3>2. Architect Maps the Search Architecture</h3>
 
@@ -198,10 +198,10 @@
 
 <h3>4. Keelin Blocks Deployment — Twice</h3>
 
-<p>Dev-Keelin's review gate is pass/fail. There is no "deploy with warnings" — either the code is clean or it doesn't ship.</p>
+<p>Dev-Keelin's review gate is pass/fail for security (always blocks) and severity-gated for academic/functional findings (block only on high severity). Low/medium issues are documented and shipped.</p>
 
 <div class="card warn">
-  <h4>Dev-Keelin Security Review — Initial Findings</h4>
+  <h4>Dev-Keelin Quality Review — Initial Findings</h4>
   <table>
     <tr><th>Finding</th><th>Verdict</th></tr>
     <tr><td><strong>Router 404 exposed internal API surface</strong> — information disclosure</td><td><span class="tag tag-gap">BLOCKED</span> — fix before deploy</td></tr>
@@ -215,7 +215,7 @@
 
 <h3>5. Manager Cuts Scope — Four Limitations Accepted</h3>
 
-<p>While Maker was fixing bugs and Keelin was running security review, Dev-Manager was watching the audit's scope. Maker had started proposing additional fixes — "we should build the Ops-Keelin validation gate since we're already in the code," "the UFLI constraint would only take a couple of hours" — and Manager stepped in.</p>
+<p>While Maker was fixing bugs and Keelin was running quality review, Dev-Manager was watching the audit's scope. Maker had started proposing additional fixes — "we should build the Ops-Keelin validation gate since we're already in the code," "the UFLI constraint would only take a couple of hours" — and Manager stepped in.</p>
 
 <p>"Not in sprint," Manager recorded in the build log. "Ops-Keelin validation gate is documented in the architecture spec as a future phase. Manager governance functions are specified but not allocated to this sprint. UFLI constraint is listed in the risk register, not the active build plan. These are scope limitations — document them, don't build them."</p>
 
@@ -248,7 +248,7 @@
 
 <h3>6. Communicator Documents the Full Chain</h3>
 
-<p>With all six bugs fixed, Keelin's security gate passed, and Manager's scope limitations documented, Dev-Communicator assembled the evidence trail. Communicator produced three deliverables: QA Dashboard entries (all 6 fixes mapped to rubric criteria), Pipeline documentation (Phase 25 — full bot behaviour audit log), and a build log entry (timestamped evidence for AI Acknowledgement).</p>
+<p>With all six bugs fixed, Keelin's quality gate passed, and Manager's scope limitations documented, Dev-Communicator assembled the evidence trail. Communicator produced three deliverables: QA Dashboard entries (all 6 fixes mapped to rubric criteria), Pipeline documentation (Phase 25 — full bot behaviour audit log), and a build log entry (timestamped evidence for AI Acknowledgement).</p>
 
 <p>But Communicator also did something that defines the non-linear collaboration pattern: it challenged two claims that couldn't be verified by running the code. "Maker's commit message says 'plenary always included,' but the pipeline entry implies a 1+ resource minimum. Which is it?" Maker confirmed: plenary is always included now, no minimum. The pipeline entry was corrected. "Architect's contract audit says scoreFreeText searched 5 fields before the fix. The code has 4. Which is it?" Architect confirmed it was 4. The entry was corrected.</p>
 
@@ -277,7 +277,7 @@ Dev-Architect     → produces architecture spec, endpoint contracts, schema val
     ↓
 Dev-Maker         → builds from spec (worker.js, frontend, Python scripts, agent .md files)
     ↓
-Dev-Keelin        → security review (pass/fail gate) → BLOCK or PASS
+Dev-Keelin        → quality review (three-facet pass/fail gate) → BLOCK or PASS
     ↓ (if PASS)
 Dev-Communicator  → documents what was built (README, AI_DISCLOSURE, JSDoc, build log)
     ↓
@@ -288,7 +288,7 @@ Dev-Manager       → archives build log, updates rubric coverage heatmap, hands
 
 <div class="card">
   <h4>1. Dev-Keelin Blocks Dev-Maker's Deployment</h4>
-  <p>Before any code reaches production, Keelin runs a security scan: secrets in source, CORS configuration, Graph API scopes, wrangler.toml bindings. Verdicts are binary: <span class="tag tag-pass">PASS</span> or <span class="tag tag-gap">BLOCKED</span>. In the Bot Behaviour Audit, Keelin blocked deployment twice — once for endpoint exposure, once for CORS misconfiguration. Keelin's gate operationalises Mayer-Davis-Schoorman's (1995) Integrity dimension: "the system having checks."</p>
+  <p>Before any code reaches production, Keelin runs a three-facet quality review. <strong>Security</strong> findings always block deployment (secrets, CORS, Graph scopes). <strong>Functional</strong> findings block on high severity (broken endpoints, silent search failures, bundle drops). <strong>Academic</strong> findings block on high severity (rubric criterion with zero evidence, agent template violations). Lower-severity academic/functional issues are documented and shipped. Verdicts are <span class="tag tag-pass">PASS</span> or <span class="tag tag-gap">BLOCKED</span>. In the Bot Behaviour Audit, Keelin blocked deployment twice on security findings — once for endpoint exposure, once for CORS misconfiguration. Keelin's gate operationalises Mayer-Davis-Schoorman's (1995) Integrity dimension: "the system having checks."</p>
 </div>
 
 <div class="card">
@@ -333,9 +333,9 @@ Dev-Manager       → archives build log, updates rubric coverage heatmap, hands
   </tr>
   <tr>
     <td><strong>Dev-Keelin</strong></td>
-    <td>Security Review</td>
-    <td>Found two blocking issues: endpoint exposure and CORS misconfiguration. Re-reviewed after fixes.</td>
-    <td>Blocked Maker's deployment — twice. "Security is binary."</td>
+    <td>Quality Review</td>
+    <td>Ran three-facet review (academic/functional/security). Found two high-severity security findings blocking deployment: endpoint exposure and CORS misconfiguration. Re-reviewed after fixes — clean.</td>
+    <td>Blocked Maker's deployment — twice. "Security always blocks; academic and functional block on high severity."</td>
     <td>—</td>
   </tr>
   <tr>

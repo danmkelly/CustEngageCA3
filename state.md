@@ -57,11 +57,11 @@ GitHub Pages (static frontend) → Cloudflare Worker (API + agent orchestration)
 
 ## Agent Pipeline
 
-**Development team (builds once):** Dev-Architect, Dev-Maker, Dev-Communicator, Dev-Manager, Dev-Keelin (security review)
+**Development team (builds once):** Dev-Architect, Dev-Maker, Dev-Communicator, Dev-Manager, Dev-Keelin (academic, functional & security QA)
 
 **Operations team (runs on query):** Ops-Researcher, Ops-Designer, Ops-Maker, Ops-Communicator, Ops-Manager, Ops-Keelin (content QA)
 
-11 agent definition files in `agents/`. Keelin is split across both teams — security review in Dev, content validation in Ops.
+11 agent definition files in `agents/`. Keelin is split across both teams — three-facet quality review in Dev (security always blocks; academic/functional block on high severity), content validation in Ops.
 
 ## Reference Taxonomies
 
