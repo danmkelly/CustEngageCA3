@@ -25,10 +25,12 @@
   .meta { color: var(--muted); font-size: 0.85rem; margin-bottom: 1.2rem; }
   .repo { display: inline-block; background: var(--accent-light); color: var(--accent); padding: 0.15rem 0.6rem; border-radius: 4px; font-family: monospace; font-size: 0.8rem; text-decoration: none; }
 
-  .tabs { display: flex; flex-wrap: wrap; gap: 0; margin: 1rem 0 0; border-bottom: 2px solid var(--border); }
-  .tab-btn { padding: 0.5rem 1rem; font-size: 0.82rem; font-weight: 600; background: none; border: none; border-bottom: 2px solid transparent; margin-bottom: -2px; cursor: pointer; color: var(--muted); transition: color 0.15s, border-color 0.15s; font-family: var(--font); }
-  .tab-btn:hover { color: var(--text); }
-  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); font-family: var(--font-display); }
+  .tabs { display: flex; flex-wrap: wrap; gap: 0; margin: 1rem 0 0; border-bottom: 2px solid var(--accent); padding: 0; }
+  .tab-btn { padding: 10px 20px 12px; font-size: 0.85rem; font-weight: 600; cursor: pointer; border: 2px solid var(--accent); border-bottom: 2px solid var(--accent); background: #e8f0eb; font-family: var(--font); color: var(--muted); border-radius: 8px 8px 0 0; transition: all 0.15s ease; white-space: nowrap; margin-bottom: -2px; position: relative; }
+  .tab-btn:hover { color: var(--text); background: var(--surface); }
+  .tab-btn.active { color: #fff; background: var(--accent); border-color: var(--accent); font-family: var(--font-display); font-weight: 600; border-bottom: 2px solid var(--accent); }
+  .tab-btn.active .tab-subtitle { color: rgba(255,255,255,0.75); }
+  .tab-subtitle { font-weight: 400; font-size: 0.7rem; color: var(--muted); display: block; margin-top: 1px; }
   .tab-panel { display: none; padding-top: 1rem; }
   .tab-panel.active { display: block; }
 
@@ -98,7 +100,7 @@
   li { margin-bottom: 0.35rem; font-size: 0.88rem; }
 
   @media (max-width: 700px) {
-    .tabs { flex-direction: column; } .tab-btn { border-bottom: 1px solid var(--border); margin-bottom: 0; } .tab-btn.active { border-bottom-color: var(--accent); }
+    .tabs { flex-direction: column; } .tab-btn { border-radius: 0; margin-bottom: 0; border-bottom: 1px solid var(--accent); } .tab-btn.active { border-bottom-color: var(--accent); border-radius: 8px 8px 0 0; }
     .agent-row { flex-direction: column; gap: 0.4rem; } .agent-avatar { flex: none; text-align: left; }
     .pipeline-flow { flex-direction: column; } .pipe-arrow { transform: rotate(90deg); }
   }
@@ -133,8 +135,8 @@
 
 <!-- TABS -->
 <div class="tabs">
-  <button class="tab-btn active" onclick="showTab('dev')">Dev Team — Building &amp; Gating</button>
-  <button class="tab-btn" onclick="showTab('ops')">Ops Team — Running &amp; Validating</button>
+  <button class="tab-btn active" onclick="showTab('dev')">Dev Team<span class="tab-subtitle">Building &amp; Gating</span></button>
+  <button class="tab-btn" onclick="showTab('ops')">Ops Team<span class="tab-subtitle">Running &amp; Validating</span></button>
 </div>
 
 <!-- =============================================== -->
