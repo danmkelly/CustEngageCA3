@@ -38,6 +38,88 @@ const RATE_LIMIT_MS = 60000;
 const MAX_SEARCH_RESULTS = 20;
 
 // --------------------------------------------------------------------------
+// CLASS-LEVEL CONTROLLED VOCABULARY
+// --------------------------------------------------------------------------
+// Normalise any grade-band input to the catalogue standard labels:
+//   "Infants" | "1st-2nd" | "3rd-4th" | "5th-6th" | ""
+// Handles: stage codes (C1–C4), human-readable (Junior Infants, 1st Class),
+// numeric (1st, 2nd), combined bands (1st-2nd), and abbreviated (JI, SI).
+
+function normalizeGradeBand(raw) {
+  if (!raw) return "";
+  var gb = String(raw).toLowerCase().trim();
+
+  // Infant variants
+  if (gb === "c1" || gb.includes("infant") || gb === "ji" || gb === "si") {
+    return "Infants";
+  }
+  // 1st-2nd variants
+  if (gb === "c2" || gb.includes("1st") || gb.includes("first") || gb.includes("2nd") || gb.includes("second")) {
+    return "1st-2nd";
+  }
+  // 3rd-4th variants
+  if (gb === "c3" || gb.includes("3rd") || gb.includes("third") || gb.includes("4th") || gb.includes("fourth")) {
+    return "3rd-4th";
+  }
+  // 5th-6th variants
+  if (gb === "c4" || gb.includes("5th") || gb.includes("fifth") || gb.includes("6th") || gb.includes("sixth")) {
+    return "5th-6th";
+  }
+  return "";
+}
+
+// Extract class-level intent from a freetext query and return the
+// normalised catalogue band label (or "" if no level detected).
+function extractGradeBandFromQuery(queryStr) {
+  if (!queryStr) return "";
+  var q = queryStr.toLowerCase();
+
+  // Multi-word patterns (longest-match-first to avoid "first" matching
+  // inside "first class").
+  var multi = [
+    { phrase: "junior infants",  band: "Infants" },
+    { phrase: "senior infants",  band: "Infants" },
+    { phrase: "junior infant",   band: "Infants" },
+    { phrase: "senior infant",   band: "Infants" },
+    { phrase: "1st class",       band: "1st-2nd" },
+    { phrase: "first class",     band: "1st-2nd" },
+    { phrase: "2nd class",       band: "1st-2nd" },
+    { phrase: "second class",    band: "1st-2nd" },
+    { phrase: "3rd class",       band: "3rd-4th" },
+    { phrase: "third class",     band: "3rd-4th" },
+    { phrase: "4th class",       band: "3rd-4th" },
+    { phrase: "fourth class",    band: "3rd-4th" },
+    { phrase: "5th class",       band: "5th-6th" },
+    { phrase: "fifth class",     band: "5th-6th" },
+    { phrase: "6th class",       band: "5th-6th" },
+    { phrase: "sixth class",     band: "5th-6th" },
+    { phrase: "1st-2nd",         band: "1st-2nd" },
+    { phrase: "3rd-4th",         band: "3rd-4th" },
+    { phrase: "5th-6th",         band: "5th-6th" },
+  ];
+  for (var i = 0; i < multi.length; i++) {
+    if (q.indexOf(multi[i].phrase) !== -1) return multi[i].band;
+  }
+
+  // Single-word fallback
+  var single = {
+    infants: "Infants",  infant: "Infants",
+    ji: "Infants",       si: "Infants",
+    "1st": "1st-2nd",    first: "1st-2nd",
+    "2nd": "1st-2nd",    second: "1st-2nd",
+    "3rd": "3rd-4th",    third: "3rd-4th",
+    "4th": "3rd-4th",    fourth: "3rd-4th",
+    "5th": "5th-6th",    fifth: "5th-6th",
+    "6th": "5th-6th",    sixth: "5th-6th",
+  };
+  var words = q.split(/\s+/);
+  for (var j = 0; j < words.length; j++) {
+    if (single[words[j]]) return single[words[j]];
+  }
+  return "";
+}
+
+// --------------------------------------------------------------------------
 // CORS HELPERS
 // --------------------------------------------------------------------------
 // Limitation: allow-origin * is permissive — suitable for demo/CA3 grading.
@@ -517,42 +599,43 @@ async function opsResearcher(env, params) {
     var gradeBand = (params.grade_band || "").toLowerCase().trim();
 
     if (outcomeCode || gradeBand) {
-      // Normalize gradeBand: accept both stage codes (C1) and human-readable (Infants)
-      var gradeBandNorm = "";
-      if (gradeBand) {
-        var gb = gradeBand.toLowerCase();
-        if (gb === "c1" || gb.includes("infant")) gradeBandNorm = "c1";
-        else if (gb === "c2" || gb.includes("1st") || gb.includes("first")) gradeBandNorm = "c2";
-        else if (gb === "c3" || gb.includes("3rd") || gb.includes("third")) gradeBandNorm = "c3";
-        else if (gb === "c4" || gb.includes("5th") || gb.includes("fifth")) gradeBandNorm = "c4";
-        else gradeBandNorm = gb;
-      }
+      var gradeBandNorm = normalizeGradeBand(gradeBand);
       matches = catalogue.filter(function (row) {
         var rowOutcome = (row.outcome_code || "").toLowerCase();
-        var rowGrade = (row.grade_band || "").toLowerCase();
-        // Normalize row grade to stage code
-        var rowGradeNorm = "";
-        if (rowGrade.includes("infant")) rowGradeNorm = "c1";
-        else if (rowGrade.includes("1st") || rowGrade.includes("first")) rowGradeNorm = "c2";
-        else if (rowGrade.includes("3rd") || rowGrade.includes("third")) rowGradeNorm = "c3";
-        else if (rowGrade.includes("5th") || rowGrade.includes("fifth")) rowGradeNorm = "c4";
-        else rowGradeNorm = rowGrade;
+        var rowGradeNorm = normalizeGradeBand(row.grade_band || "");
         var outcomeMatch = !outcomeCode || rowOutcome.includes(outcomeCode);
-        var gradeMatch = !gradeBandNorm || rowGradeNorm.includes(gradeBandNorm);
+        var gradeMatch = !gradeBandNorm || rowGradeNorm === gradeBandNorm;
         return outcomeMatch && gradeMatch;
       });
 
       // Gap report — only when genuinely zero resources
-      if (outcomeCode && matches.length === 0) {
+      if (matches.length === 0 && (outcomeCode || gradeBand)) {
+        var gapMsg = "No resources found";
+        if (outcomeCode) gapMsg += " for outcome " + outcomeCode;
+        if (gradeBand) gapMsg += " at " + gradeBand + " level";
+
+        // List available grade bands for the same outcome (if grade was requested)
+        if (outcomeCode && gradeBandNorm) {
+          var outcomeOnlyMatches = catalogue.filter(function (row) {
+            return (row.outcome_code || "").toLowerCase().includes(outcomeCode);
+          });
+          var altBands = {};
+          outcomeOnlyMatches.forEach(function (row) {
+            var b = normalizeGradeBand(row.grade_band || "") || "Unspecified";
+            altBands[b] = true;
+          });
+          var altList = Object.keys(altBands).sort();
+          if (altList.length > 0) {
+            gapMsg += ". Resources for this outcome exist at: " + altList.join(", ") + ".";
+          }
+        }
+
         gaps.push({
-          outcome_code: outcomeCode,
-          description:
-            "No resources found for outcome " +
-            outcomeCode +
-            " (" +
-            (gradeBand || "any grade band") +
-            ")",
+          outcome_code: outcomeCode || "",
+          grade_band: gradeBandNorm,
+          description: gapMsg,
           discovered: false,
+          available_levels: outcomeCode && gradeBandNorm ? altList : undefined,
         });
       }
 
@@ -582,9 +665,20 @@ async function opsResearcher(env, params) {
   // ── FREETEXT MODE ─────────────────────────────────────────────────────
   if (mode === "freetext") {
     var queryStr = (params.query || "").trim();
+
+    // Extract class-level intent from query and strip it from search terms
+    // so it doesn't inflate scores for unrelated grade bands.
+    var queryGradeBand = extractGradeBandFromQuery(queryStr);
+
     var queryTerms = queryStr
       .split(/\s+/)
       .filter(function (t) { return t.length > 1; });
+
+    if (queryGradeBand) {
+      queryTerms = queryTerms.filter(function (t) {
+        return normalizeGradeBand(t) !== queryGradeBand;
+      });
+    }
 
     if (queryTerms.length === 0) {
       matches = catalogue.slice(0, MAX_SEARCH_RESULTS);
@@ -597,7 +691,48 @@ async function opsResearcher(env, params) {
         .slice(0, MAX_SEARCH_RESULTS)
         .filter(function (s) { return s.score > 0; });
 
-      if (best.length === 0) {
+      // Mandatory class-level filter — only apply when level was detected
+      // in the query AND results would otherwise be returned.
+      if (queryGradeBand && best.length > 0) {
+        var gradeFiltered = best.filter(function (s) {
+          return normalizeGradeBand(s.row.grade_band || "") === queryGradeBand;
+        });
+
+        if (gradeFiltered.length > 0) {
+          best = gradeFiltered;
+        } else {
+          // No match at requested level — list levels that DO have matches
+          var availableBands = {};
+          best.forEach(function (s) {
+            var band = normalizeGradeBand(s.row.grade_band || "") || "Unspecified";
+            availableBands[band] = true;
+          });
+          var bandList = Object.keys(availableBands).sort();
+
+          // Also find all distinct levels across the FULL catalogue with
+          // matching keywords (not just top-20) for a more useful message.
+          var allAvailableBands = {};
+          scored.filter(function (s) { return s.score > 0; }).forEach(function (s) {
+            var band = normalizeGradeBand(s.row.grade_band || "") || "Unspecified";
+            allAvailableBands[band] = true;
+          });
+          var fullBandList = Object.keys(allAvailableBands).sort();
+
+          gaps.push({
+            outcome_code: "",
+            description: "No resources matched \"" + queryStr +
+              "\" at " + queryGradeBand + " level." +
+              (fullBandList.length > 0
+                ? " Resources for this topic exist at: " + fullBandList.join(", ") + "."
+                : ""),
+            discovered: false,
+            available_levels: fullBandList,
+          });
+          best = [];
+        }
+      }
+
+      if (best.length === 0 && gaps.length === 0) {
         gaps.push({
           outcome_code: "",
           description:
@@ -1588,6 +1723,9 @@ async function handleChat(request, env) {
   var catalogue = await fetchCatalogue(env);
   var resources = [];
 
+  // Extract class-level from the user message for mandatory filtering
+  var chatGradeBand = extractGradeBandFromQuery(lastUserMessage);
+
   if (searchTerms.length > 0) {
     // Semantic matching — send top 50 keyword candidates to DeepSeek for relevance ranking
     var queryStr = searchTerms.join(" ");
@@ -1600,6 +1738,16 @@ async function handleChat(request, env) {
     });
     scored.sort(function (a, b) { return b.score - a.score; });
     var candidates = scored.slice(0, 50).filter(function (s) { return s.score > 0; });
+
+    // Mandatory class-level filter for chat (same as freetext mode)
+    if (chatGradeBand && candidates.length > 0) {
+      var chatGradeFiltered = candidates.filter(function (s) {
+        return normalizeGradeBand(s.row.grade_band || "") === chatGradeBand;
+      });
+      if (chatGradeFiltered.length > 0) {
+        candidates = chatGradeFiltered;
+      }
+    }
 
     if (candidates.length > 0) {
       // Build a compact catalogue summary for DeepSeek
@@ -1634,6 +1782,12 @@ async function handleChat(request, env) {
     // Fallback to keyword if semantic ranking produced nothing
     if (resources.length === 0) {
       var best = scored.slice(0, 10).filter(function (s) { return s.score > 0; });
+      // Respect chat grade-band filter in fallback too
+      if (chatGradeBand) {
+        best = best.filter(function (s) {
+          return normalizeGradeBand(s.row.grade_band || "") === chatGradeBand;
+        });
+      }
       resources = best.map(function (s) {
         return { id: s.row.id, filename: s.row.filename, subject: s.row.subject, grade_band: s.row.grade_band, format: s.row.format, confidence: s.row.confidence, onedrive_path: s.row.onedrive_path };
       });

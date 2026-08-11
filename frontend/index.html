@@ -1361,9 +1361,13 @@ function renderResults() {
   if (activeRefinementKeys.length > 0) {
     filteredResults = state.results[state.activeMode].filter(function(r) {
       return activeRefinementKeys.some(function(key) {
-        return (r.format && r.format.toLowerCase() === key.toLowerCase()) ||
-               (r.grade_band && r.grade_band.toLowerCase() === key.toLowerCase()) ||
-               (r.season && r.season.toLowerCase() === key.toLowerCase());
+        var keyLower = key.toLowerCase();
+        var gb = (r.grade_band || "").toLowerCase();
+        // Normalise grade-band chips: "Junior Infants" / "Senior Infants" both match "Infants"
+        if ((keyLower === "junior infants" || keyLower === "senior infants") && gb === "infants") return true;
+        return (r.format && r.format.toLowerCase() === keyLower) ||
+               (gb === keyLower) ||
+               (r.season && r.season.toLowerCase() === keyLower);
       });
     });
   }
@@ -1507,7 +1511,8 @@ function renderRefinementBar() {
     '<span class="chip" data-action="refinement-chip" data-key="Activity">Activity</span>' +
     '<span class="chip" data-action="refinement-chip" data-key="Poster">Poster</span>' +
     '<span class="chip" data-action="refinement-chip" data-key="Flashcards">Flashcards</span>' +
-    '<span class="chip" data-action="refinement-chip" data-key="Infants">Infants</span>' +
+    '<span class="chip" data-action="refinement-chip" data-key="Junior Infants">Junior Infants</span>' +
+    '<span class="chip" data-action="refinement-chip" data-key="Senior Infants">Senior Infants</span>' +
     '<span class="chip" data-action="refinement-chip" data-key="1st-2nd">1st-2nd</span>' +
     '<span class="chip" data-action="refinement-chip" data-key="3rd-4th">3rd-4th</span>' +
     '<span class="chip" data-action="refinement-chip" data-key="5th-6th">5th-6th</span>' +
