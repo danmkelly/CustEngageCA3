@@ -88,7 +88,7 @@ GitHub Pages (static frontend) → Cloudflare Worker (API + agent orchestration)
 | `index.html` (root) | Redirect to frontend UX |
 | `frontend/index.html` | Main Teacher's Pet application |
 | `qa.html` | QA Dashboard — 40 framework assessments, 30 findings register, bot behaviour audit, reflection |
-| `pipeline_thoughts.html` | Design Journey — 25 phases, 7 tabs, architecture, decisions, agent specs |
+| `pipeline_thoughts.html` | Design Journey — 18 phases, 7 tabs, architecture, decisions, agent specs |
 | `collab.html` | Agent Collaboration — Dev and Ops team case studies, non-linear flows, partnership progression |
 | `README.md` | Project overview and setup instructions |
 | `GOVERNANCE.md` | Disclosure policy, escalation routes, review cadence |
@@ -98,7 +98,7 @@ GitHub Pages (static frontend) → Cloudflare Worker (API + agent orchestration)
 
 ## Recent Changes (August 2026)
 
-### Bot Behaviour Audit (Phase 25)
+### Bot Behaviour Audit (Phase 17)
 - **6 bugs fixed:** search field coverage (4→9 fields), chat ranking error handling, router 404 endpoint exposure, confidence score conflation, designer plenary skip, vague error messages
 - **4 scope limitations documented:** Ops-Keelin validation gate unimplemented, Manager governance functions missing, UFLI lesson-range constraint absent, curriculumonline.ie fallback hardcoded
 - **7-test teacher-centric battery** executed against deployed Worker — all passing
@@ -114,7 +114,7 @@ GitHub Pages (static frontend) → Cloudflare Worker (API + agent orchestration)
 - **Findings register:** 30 entries (K01-K30), all resolved or documented
 - **Bot behaviour audit:** 7 teacher-centric test scenarios, all passing
 - **QA page:** `qa.html` — 3-pillar framework assessment (40 frameworks), functional test table, security audit, CA3 criteria map, bot behaviour audit with LLM weakness reflection
-- **Pipeline page:** `pipeline_thoughts.html` — full design journey (25 phases), 7 tabbed decision panels
+- **Pipeline page:** `pipeline_thoughts.html` — full design journey (18 phases), 7 tabbed decision panels
 - **Collaboration page:** `collab.html` — Dev and Ops team case studies, 10 non-linear challenge flows, partnership progression ladder
 
 ## Key Design Decisions
