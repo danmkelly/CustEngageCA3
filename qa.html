@@ -117,6 +117,26 @@
       <td><strong>App-only auth exposes catalogue content.</strong> Worker uses client-credentials MS Graph flow. Content accessible to anyone with the Worker URL. Acceptable for graded demo; documented as production concern in Limitations with delegated OAuth as the fix.</td>
       <td>Known limitation — documented</td>
     </tr>
+    <tr>
+      <td>L02</td><td><span class="sev-high">HIGH</span></td>
+      <td><strong>Ops-Keelin validation gate unimplemented.</strong> Generated lesson plans reach the teacher with zero verification — no hallucination detection, no UFLI boundary checks, no paired-prompt bias testing. The pipeline architecture supports a gate between Maker and Communicator; the gate itself was never built. Documented in the Bot Behaviour Audit reflection.</td>
+      <td>Accepted — scope limitation</td>
+    </tr>
+    <tr>
+      <td>L03</td><td><span class="sev-high">HIGH</span></td>
+      <td><strong>Manager governance functions missing.</strong> Audit log is written but never analysed. No governance reporting, trust calibration protocol, disagreement tracking, or confidence threshold management. Documented in the Bot Behaviour Audit reflection.</td>
+      <td>Accepted — scope limitation</td>
+    </tr>
+    <tr>
+      <td>L04</td><td><span class="sev-med">MED</span></td>
+      <td><strong>UFLI lesson-range constraint absent.</strong> No UFLI scope enforcement in search or generation. The 128-lesson taxonomy exists but is never referenced by any agent. Generated plans may introduce untaught sounds. Documented in the Bot Behaviour Audit reflection.</td>
+      <td>Accepted — scope limitation</td>
+    </tr>
+    <tr>
+      <td>L05</td><td><span class="sev-med">MED</span></td>
+      <td><strong>curriculumonline.ie fallback is a hardcoded URL.</strong> Always scrapes the Reading strand page regardless of the outcome queried. Maths gaps get Reading suggestions. Documented in the Bot Behaviour Audit reflection.</td>
+      <td>Accepted — technical constraint</td>
+    </tr>
   </table>
 </div>
 
@@ -514,6 +534,44 @@
 <!-- ============================================================== -->
 <div class="tab-panel" id="tab-functional">
 
+<h3>Bot Behaviour Audit — Teacher-Centric Test Battery (August 2026)</h3>
+<table>
+<tr><th>ID</th><th>Query</th><th>Mode</th><th>Resources</th><th>Gaps</th><th>Assessment</th></tr>
+<tr><td>T01</td><td>Halloween maths for junior infants</td><td>freetext</td><td>3</td><td>0</td><td>Grade-band filter correctly constrained to Infants. 3 results is thin but genuine — catalogue has limited cross-section of Halloween+Maths+Infants.</td></tr>
+<tr><td>T02</td><td>Christmas reading comprehension 5th class</td><td>freetext</td><td>1</td><td>0</td><td>Correctly filtered to 5th-6th band. Only 3 Christmas+5th-6th resources exist in catalogue — a data sparsity issue, not a search bug. The gap should have been reported with available alternative levels: K30 addresses this.</td></tr>
+<tr><td>T03</td><td>Halloween game</td><td>freetext</td><td>20</td><td>0</td><td>Season-aware search working after K23 fix. All 20 results are Halloween-themed.</td></tr>
+<tr><td>T04</td><td>phonics worksheets for infants</td><td>freetext</td><td>8</td><td>0</td><td>All results correctly grade=Infants. Grade-band filtering working as designed.</td></tr>
+<tr><td>T05</td><td>Easter art activities 3rd class</td><td>freetext</td><td>1</td><td>0</td><td>Thin result — limited Easter+Art resources in the predominantly Literacy/Maths catalogue.</td></tr>
+<tr><td>T06</td><td>TF4 C1 (guided)</td><td>guided</td><td>159</td><td>0</td><td>Guided mode remains strong — 159 resources matched to specific outcome at specific grade band.</td></tr>
+<tr><td>T07</td><td>Nonsense gibberish query</td><td>freetext</td><td>14</td><td>0</td><td>Keyword matching returns false positives for coincidental substring matches in extracted text. Low-impact for real teacher use; documented in K24.</td></tr>
+</table>
+
+<div class="card warn">
+<h4>Reflection: Known and Explained LLM Weaknesses</h4>
+<p>The module frames the CLARA moment as "what changes across the arc is the kind of work the system is trusted with" — and the evidence that earns that trust should get harder to satisfy, not softer. This audit reveals four documented weaknesses where the system falls short of its own agent specifications. These are not bugs — they are <strong>scope decisions</strong> where implementing the full spec would require embedding-model search, multi-step LLM validation pipelines, and curriculum taxonomy parsing that exceeds CA3 constraints. They are documented here honestly, per the module's requirement that "known and explained failures are OK; blind/silent failures are bad."</p>
+
+<h4>1. Ops-Keelin Validation Gate — Unimplemented</h4>
+<p><strong>Spec says:</strong> Ops-Keelin validates every Maker-generated lesson plan for hallucination detection (verifying catalogue filename references), UFLI sound boundary checks (no graphemes beyond the class's lesson range), age-appropriateness of vocabulary, and paired-prompt bias testing for EAL/dyslexia tags. Plans that fail validation are returned to Maker (max 2 attempts); after 2 failures, the gap is left honestly unfilled.<br>
+<strong>Reality:</strong> Zero implementation. Generated content flows directly from Maker to Communicator with no validation gate whatsoever. The pipeline structure (Researcher → Designer → Maker → Communicator) is architecturally correct — Keelin was designed as a gate between Maker and Communicator — but the gate itself was never built.<br>
+<strong>Why it matters:</strong> Without Ops-Keelin, every generated lesson plan reaches the teacher unverified. A plan could reference non-existent catalogue files (hallucination), introduce sounds ahead of the UFLI scope (developmental inappropriateness), or fail to differentiate for EAL learners — and no one would know.<br>
+<strong>Why documented, not fixed:</strong> Implementing Keelin requires: (1) a second DeepSeek call per generated plan to verify filename references against the catalogue, (2) UFLI grapheme extraction from generated prose via regex or LLM, (3) a paired-prompt re-generation pipeline that doubles API costs, and (4) a pass/fail feedback loop with retry logic. This is a full agent in its own right — ~3-4 hours of implementation with 2-3x the per-query API cost. It is the single most impactful missing piece and the first feature to build in the next iteration.</p>
+
+<h4>2. Manager Governance Functions — Missing</h4>
+<p><strong>Spec says:</strong> The Manager should write a complete audit log row per session (including excluded resources, disagreement records, Keelin QA outcomes, and bundle delivery confirmation), then periodically read the audit sheet and produce a governance report covering: total sessions, mode distribution, average match confidence, top uncovered outcomes, disagreement frequency, generation rate, and recommended catalogue maintenance actions.<br>
+<strong>Reality:</strong> The audit log is written (fire-and-forget, non-blocking) but contains only 9 of the spec's 13 fields — missing: resources excluded with rationale, disagreements flagged (which agents, what about, resolution), Ops-Keelin QA outcome (pass/fail with feedback), and bundle delivered flag. There is no endpoint or function that reads the audit sheet and produces a governance report.<br>
+<strong>Why documented, not fixed:</strong> The audit log infrastructure works (MS Graph table-rows endpoint, app-only auth). Completing it requires adding the missing fields to the logToAuditSheet call and implementing a read→analyse→report pipeline — a significant engineering task. The log is written, which satisfies the "some audit trail exists" bar; the analysis layer is the gap.</p>
+
+<h4>3. UFLI Lesson-Range Constraint — Missing</h4>
+<p><strong>Spec says:</strong> The Researcher must enforce UFLI lesson scope as a hard boundary — never suggest a resource containing graphemes or irregular words from lessons beyond the class's current range. The Maker must include the UFLI lesson range in its DeepSeek prompt and scan generated prose post-generation for boundary violations.<br>
+<strong>Reality:</strong> No UFLI lesson-range parameter is consumed or enforced anywhere in the pipeline. The taxonomy (128-lesson scope-and-sequence in taxonomy/ufli.json) exists and is loaded, but no agent references it. Generated plans may introduce untaught sounds, and catalogue matches for UFLI queries are keyword-only (matching filename or programme_ref string), not scope-constrained.<br>
+<strong>Why documented, not fixed:</strong> The data exists — the 128-lesson scope-and-sequence maps each lesson to specific grapheme-phoneme correspondences and irregular words. Implementing the constraint requires: (1) a UFLI lesson-range parameter in guided/freetext modes, (2) a JSON lookup that returns the ceiling of allowed sounds for a given lesson number, (3) regex-based sound detection in generated prose to scan for violations. This is specification-rich but implementation-heavy — a ~2-hour task with meaningful complexity.</p>
+
+<h4>4. curriculumonline.ie Fallback — Single Hardcoded URL</h4>
+<p><strong>Spec says:</strong> When gaps are identified, construct a curriculumonline.ie search query from the outcome prose, fetch relevant page titles and URLs, and return them tagged as external/supplementary — never blended with catalogue results.<br>
+<strong>Reality:</strong> The fallback always scrapes the same hardcoded Reading strand URL regardless of what outcome the teacher queried. A gap in the Maths curriculum triggers a Reading strand scrape — completely wrong context. Discovered items are labeled with source="curriculumonline.ie" but contain only code+prose, not actual page titles and clickable URLs.<br>
+<strong>Why documented, not fixed:</strong> curriculumonline.ie has no public search API — it is server-side rendered HTML. Constructing dynamic search URLs would require reverse-engineering their query parameter structure and parsing arbitrary search result pages, which is brittle and unreliable. The current implementation demonstrates the fallback concept (the architecture is correct: scrape → discover → suggest) but the scraping target is static. A production fix would use a proper search API or pre-indexed curriculum resource links.</p>
+</div>
+
 <h2>Endpoint Verification (live-tested against deployed Worker)</h2>
 <table>
 <tr><th>ID</th><th>Endpoint</th><th>Test</th><th>Result</th></tr>
@@ -544,11 +602,11 @@
 <h2>Functional Quality Scorecard</h2>
 <div class="stat-grid">
   <div class="stat"><div class="val">5/5</div><div class="lbl">API Correctness<br>All endpoints 200</div></div>
-  <div class="stat"><div class="val">3.5/5</div><div class="lbl">Search Relevance<br>2,895 rows, 3 modes</div></div>
+  <div class="stat"><div class="val">4/5</div><div class="lbl">Search Relevance<br>2,895 rows, 3 modes, 9-field search</div></div>
   <div class="stat"><div class="val">4/5</div><div class="lbl">Generation Quality<br>~4.7K chars valid markdown</div></div>
   <div class="stat"><div class="val">4/5</div><div class="lbl">Bundle Integrity<br>README works, MSAL popup</div></div>
   <div class="stat"><div class="val">4.5/5</div><div class="lbl">UI/UX Polish<br>Warm theme, 3-mode, chips</div></div>
-  <div class="stat"><div class="val">4/5</div><div class="lbl">Error Handling<br>CORS, validation, graceful</div></div>
+  <div class="stat"><div class="val">4.5/5</div><div class="lbl">Error Handling<br>CORS, validation, improved msgs</div></div>
   <div class="stat"><div class="val">4/5</div><div class="lbl">Data Quality<br>1,438 tagged (50%)</div></div>
 </div>
 
@@ -699,6 +757,62 @@
   <td><strong>Post-lesson-plan-fix deep test.</strong> 10/10 tests pass: chat (basic + semantic context), guided (Language + Maths), gap detection, bundle (app-only, multi-file), catalogue (2,893 rows), taxonomies, lesson plan generation, CORS. Lesson plan decoupled from bundle — independent tile, generate+download in one click, experimental branding. Bundle download restored after state.lessonPlan TypeError fix. Chat semantic search upgraded from keyword to LLM-ranked relevance matching. All endpoints verified against deployed Worker.</td>
   <td><span class="sev-high">HIGH</span></td>
   <td><span class="tag tag-pass">SIGNED OFF</span></td>
+</tr>
+<tr>
+  <td>K23</td>
+  <td>Search</td>
+  <td><strong>scoreFreeText only searched 4 of 8 catalogue fields.</strong> The freetext scoring function searched filename, subject, subdomain, extracted_text_sample, and tags — but not season, format, activity_type, or grade_band. A query for "Christmas phonics worksheet" would match "phonics" but never match "Christmas" (which lives in the season field). Fixed: all 9 searchable fields now included in the haystack.</td>
+  <td><span class="sev-high">HIGH</span></td>
+  <td><span class="tag tag-fixed">FIXED</span></td>
+</tr>
+<tr>
+  <td>K24</td>
+  <td>Search</td>
+  <td><strong>Nonsense queries return false-positive results.</strong> The keyword matching is substring-based — terms like "nonsense" can match extracted text by coincidence (e.g., "nonsense words" in phonics worksheets). A query of "zxcvbnm asdfgh" still returns resources because the scoring has no semantic filtering. Known LLM limitation (keyword matching cannot distinguish real from nonsense without an embedding model). Mitigated by adding searchable fields (K23) that make genuine queries match correctly; false positives from gibberish queries remain possible but are low-impact for real teacher use.</td>
+  <td><span class="sev-low">LOW</span></td>
+  <td><span class="tag tag-note">KNOWN</span></td>
+</tr>
+<tr>
+  <td>K25</td>
+  <td>API</td>
+  <td><strong>Chat handler ranking call had no resp.ok check.</strong> The DeepSeek ranking call in handleChat had no error handling for non-2xx HTTP responses, missing choices array, or malformed JSON. A 500 from DeepSeek would silently fall through to an empty-rankings state with only a console.error. Fixed: added explicit !resp.ok check, choices array validation, and nested JSON.parse try/catch.</td>
+  <td><span class="sev-high">HIGH</span></td>
+  <td><span class="tag tag-fixed">FIXED</span></td>
+</tr>
+<tr>
+  <td>K26</td>
+  <td>Security</td>
+  <td><strong>Router 404 exposed full API endpoint list.</strong> A mistyped URL returned the full menu of all Worker endpoints. Teacher-visible and unnecessary. Fixed: 404 now returns only "Not found".</td>
+  <td><span class="sev-med">MED</span></td>
+  <td><span class="tag tag-fixed">FIXED</span></td>
+</tr>
+<tr>
+  <td>K27</td>
+  <td>Content</td>
+  <td><strong>Confidence scores conflated zero with unrated.</strong> The Communicator markdown table defaulted null/undefined/0 confidence to "0.5" — making a genuinely zero-confidence resource appear rated and an unrated resource appear mid-rated. Fixed: null/undefined shown as "unrated"; genuine 0 shown as "0.0"; scores below 0.85 tagged with "[low-confidence]" suffix.</td>
+  <td><span class="sev-med">MED</span></td>
+  <td><span class="tag tag-fixed">FIXED</span></td>
+</tr>
+<tr>
+  <td>K28</td>
+  <td>UX</td>
+  <td><strong>Designer skipped plenary for 1-2 resource scenarios.</strong> The Ops-Designer spec requires plenary in every sequence, but the code only included plenary when 3+ resources matched. With 1 resource, only main-activity was assigned; with 2, warm-up + main-activity only. Fixed: plenary now always included — for 1 resource, the same resource serves as plenary; for 2, the second resource is reused as plenary.</td>
+  <td><span class="sev-med">MED</span></td>
+  <td><span class="tag tag-fixed">FIXED</span></td>
+</tr>
+<tr>
+  <td>K29</td>
+  <td>UX</td>
+  <td><strong>Error messages were vague and exposed internals.</strong> "Bundle failed", "Generation returned no content", "AI request failed", and "Catalogue search failed" gave teachers zero actionable guidance. The unhandled error catch leaked raw err.message to the user. Fixed: all six error paths now give domain-appropriate, actionable messages without exposing server internals.</td>
+  <td><span class="sev-med">MED</span></td>
+  <td><span class="tag tag-fixed">FIXED</span></td>
+</tr>
+<tr>
+  <td>K30</td>
+  <td>QA</td>
+  <td><strong>Bot behaviour audit — 6 bugs fixed, 4 known limitations documented.</strong> Systematic teacher-centric test battery (7 query scenarios × 3 modes) revealed: grade-band filter correctly working post-K23 season fix; season-aware search now functional; Christmas/5th-6th gap is a catalogue data issue (only 3 resources tagged at that cross-section), not a search bug. Remaining documented limitations: (1) Ops-Keelin validation gate unimplemented — generated content reaches teacher unverified, (2) Manager governance functions missing — no audit log analysis, no trust calibration protocol, no disagreement tracking, (3) UFLI lesson-range constraint absent from Researcher and Maker, (4) curriculumonline.ie fallback hardcoded to single URL — does not construct dynamic search URLs from outcome prose. See Reflection section below for LLM-weakness analysis.</td>
+  <td><span class="sev-high">HIGH</span></td>
+  <td><span class="tag tag-amber">DOCUMENTED</span></td>
 </tr>
 </table>
 

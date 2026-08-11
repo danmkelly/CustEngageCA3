@@ -550,6 +550,10 @@ function scoreFreeText(row, queryTerms) {
     row.filename || "",
     row.subject || "",
     row.subdomain || "",
+    row.format || "",
+    row.activity_type || "",
+    row.season || "",
+    row.grade_band || "",
     (row.extracted_text_sample || "").substring(0, 2000),
     (row.tags || "").replace(/,/g, " "),
   ];
@@ -789,8 +793,19 @@ function opsDesigner(matches, gaps, params) {
           path: matches[0].onedrive_path,
           tags: matches[0].tags,
           rationale:
-            "Only matching resource — recommended as the main activity for " +
-            (outcomeCode || query),
+            "Only matching resource — suitable as the main activity for " +
+            (outcomeCode || query) + ". Consider supplementing with teacher-led plenary.",
+        },
+      });
+      // Always include a plenary — even with a single resource
+      sequence.push({
+        role: "plenary",
+        resource: {
+          id: matches[0].id,
+          filename: matches[0].filename,
+          path: matches[0].onedrive_path,
+          tags: matches[0].tags,
+          rationale: "Revisit same resource for plenary consolidation check",
         },
       });
     } else if (matches.length === 2) {
@@ -812,6 +827,16 @@ function opsDesigner(matches, gaps, params) {
           path: matches[1].onedrive_path,
           tags: matches[1].tags,
           rationale: "Core instructional activity aligned to outcome",
+        },
+      });
+      sequence.push({
+        role: "plenary",
+        resource: {
+          id: matches[1].id,
+          filename: matches[1].filename,
+          path: matches[1].onedrive_path,
+          tags: matches[1].tags,
+          rationale: "Revisit main activity resource for plenary consolidation and assessment check",
         },
       });
     } else {
@@ -1049,12 +1074,17 @@ function buildSummaryMd(
       var rationale = seqEntry
         ? seqEntry.role + ": " + seqEntry.resource.rationale
         : "General catalogue match";
+      var confVal = (m.confidence != null) ? String(m.confidence) : "unrated";
+      var confNote = "";
+      if (m.confidence != null && Number(m.confidence) < 0.85) {
+        confNote = " *[low-confidence]*";
+      }
       lines.push(
         "| " + (i + 1) +
         " | " + (m.filename || "—") +
         " | " + (m.subject || "—") +
         " | " + (m.subdomain || "—") +
-        " | " + (m.confidence || "0.5") +
+        " | " + confVal + confNote +
         " | " + rationale + " |"
       );
     });
@@ -1238,7 +1268,7 @@ async function handleQuery(request, env) {
   } catch (err) {
     console.error("[Researcher] Error: " + err.message);
     return jsonResponse(
-      { error: "Catalogue search failed", detail: err.message },
+      { error: "Catalogue search failed — the resource index could not be queried", detail: err.message },
       500
     );
   }
@@ -1503,7 +1533,7 @@ async function handleBundle(request, env) {
   });
   } catch (err) {
     console.error("[Bundle] Fatal: " + err.message);
-    return jsonResponse({ error: "Bundle failed", detail: err.message }, 500);
+    return jsonResponse({ error: "Bundle generation failed — some files could not be retrieved. Try again.", detail: err.message }, 500);
   }
 }
 
@@ -1552,7 +1582,7 @@ async function handleGenerateLesson(request, env) {
     var plan = await opsMaker(env, makerSpec);
     if (!plan) {
       return jsonResponse(
-        { error: "Generation returned no content" },
+        { error: "Lesson plan generation returned no content — the AI may have been unable to produce a plan for this topic. Try again or simplify your request." },
         500
       );
     }
@@ -1697,7 +1727,7 @@ async function handleChat(request, env) {
     deepseekResponse = await callDeepSeek(env, CHAT_SYSTEM_PROMPT, userPrompt, 0.7);
   } catch (err) {
     console.error("[Chat] DeepSeek error: " + err.message);
-    return jsonResponse({ error: "AI request failed", detail: err.message }, 500);
+    return jsonResponse({ error: "The AI service (DeepSeek) is unavailable right now. Please try again in a moment.", detail: err.message }, 500);
   }
 
   var reply;
@@ -1764,15 +1794,26 @@ async function handleChat(request, env) {
           headers: { "Content-Type": "application/json", Authorization: "Bearer " + env.DEEPSEEK_API_KEY },
           body: JSON.stringify({ model: DEEPSEEK_MODEL, messages: [{ role: "user", content: rankPrompt }], temperature: 0.1, max_tokens: 200 })
         });
-        if (rankResp.ok) {
-          var rankData = await rankResp.json();
-          var rankText = (rankData.choices[0].message.content || "").trim();
-          if (rankText.startsWith("```")) rankText = rankText.split("```")[1];
+        if (!rankResp.ok) {
+          console.error("[Chat] Ranking API returned " + rankResp.status);
+          throw new Error("Ranking API status " + rankResp.status);
+        }
+        var rankData = await rankResp.json();
+        if (!rankData.choices || rankData.choices.length === 0) {
+          console.error("[Chat] Ranking returned empty choices");
+          throw new Error("Empty ranking choices");
+        }
+        var rankText = (rankData.choices[0].message.content || "").trim();
+        if (rankText.startsWith("```")) rankText = rankText.split("```")[1];
+        try {
           var indices = JSON.parse(rankText);
+          if (!Array.isArray(indices)) throw new Error("Not an array");
           resources = indices.map(function (i) {
             var s = candidates[i - 1]; if (!s) return null;
             return { id: s.row.id, filename: s.row.filename, subject: s.row.subject, grade_band: s.row.grade_band, format: s.row.format, confidence: s.row.confidence, onedrive_path: s.row.onedrive_path };
           }).filter(Boolean).slice(0, 10);
+        } catch (parseErr) {
+          console.error("[Chat] Failed to parse ranking response: " + parseErr.message);
         }
       } catch (e) {
         console.error("[Chat] Semantic ranking failed, falling back to keyword: " + e.message);
@@ -1852,20 +1893,8 @@ export default {
         return await handleTaxonomy(request, env, tname);
       }
 
-      // 404 for unmatched routes
-      return jsonResponse(
-        {
-          error: "Not found",
-          endpoints: [
-            "POST /api/query",
-            "POST /api/chat",
-            "POST /api/bundle",
-            "POST /api/generate-lesson",
-            "GET /api/catalogue", "GET /api/taxonomy/:name",
-          ],
-        },
-        404
-      );
+      // 404 for unmatched routes — don't expose API surface area
+      return jsonResponse({ error: "Not found" }, 404);
     } catch (err) {
       console.error(
         "[Worker] Unhandled error: " +
@@ -1874,7 +1903,7 @@ export default {
         (err.stack || "")
       );
       return jsonResponse(
-        { error: "Internal server error", detail: err.message },
+        { error: "Internal server error — the request could not be completed" },
         500
       );
     }
