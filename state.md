@@ -20,9 +20,17 @@ GitHub Pages (static frontend) → Cloudflare Worker (API + agent orchestration)
 
 ## Two Interaction Modes
 
-1. **Curriculum Guided Selection** — Progressive dropdowns (Subject → Strand → Stage → Outcome). Searches catalogue by outcome code + grade band with normalisation. Honest gap detection (only when genuinely zero resources).
+1. **Curriculum Guided Selection** — Progressive dropdowns (Subject → Strand → Stage → Outcome). Searches catalogue by outcome code + grade band with normalisation. Honest gap detection with available-level suggestions.
 
-2. **Interactive Bot Selection** — LLM-powered chat concierge. Two-stage semantic search: keyword retrieval (top 50) → DeepSeek relevance ranking (top 10). Context-aware across conversation turns. CASA-compliant (bot identity disclosed in turn 1).
+2. **Interactive Bot Selection** — LLM-powered chat concierge. Two-stage semantic search: keyword retrieval (top 50, 9-field scoring) → DeepSeek relevance ranking (top 10). Context-aware across conversation turns. CASA-compliant (bot identity disclosed in turn 1).
+
+## Search & Filtering
+
+- **9-field freetext scoring:** filename, subject, subdomain, format, activity_type, season, grade_band, extracted_text_sample, tags
+- **Mandatory grade-band filtering:** Class-level terms (Junior Infants, 1st Class, 5th-6th, etc.) extracted from freetext queries and applied as hard filters
+- **Controlled vocabulary:** All class-level inputs normalised to standard band labels (Infants, 1st-2nd, 3rd-4th, 5th-6th) via `normalizeGradeBand()` and `extractGradeBandFromQuery()`
+- **Gap reporting:** When no resources match topic + level, returns explicit message listing alternative levels where resources exist
+- **Refinement chips:** Client-side filtering by format, grade band (Junior Infants, Senior Infants, 1st-2nd, 3rd-4th, 5th-6th), and season
 
 ## Bundle System
 
@@ -49,11 +57,11 @@ GitHub Pages (static frontend) → Cloudflare Worker (API + agent orchestration)
 
 ## Agent Pipeline
 
-**Development team (builds once):** Dev-Architect, Dev-Maker, Dev-Communicator, Dev-Manager, Keelin (security review)
+**Development team (builds once):** Dev-Architect, Dev-Maker, Dev-Communicator, Dev-Manager, Dev-Keelin (security review)
 
-**Operations team (runs on query):** Ops-Researcher, Ops-Designer, Ops-Maker, Ops-Communicator, Ops-Manager, Keelin (content QA)
+**Operations team (runs on query):** Ops-Researcher, Ops-Designer, Ops-Maker, Ops-Communicator, Ops-Manager, Ops-Keelin (content QA)
 
-11 agent definition files in `agents/`. Keelin is shared across both teams — security review in Dev, content validation in Ops.
+11 agent definition files in `agents/`. Keelin is split across both teams — security review in Dev, content validation in Ops.
 
 ## Reference Taxonomies
 
@@ -66,27 +74,48 @@ GitHub Pages (static frontend) → Cloudflare Worker (API + agent orchestration)
 
 | Endpoint | Method | Purpose |
 |---|---|---|
-| `/api/query` | POST | Guided + freetext catalogue search |
-| `/api/chat` | POST | LLM-powered chat with semantic search |
-| `/api/bundle` | POST | ZIP bundle creation (OneDrive + GitHub files) |
+| `/api/query` | POST | Guided + freetext catalogue search with grade-band filtering |
+| `/api/chat` | POST | LLM-powered chat with two-stage semantic search + grade-band filtering |
+| `/api/bundle` | POST | ZIP bundle creation (OneDrive + GitHub files) with AI disclosure README |
 | `/api/catalogue` | GET | Full catalogue as JSON |
 | `/api/taxonomy/:name` | GET | Reference taxonomy data |
 | `/api/generate-lesson` | POST | Standalone lesson plan generation |
 
-## Governance & Disclosure
+## Documentation Pages
 
-- `GOVERNANCE.md` — Disclosure policy, escalation routes (3 named triggers with response times), monthly review cadence, data minimisation, EU AI Act positioning
-- `AI_DISCLOSURE.md` — All AI used (DeepSeek, Gemini Flash, OpenCode/Claude), confidence tiers, limitations, teacher's role
-- Frontend footer: Links to both + Trust Statement
-- Every bundle README includes AI disclosure
-- AI-generated content visually distinct in UI
+| Page | Purpose |
+|---|---|
+| `index.html` (root) | Redirect to frontend UX |
+| `frontend/index.html` | Main Teacher's Pet application |
+| `qa.html` | QA Dashboard — 40 framework assessments, 30 findings register, bot behaviour audit, reflection |
+| `pipeline_thoughts.html` | Design Journey — 25 phases, 7 tabs, architecture, decisions, agent specs |
+| `collab.html` | Agent Collaboration — Dev and Ops team case studies, non-linear flows, partnership progression |
+| `README.md` | Project overview and setup instructions |
+| `GOVERNANCE.md` | Disclosure policy, escalation routes, review cadence |
+| `AI_DISCLOSURE.md` | All AI used, confidence tiers, limitations, teacher's role |
+| `CATALOGUE.md` | Taxonomy documentation |
+| `state.md` | This file — solution state snapshot |
+
+## Recent Changes (August 2026)
+
+### Bot Behaviour Audit (Phase 25)
+- **6 bugs fixed:** search field coverage (4→9 fields), chat ranking error handling, router 404 endpoint exposure, confidence score conflation, designer plenary skip, vague error messages
+- **4 scope limitations documented:** Ops-Keelin validation gate unimplemented, Manager governance functions missing, UFLI lesson-range constraint absent, curriculumonline.ie fallback hardcoded
+- **7-test teacher-centric battery** executed against deployed Worker — all passing
+
+### Class-Level Search Enhancement (Phase 24)
+- Mandatory grade-band filter added to freetext and chat search modes
+- Controlled vocabulary for class levels via `normalizeGradeBand()` and `extractGradeBandFromQuery()`
+- Refinement chips updated with Junior/Senior Infants
+- Gap messages now list alternative levels where resources exist
 
 ## QA State
 
-- **Keelin deep test:** 10/10 PASS — all endpoints verified against deployed Worker
-- **Findings register:** 22 entries, all resolved or accepted
-- **QA page:** `qa.html` — 3-pillar framework assessment (40 frameworks), functional test table, security audit, CA3 criteria map
-- **Pipeline page:** `pipeline_thoughts.html` — full design journey (24 phases), 7 tabbed decision panels
+- **Findings register:** 30 entries (K01-K30), all resolved or documented
+- **Bot behaviour audit:** 7 teacher-centric test scenarios, all passing
+- **QA page:** `qa.html` — 3-pillar framework assessment (40 frameworks), functional test table, security audit, CA3 criteria map, bot behaviour audit with LLM weakness reflection
+- **Pipeline page:** `pipeline_thoughts.html` — full design journey (25 phases), 7 tabbed decision panels
+- **Collaboration page:** `collab.html` — Dev and Ops team case studies, 10 non-linear challenge flows, partnership progression ladder
 
 ## Key Design Decisions
 
@@ -97,21 +126,30 @@ GitHub Pages (static frontend) → Cloudflare Worker (API + agent orchestration)
 5. **Search-first, generate-as-fallback** — Gap resolution via curriculumonline.ie search before AI generation
 6. **App-only auth** — Business tenant (modernise.ie) enables zero-friction download; production path is delegated OAuth via MSAL.js
 7. **Lesson plans experimental** — Decoupled from bundle, honestly branded
+8. **Split Keelin** — Dev-Keelin (security gate) and Ops-Keelin (content QA) are separate agents with non-overlapping scopes
+9. **Warm library-card identity** — Fraunces + Public Sans + cream palette across all pages
 
 ## File Count
 
-~6,500 lines across: HTML (2,800), JavaScript/Worker (1,400), Markdown (800), JSON (750), Python (350)
+~14,000 lines across: HTML (10,000: frontend, qa, pipeline, collab), JavaScript/Worker (1,900), Markdown (800), JSON (750), Python (350)
 
 ## Milestones
 
 - `v1.0-milestone` — First stable: 10/10 Keelin, guided+freetext, persistent bundle, app-only auth
 - `v2.0-milestone` — Interactive Bot Selection + chat, 12/12 Keelin
 - `v2.2-stable` — Lesson plans decoupled, semantic chat search, 10/10 Keelin
+- `v2.3-stable` — Class-level mandatory filtering, 9-field freetext search, controlled grade-band vocabulary
+- `v3.0-stable` — Bot behaviour audit complete: 6 bugs fixed, 4 scope limitations documented, all docs updated
 
-## Limitations (Documented)
+## Known Scope Limitations (Documented)
 
-- App-only auth exposes catalogue through Worker (acceptable for graded demo)
-- No persistent session state (in-memory only)
-- Browse/explore tab removed (engineering complexity without rubric value)
-- Lesson plan generation depends on DeepSeek API latency (2-15s, outside our control)
-- Personal OneDrive not supported (requires SPO license); business tenant required for file downloads
+- **Ops-Keelin validation gate unimplemented** — Generated lesson plans reach teacher with zero verification (no hallucination detection, no UFLI boundary checks, no paired-prompt bias testing)
+- **Manager governance functions missing** — Audit log is written but never analysed; no trust calibration protocol, no disagreement tracking, no governance reporting
+- **UFLI lesson-range constraint absent** — 128-lesson taxonomy exists but is never referenced by any agent; generated plans may introduce untaught sounds
+- **curriculumonline.ie fallback hardcoded** — Always scrapes the Reading strand page regardless of outcome queried; no dynamic search URL construction
+- **App-only auth exposes catalogue through Worker** — Acceptable for graded demo; delegated OAuth is the documented production path
+- **No persistent session state** — In-memory only; page refresh loses selections and search history
+- **Researcher gap analysis is binary** — Spec calls for full outcome coverage comparison (fully/partially/zero); code only detects "nothing found"
+- **Designer Maker spec is thin** — Spec calls for verbatim outcome prose, materials list, differentiation notes, assessment check; code produces only 6 generic fields
+- **Lesson plan generation depends on DeepSeek API latency** — 2-15s, outside our control
+- **Keyword matching is pre-semantic** — Cannot distinguish genuine thematic relevance from coincidental substring matches (partially mitigated by chat mode's two-stage ranking)
