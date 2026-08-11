@@ -168,14 +168,14 @@
   <td>E02</td>
   <td>Three AI Intelligences</td>
   <td>Huang &amp; Rust (2021)</td>
-  <td><strong>Mechanical:</strong> full catalogue search (2,895 rows), grade-band normalisation, regex-based outcome matching, SHA-256 rate limiting — all deterministic, no LLM. <strong>Thinking:</strong> freetext keyword scoring, semantic similarity retrieval (More Like This), curriculum gap detection via outcome-code matching. <strong>Feeling:</strong> not a chatbot — the system does not attempt affective interaction. This is an honest design choice: Teacher's Pet is a concierge, not a companion. The warm visual identity (Fraunces/cream palette/library-card aesthetic) provides emotional warmth through design rather than through conversational persona.</td>
+  <td><strong>Mechanical:</strong> full catalogue search (2,895 rows), grade-band normalisation, regex-based outcome matching, SHA-256 rate limiting — all deterministic, no LLM. <strong>Thinking:</strong> freetext keyword scoring, semantic similarity retrieval via the similarity search endpoint, curriculum gap detection via outcome-code matching. <strong>Feeling:</strong> not a chatbot — the system does not attempt affective interaction. This is an honest design choice: Teacher's Pet is a concierge, not a companion. The warm visual identity (Fraunces/cream palette/library-card aesthetic) provides emotional warmth through design rather than through conversational persona.</td>
   <td><span class="tag tag-pass">PASS</span></td>
 </tr>
 <tr>
   <td>E03</td>
   <td>Co-Creation</td>
   <td>Prahalad &amp; Ramaswamy (2004)</td>
-  <td>The teacher is the active partner: selects resources for bundle, signals relevance (thumbs up/down), flags mis-tagged items for catalogue improvement, and remains the pedagogical decision-maker. The system augments the teacher's resource awareness rather than replacing it. AI Disclosure: "The teacher remains the pedagogical decision-maker."</td>
+  <td>The teacher is the active partner: selects resources for bundle, reviews AI-generated plans before use, and remains the pedagogical decision-maker. The system augments the teacher's resource awareness rather than replacing it. AI Disclosure: "The teacher remains the pedagogical decision-maker."</td>
   <td><span class="tag tag-pass">PASS</span></td>
 </tr>
 </table>
@@ -306,7 +306,7 @@
   <td>E18</td>
   <td>Seven Principles of Persuasion</td>
   <td>Cialdini (2021)</td>
-  <td>Applied as recognition vocabulary, per the module's instruction: <strong>Reciprocity:</strong> gives value first — catalogue matches, sequenced lesson structure, curriculum gaps with suggestions. <strong>Authority:</strong> Irish curriculum outcomes (NCCA), UFLI scope-and-sequence, curriculumonline.ie as fallback. <strong>Consistency:</strong> selected resources persist across refinement; thumbs-up/down create visible session commitment. <strong>Liking:</strong> warm library-card aesthetic — Fraunces serif, cream palette, dot-grid background. <strong>Unity:</strong> specifically Irish — Irish curriculum terminology, UFLI as the teacher's chosen programme, "Infants/1st-2nd" grade bands. <strong>Social proof:</strong> limited — single-teacher system. <strong>Scarcity:</strong> deliberately absent — no fake urgency. The module's test applies: "is it true, and does the customer keep control?" — yes on both counts.</td>
+  <td>Applied as recognition vocabulary, per the module's instruction: <strong>Reciprocity:</strong> gives value first — catalogue matches, sequenced lesson structure, curriculum gaps with suggestions. <strong>Authority:</strong> Irish curriculum outcomes (NCCA), UFLI scope-and-sequence, curriculumonline.ie as fallback. <strong>Consistency:</strong> selected resources persist across refinement in the persistent bundle sidebar. <strong>Liking:</strong> warm library-card aesthetic — Fraunces serif, cream palette, dot-grid background. <strong>Unity:</strong> specifically Irish — Irish curriculum terminology, UFLI as the teacher's chosen programme, "Infants/1st-2nd" grade bands. <strong>Social proof:</strong> limited — single-teacher system. <strong>Scarcity:</strong> deliberately absent — no fake urgency. The module's test applies: "is it true, and does the customer keep control?" — yes on both counts.</td>
   <td><span class="tag tag-pass">PASS</span></td>
 </tr>
 </table>
@@ -329,14 +329,14 @@
   <td>I01</td>
   <td>CASA — Computers Are Social Actors</td>
   <td>Reeves &amp; Nass (1996)</td>
-  <td>Despite not being a chatbot, Teacher's Pet honours CASA principles: (1) <strong>Turn-1 disclosure:</strong> the UI header says "Catalogued. Matched. Ready by Monday" — establishes identity as a concierge, not a person. (2) <strong>No fake-human cues:</strong> no avatar, no simulated typing, no conversational persona. (3) <strong>Register matches capability:</strong> warm professional tone (library card aesthetic) without over-promising. (4) <strong>Frustration handling:</strong> error banners with auto-dismiss (15s), exclusion section for rejected resources, "No resources found" gap cards with actionable alternatives. The module's bright line — "disclose bot status in turn 1" — is satisfied by the visual identity: the AI badge on generated plans, the confidence scores, and the bundle disclosure.</td>
+  <td>Despite not being a chatbot, Teacher's Pet honours CASA principles: (1) <strong>Turn-1 disclosure:</strong> the UI header says "Catalogued. Matched. Ready by Monday" — establishes identity as a concierge, not a person. (2) <strong>No fake-human cues:</strong> no avatar, no simulated typing, no conversational persona. (3) <strong>Register matches capability:</strong> warm professional tone (library card aesthetic) without over-promising. (4) <strong>Frustration handling:</strong> error banners with auto-dismiss (15s), "No resources found" gap cards with actionable alternatives. The module's bright line — "disclose bot status in turn 1" — is satisfied by the visual identity: the AI badge on generated plans, the confidence scores, and the bundle disclosure.</td>
   <td><span class="tag tag-pass">PASS</span></td>
 </tr>
 <tr>
   <td>I02</td>
   <td>Conversation Flow Anatomy</td>
   <td>Module framework</td>
-  <td>The five-part anatomy maps to the UX structure: <strong>Opener:</strong> empty state + two-mode tabs ("Pick a mode above, two ways in"). <strong>Intent:</strong> guided (curriculum outcome), freetext (resource recall) — two distinct intents, each with its own form. <strong>Slots:</strong> guided mode uses progressive dropdowns (one selection at a time, validated); Interactive Bot Selection takes a natural-language query with conversation history. <strong>Recovery:</strong> gap cards with actionable alternatives ("Search curriculumonline.ie" + "Generate lesson plan"); error banners; excluded section for rejected resources. <strong>Closer:</strong> bundle download with summary README and AI disclosure. The module's core ethic — "design the unexpected first" — is satisfied: the system handles zero results (gap cards), API failures (error banners), and user disagreement (thumbs down + exclusion).</td>
+  <td>The five-part anatomy maps to the UX structure: <strong>Opener:</strong> empty state + two-mode tabs ("Pick a mode above, two ways in"). <strong>Intent:</strong> guided (curriculum outcome), freetext (resource recall) — two distinct intents, each with its own form. <strong>Slots:</strong> guided mode uses progressive dropdowns (one selection at a time, validated); Interactive Bot Selection takes a natural-language query with conversation history. <strong>Recovery:</strong> gap cards with actionable alternatives ("Search curriculumonline.ie" + "Generate lesson plan"); error banners; excluded section for rejected resources. <strong>Closer:</strong> bundle download with summary README and AI disclosure. The module's core ethic — "design the unexpected first" — is satisfied: the system handles zero results (gap cards), API failures (error banners), and disagreement (gap cards with actionable alternatives).</td>
   <td><span class="tag tag-pass">PASS</span></td>
 </tr>
 <tr>
@@ -402,7 +402,7 @@
   <td>I10</td>
   <td>Recommender Taxonomy</td>
   <td>Ricci et al. (2022) / Burke (2002)</td>
-  <td><strong>Content-based:</strong> strong. Resources filtered by subject, subdomain, grade_band, format, season, pedagogy, programme. Freetext scoring across 5 fields. "More like this" triggers similarity re-search. <strong>Collaborative filtering:</strong> not implemented — single-teacher system, no multi-user ratings or co-purchase patterns. Known gap per module: "pick a family based on what data you actually have." <strong>Hybrid:</strong> the two-mode search system functions as a retrieval-augmented recommender: curriculum-structured lookup (guided) + semantic search (freetext) with client-side refinement chips.. Burke's seven hybridisation strategies are not directly applied, but the system's combination of content-based filtering with LLM-powered semantic similarity is a form of mixed hybridisation.</td>
+  <td><strong>Content-based:</strong> strong. Resources filtered by subject, subdomain, grade_band, format, season, pedagogy, programme. Freetext scoring across 5 fields. Similarity re-search available via the API. <strong>Collaborative filtering:</strong> not implemented — single-teacher system, no multi-user ratings or co-purchase patterns. Known gap per module: "pick a family based on what data you actually have." <strong>Hybrid:</strong> the two-mode search system functions as a retrieval-augmented recommender: curriculum-structured lookup (guided) + semantic search (freetext) with client-side refinement chips.. Burke's seven hybridisation strategies are not directly applied, but the system's combination of content-based filtering with LLM-powered semantic similarity is a form of mixed hybridisation.</td>
   <td><span class="tag tag-note">NOTE</span></td>
 </tr>
 <tr>
@@ -428,14 +428,14 @@
   <td>I13</td>
   <td>Three AI Capability Types</td>
   <td>Davenport &amp; Ronanki (2018)</td>
-  <td><strong>Process automation:</strong> grade-band normalisation (Infants→C1, 1st-2nd→C2), regex-based outcome-code extraction, MS Graph token refresh with auto-retry. <strong>Cognitive insight:</strong> freetext keyword scoring, semantic similarity (More Like This), curriculum gap detection across catalogue vs. taxonomy. <strong>Cognitive engagement:</strong> DeepSeek lesson plan generation (standalone, teacher-initiated, [AI-Generated] flagged) + Communicator summary formatting. The module's maturity question — "fit-for-purpose, not highest type wins" — is respected: the system does not use LLMs for grade-band normalisation (a deterministic rule does it better) but does use LLMs for lesson plan generation (where fluency adds value).</td>
+  <td><strong>Process automation:</strong> grade-band normalisation (Infants→C1, 1st-2nd→C2), regex-based outcome-code extraction, MS Graph token refresh with auto-retry. <strong>Cognitive insight:</strong> freetext keyword scoring, semantic similarity retrieval, curriculum gap detection across catalogue vs. taxonomy. <strong>Cognitive engagement:</strong> DeepSeek lesson plan generation (standalone, teacher-initiated, [AI-Generated] flagged) + Communicator summary formatting. The module's maturity question — "fit-for-purpose, not highest type wins" — is respected: the system does not use LLMs for grade-band normalisation (a deterministic rule does it better) but does use LLMs for lesson plan generation (where fluency adds value).</td>
   <td><span class="tag tag-pass">PASS</span></td>
 </tr>
 <tr>
   <td>I14</td>
   <td>Customer Lifetime Value (CLV)</td>
   <td>Kumar &amp; Reinartz (2016)</td>
-  <td>In Teacher's Pet's context, CLV is the teacher's ongoing relationship with the system. The module's diagnostic: "sort retention 'wins' into CLV-positive vs. CLV-negative." CLV-positive moves: bundle download with AI disclosure builds trust for repeat use; "Not for this outcome" flags improve catalogue quality over time; gap detection keeps the system useful even when the catalogue is thin. CLV-negative avoided: no cancellation traps, no blanket discount-chasing, no over-messaging. The system respects the teacher's time (results capped at 20, descriptions concise) rather than maximising session duration.</td>
+  <td>In Teacher's Pet's context, CLV is the teacher's ongoing relationship with the system. The module's diagnostic: "sort retention 'wins' into CLV-positive vs. CLV-negative." CLV-positive moves: bundle download with AI disclosure builds trust for repeat use; gap detection keeps the system useful even when the catalogue is thin. CLV-negative avoided: no cancellation traps, no blanket discount-chasing, no over-messaging. The system respects the teacher's time (results capped at 20, descriptions concise) rather than maximising session duration.</td>
   <td><span class="tag tag-pass">PASS</span></td>
 </tr>
 </table>
@@ -454,7 +454,7 @@
   <td>P01</td>
   <td>The Missing Middle — Six Sub-Roles</td>
   <td>Daugherty &amp; Wilson (2018)</td>
-  <td><strong>Humans help machines — Train:</strong> teacher provides feedback (thumbs up/down, "Not for this outcome" flags). <strong>Explain:</strong> confidence scores, AI badge, AI_DISCLOSURE.md — makes AI output accountable. <strong>Sustain:</strong> GOVERNANCE.md monthly review cadence, Ops-Keelin QA gate, rate limiter. <strong>Machines help humans — Amplify:</strong> the system searches 2,895 personal resources in <1 second; a human couldn't. <strong>Interact:</strong> two-mode UX meets the teacher in their current mental state. <strong>Embody:</strong> N/A — no physical-world extension. The module's warning — "each of the six carries its own failure mode" — is respected: automation bias is countered by the [AI-Generated] badge and standalone generation tile; fluency-mistaken-for-competence is countered by the [AI-Generated] badge.</td>
+  <td><strong>Humans help machines — Train:</strong> teacher selects and deselects resources for their bundle. <strong>Explain:</strong> confidence scores, AI badge, AI_DISCLOSURE.md — makes AI output accountable. <strong>Sustain:</strong> GOVERNANCE.md monthly review cadence, Ops-Keelin QA gate, rate limiter. <strong>Machines help humans — Amplify:</strong> the system searches 2,895 personal resources in <1 second; a human couldn't. <strong>Interact:</strong> two-mode UX meets the teacher in their current mental state. <strong>Embody:</strong> N/A — no physical-world extension. The module's warning — "each of the six carries its own failure mode" — is respected: automation bias is countered by the [AI-Generated] badge and standalone generation tile; fluency-mistaken-for-competence is countered by the [AI-Generated] badge.</td>
   <td><span class="tag tag-pass">PASS</span></td>
 </tr>
 <tr>
@@ -475,7 +475,7 @@
   <td>P04</td>
   <td>Two-Axis HCAI Grid</td>
   <td>Shneiderman (2020 / 2022)</td>
-  <td>Teacher's Pet operates in the <strong>high-automation + high-control quadrant</strong> — the module's explicit goal. High automation: the 5-agent pipeline runs autonomously on search, the Communicator auto-formats summaries, the Ops-Keelin QA gate auto-rejects hallucinated plans. High control: teacher selects resources, reviews before bundle, has explicit thumbs-down/exclude/flag actions, can close or ignore any generated plan. The module's key move — "the fix for a risky autonomous system is usually not less autonomy — it is more control" — is operationalised: the Maker is fully autonomous (reads spec → calls DeepSeek → returns markdown), but the control layer (Ops-Keelin rejection + teacher review + explicit bundle selection) prevents that autonomy from becoming unilateral.</td>
+  <td>Teacher's Pet operates in the <strong>high-automation + high-control quadrant</strong> — the module's explicit goal. High automation: the 5-agent pipeline runs autonomously on search, the Communicator auto-formats summaries, the Ops-Keelin QA gate auto-rejects hallucinated plans. High control: teacher selects resources, reviews before bundle, has explicit control over resource selection and AI-generated content review, can close or ignore any generated plan. The module's key move — "the fix for a risky autonomous system is usually not less autonomy — it is more control" — is operationalised: the Maker is fully autonomous (reads spec → calls DeepSeek → returns markdown), but the control layer (Ops-Keelin rejection + teacher review + explicit bundle selection) prevents that autonomy from becoming unilateral.</td>
   <td><span class="tag tag-pass">PASS</span></td>
 </tr>
 </table>
@@ -494,14 +494,14 @@
   <td>P06</td>
   <td>Responsible Innovation — Four Dimensions</td>
   <td>Stilgoe, Owen &amp; Macnaghten (2013)</td>
-  <td><strong>Anticipation:</strong> GOVERNANCE.md anticipates three trigger scenarios (content quality concerns, tagging errors, API failures) with defined escalation routes. <strong>Reflexivity:</strong> audit sheet logs every session; monthly review cadence examines confidence distribution, QA failure logs, and dependency health. <strong>Inclusion:</strong> disagreement is first-class in the UX (thumbs-down, "Not for this outcome", "Generate something better"). <strong>Responsiveness:</strong> triggers have named response times; 3+ content quality flags/month triggers system prompt review; API failures trigger Dev-Manager re-invocation. The module's "responsibility theatre" test — "could anything have gone differently because of this?" — passes: a pattern of flagged mis-tagged resources will result in catalogue review, not just logged and ignored.</td>
+  <td><strong>Anticipation:</strong> GOVERNANCE.md anticipates three trigger scenarios (content quality concerns, tagging errors, API failures) with defined escalation routes. <strong>Reflexivity:</strong> audit sheet logs every session; monthly review cadence examines confidence distribution, QA failure logs, and dependency health. <strong>Inclusion:</strong> disagreement is first-class in the UX (gap cards, "Generate lesson plan", refinement filtering, deselection from bundle). <strong>Responsiveness:</strong> triggers have named response times; 3+ content quality flags/month triggers system prompt review; API failures trigger Dev-Manager re-invocation. The module's "responsibility theatre" test — "could anything have gone differently because of this?" — passes: a pattern of flagged mis-tagged resources will result in catalogue review, not just logged and ignored.</td>
   <td><span class="tag tag-pass">PASS</span></td>
 </tr>
 <tr>
   <td>P07</td>
   <td>"Responsibility Theatre" — Three Failure Patterns</td>
   <td>Stilgoe et al. (2013) / Module extension</td>
-  <td>Teacher's Pet avoids all three: (1) <strong>Ethics board with no authority:</strong> Ops-Keelin has actual blocking power — rejected plans don't reach the teacher. Dev-Keelin blocks deployment — the security audit here found and fixed 7 bugs before this QA page shipped. (2) <strong>Consultation after build is frozen:</strong> the thumbs-down/flag mechanisms are live in the UX, not retrospective. (3) <strong>Impact assessment written to be filed:</strong> GOVERNANCE.md defines a monthly review cadence with specific evidence reviewed — not a one-time document. The test — "could anything have gone differently because of this?" — passes for all four dimensions.</td>
+  <td>Teacher's Pet avoids all three: (1) <strong>Ethics board with no authority:</strong> Ops-Keelin has actual blocking power — rejected plans don't reach the teacher. Dev-Keelin blocks deployment — the security audit here found and fixed 7 bugs before this QA page shipped. (2) <strong>Consultation after build is frozen:</strong> the QA findings register tracks issues across sessions, not just at review time. (3) <strong>Impact assessment written to be filed:</strong> GOVERNANCE.md defines a monthly review cadence with specific evidence reviewed — not a one-time document. The test — "could anything have gone differently because of this?" — passes for all four dimensions.</td>
   <td><span class="tag tag-pass">PASS</span></td>
 </tr>
 <tr>
