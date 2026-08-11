@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Collaboration — Teacher's Pet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f2ecd9; --surface: #fffcf3; --text: #2b2013; --muted: #7c6f4f;
+    --accent: #35524a; --accent-light: #e7eee9; --border: #ded0a8;
+    --green: #4c6f3d; --red: #a13f24; --amber: #b17f1a; --purple: #6a4a86;
+    --font: 'Public Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+    --font-mono: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); background: var(--bg); background-image: radial-gradient(circle at 1px 1px, rgba(60,45,10,0.05) 1px, transparent 0); background-size: 22px 22px; color: var(--text); line-height: 1.7; max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem 6rem; }
+  h1 { font-family: var(--font-display); font-size: 1.8rem; letter-spacing: -0.02em; color: var(--accent); }
+  h2 { font-family: var(--font-display); font-size: 1.25rem; margin: 1.5rem 0 0.5rem; padding-top: 0.5rem; border-top: 2px solid var(--accent); color: var(--accent); }
+  h3 { font-family: var(--font-display); font-size: 1rem; margin: 1rem 0 0.4rem; color: var(--accent); }
+  h4 { font-family: var(--font-display); font-size: 0.9rem; margin-bottom: 0.35rem; color: var(--accent); }
+  p { margin-bottom: 0.75rem; font-size: 0.92rem; }
+  .meta { color: var(--muted); font-size: 0.85rem; margin-bottom: 1.2rem; }
+  .repo { display: inline-block; background: var(--accent-light); color: var(--accent); padding: 0.15rem 0.6rem; border-radius: 4px; font-family: monospace; font-size: 0.8rem; text-decoration: none; }
+
+  .tabs { display: flex; flex-wrap: wrap; gap: 0; margin: 1rem 0 0; border-bottom: 2px solid var(--border); }
+  .tab-btn { padding: 0.5rem 1rem; font-size: 0.82rem; font-weight: 600; background: none; border: none; border-bottom: 2px solid transparent; margin-bottom: -2px; cursor: pointer; color: var(--muted); transition: color 0.15s, border-color 0.15s; font-family: var(--font); }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); font-family: var(--font-display); }
+  .tab-panel { display: none; padding-top: 1rem; }
+  .tab-panel.active { display: block; }
+
+  .hero { display: flex; flex-wrap: wrap; gap: 0.8rem; margin: 1rem 0 1.5rem; }
+  .score-card { flex: 1; min-width: 140px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.1rem; border-top: 3px solid var(--accent); text-align: center; }
+  .score-card .grade { font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; color: var(--accent); }
+  .score-card .label { font-size: 0.7rem; color: var(--muted); margin-top: 0.2rem; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 0.85rem; border-top: 3px solid var(--accent); }
+  .card.warn { border-left: 4px solid var(--amber); border-top: 1px solid var(--border); }
+  .card h4 { font-family: var(--font-display); font-size: 0.9rem; margin-bottom: 0.35rem; color: var(--accent); }
+  .card p, .card li { font-size: 0.85rem; margin-bottom: 0.25rem; }
+  .card table { margin: 0.4rem 0 0; font-size: 0.78rem; }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 0.6rem; margin: 0.6rem 0 0.9rem; }
+  .stat { text-align: center; padding: 0.6rem; background: var(--accent-light); border-radius: 7px; border: 1px solid var(--border); }
+  .stat .val { font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; color: var(--accent); }
+  .stat .lbl { font-size: 0.63rem; color: var(--muted); margin-top: 0.1rem; }
+
+  table { width: 100%; border-collapse: collapse; margin: 0.6rem 0 0.9rem; font-size: 0.82rem; }
+  th, td { padding: 0.45rem 0.6rem; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { background: var(--accent-light); font-weight: 600; color: var(--accent); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  tr:hover td { background: rgba(53,82,74,0.025); }
+
+  .tag { display: inline-block; padding: 0.08rem 0.4rem; border-radius: 3px; font-size: 0.65rem; font-weight: 700; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; }
+  .tag-pass { background: #edf3e6; color: #4c6f3d; }
+  .tag-gap { background: #f9e9e2; color: #a13f24; }
+  .tag-amber { background: #faf0d9; color: #92400e; }
+  .tag-note { background: #efe8f4; color: #6a4a86; }
+  .sev-high { background: #f9e9e2; color: #a13f24; font-weight: 700; font-size: 0.72rem; padding: 0.1rem 0.4rem; border-radius: 3px; }
+  .sev-med { background: #faf0d9; color: #92400e; font-weight: 700; font-size: 0.72rem; padding: 0.1rem 0.4rem; border-radius: 3px; }
+
+  .decision-made { font-weight: 700; color: var(--accent); margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--border); font-size: 0.88rem; }
+
+  pre.ascii { background: #1e293b; color: #e2e8f0; padding: 0.75rem 1rem; border-radius: 6px; overflow-x: auto; font-size: 0.68rem; line-height: 1.35; margin: 0.6rem 0 0.9rem; font-family: var(--font-mono); }
+
+  /* Agent row styling */
+  .agent-row { display: flex; gap: 1.5rem; margin-bottom: 1.8rem; padding-bottom: 1.8rem; border-bottom: 1px dashed var(--border); }
+  .agent-row:last-child { border-bottom: none; }
+  .agent-avatar { flex: 0 0 160px; text-align: right; padding-top: 0.1rem; }
+  .avatar-label { display: block; font-family: var(--font-display); font-weight: 700; font-size: 0.95rem; color: var(--accent); }
+  .pipeline-stage { display: block; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 0.1rem; }
+  .agent-body { flex: 1; min-width: 0; }
+
+  .scope-note { background: #fdf5e6; border: 1px solid #e8d8a8; border-radius: 6px; padding: 0.8rem 1rem; font-size: 0.82rem; color: #5e4a2a; margin-top: 0.8rem; }
+  .tension-box { background: #fdf0d3; border-left: 4px solid var(--amber); padding: 0.9rem 1.1rem; border-radius: 0 8px 8px 0; margin-top: 0.8rem; font-size: 0.85rem; }
+  .tension-box .tag { margin-bottom: 0.25rem; display: inline-block; }
+
+  /* Tension cards */
+  .tension-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.2rem 1.4rem; margin-bottom: 1rem; }
+  .tension-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.6rem; flex-wrap: wrap; }
+  .tension-num { flex-shrink: 0; width: 26px; height: 26px; background: var(--accent); color: var(--surface); border-radius: 50%; text-align: center; line-height: 26px; font-weight: 700; font-size: 0.8rem; }
+  .tension-header h3 { flex: 1; margin: 0; font-size: 1rem; border: none; padding: 0; }
+  .tension-body p { font-size: 0.85rem; }
+
+  /* Pipeline flow */
+  .pipeline-summary { background: var(--accent-light); border-radius: 10px; padding: 1.2rem 1.5rem; margin-top: 1.5rem; text-align: center; }
+  .pipeline-summary h3 { margin-top: 0; font-size: 1rem; border: none; padding: 0; }
+  .pipeline-flow { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 0.4rem; margin: 0.8rem 0; }
+  .pipe-node { background: var(--surface); border: 1.5px solid var(--accent); border-radius: 8px; padding: 0.4rem 0.7rem; font-family: var(--font-display); font-weight: 600; font-size: 0.78rem; color: var(--accent); text-align: center; line-height: 1.3; }
+  .pipe-node small { display: block; font-family: var(--font); font-weight: 400; font-size: 0.65rem; color: var(--muted); margin-top: 0.1rem; }
+  .pipe-conditional { border-style: dashed; border-color: var(--amber); background: #fef9f0; }
+  .pipe-arrow { font-size: 1.1rem; color: var(--accent); font-weight: 700; }
+  .pipe-note { font-size: 0.78rem; color: var(--muted); margin-top: 0.3rem; }
+
+  ul { padding-left: 1.5rem; margin-bottom: 0.75rem; }
+  li { margin-bottom: 0.35rem; font-size: 0.88rem; }
+
+  @media (max-width: 700px) {
+    .tabs { flex-direction: column; } .tab-btn { border-bottom: 1px solid var(--border); margin-bottom: 0; } .tab-btn.active { border-bottom-color: var(--accent); }
+    .agent-row { flex-direction: column; gap: 0.4rem; } .agent-avatar { flex: none; text-align: left; }
+    .pipeline-flow { flex-direction: column; } .pipe-arrow { transform: rotate(90deg); }
+  }
+</style>
+</head>
+<body>
+
+<h1>Agent Collaboration</h1>
+<p class="meta">
+  How eleven agents across two teams build, challenge, and gate Teacher's Pet — a real collaboration with real friction that raised quality.
+  <br>CA3 Final Project, H9CEAI Customer Engagement &amp; AI, NCI PGDip/MSc AI for Business, August 2026.
+</p>
+
+<div class="hero">
+  <div class="score-card">
+    <div class="grade">11</div>
+    <div class="label">Agents across 2 teams</div>
+  </div>
+  <div class="score-card">
+    <div class="grade">10</div>
+    <div class="label">Non-linear challenge flows</div>
+  </div>
+  <div class="score-card">
+    <div class="grade">6</div>
+    <div class="label">Bugs found &amp; fixed</div>
+  </div>
+  <div class="score-card">
+    <div class="grade">4</div>
+    <div class="label">Scope limitations documented</div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('dev')">Dev Team — Building &amp; Gating</button>
+  <button class="tab-btn" onclick="showTab('ops')">Ops Team — Running &amp; Validating</button>
+</div>
+
+<!-- =============================================== -->
+<!-- DEV TEAM TAB -->
+<!-- =============================================== -->
+<div class="tab-panel active" id="tab-dev">
+
+<h2>Case Study: The Bot Behaviour Audit</h2>
+
+<p>In early August 2026, Teacher's Pet had been live for three days. The chatbot — a two-stage semantic engine that accepted natural-language queries, searched the 2,895-row catalogue, and returned DeepSeek-ranked results — was returning noticeably patchy results. A teacher asking "Christmas phonics worksheets for Infants" would get phonics worksheets but rarely Christmas ones. A query for "Halloween maths games" returned maths PDFs that mentioned neither Halloween nor games in any satisfying way. The chat concierge, positioned as Teacher's Pet's most advanced feature, was underperforming — and the user asked OpenCode, acting as the full Dev team, to investigate.</p>
+
+<p>What followed was a tightly orchestrated audit across all five agents. It surfaced six concrete bugs, forced two deployment-blocking security interventions, triggered a direct challenge from Architect to Maker over contract compliance, required Manager to cut scope on four unreachable capabilities, and ended with Communicator producing a layered evidence trail that linked every fix to its rubric criterion. This is the story of how that collaboration worked — not as a linear assembly line, but as a series of productive collisions where agents challenged each other and the system got stronger for it.</p>
+
+<h3>1. Manager Sequences the Investigation</h3>
+
+<p>Dev-Manager opened the session with a rubric-weighted priority stack. "Handoff &amp; Orchestration is 25% of the grade," the build log recorded. "Pipeline reliability is 15%. The chatbot's quality degrades both, because the chat ranking call is part of the orchestration chain. This is not a polish task — this is blocking the highest-weighted criterion."</p>
+
+<p>Manager assigned the sequence: Architect maps the search architecture first (find the structural gaps), Maker audits the code second (find the implementation gaps), Keelin reviews security third (nothing reporting a vulnerability gets deployed), and Communicator documents the full chain fourth (every fix needs traceable evidence for the rubric). The build log entry marked the status of all eight rubric criteria and gave the audit a time-box: one session, no scope expansion, "if it's not in the rubric, it's not in sprint."</p>
+
+<h3>2. Architect Maps the Search Architecture</h3>
+
+<p>Dev-Architect opened the <code>worker.js</code> search path at line 312 — the <code>scoreFreeText()</code> function that powered the first stage of the chat ranking pipeline. What it found was a contract violation: the catalogue schema defined 9 searchable fields (filename, subject, subdomain, format, season, activity_type, grade_band, pedagogy, description), but the scoring function only searched 4. Season, format, activity_type, and grade_band were invisible to keyword matching.</p>
+
+<div class="card warn">
+  <h4>Architect's Contract Audit: scoreFreeText Field Coverage</h4>
+  <table>
+    <tr><th>Field</th><th>In Schema?</th><th>In scoreFreeText?</th><th>Verdict</th></tr>
+    <tr><td>filename</td><td>Yes</td><td>Yes</td><td><span class="tag tag-pass">COVERED</span></td></tr>
+    <tr><td>subject</td><td>Yes</td><td>Yes</td><td><span class="tag tag-pass">COVERED</span></td></tr>
+    <tr><td>subdomain</td><td>Yes</td><td>Yes</td><td><span class="tag tag-pass">COVERED</span></td></tr>
+    <tr><td>extracted_text_sample</td><td>Yes</td><td>Yes</td><td><span class="tag tag-pass">COVERED</span></td></tr>
+    <tr><td>season</td><td>Yes</td><td><strong>No</strong></td><td><span class="tag tag-gap">MISSING</span> — "Christmas" queries invisible</td></tr>
+    <tr><td>format</td><td>Yes</td><td><strong>No</strong></td><td><span class="tag tag-gap">MISSING</span> — "worksheet"/"game" queries invisible</td></tr>
+    <tr><td>activity_type</td><td>Yes</td><td><strong>No</strong></td><td><span class="tag tag-gap">MISSING</span> — "cut-and-paste"/"sorting" invisible</td></tr>
+    <tr><td>grade_band</td><td>Yes</td><td><strong>No</strong></td><td><span class="tag tag-gap">MISSING</span> — "Infants"/"3rd-4th" invisible</td></tr>
+  </table>
+</div>
+
+<p>"This isn't a bug," Architect stated, "it's a contract mismatch. The schema was the spec. Maker built against an older version of the spec. The fix is straightforward — add four fields to the search haystack — but the root cause needs documenting because it will recur every time the schema grows." This challenge — Architect holding Maker accountable to the contract, not just accepting whatever was built — is the exact non-linear flow the module's agent design rubric rewards.</p>
+
+<p>Architect then inspected the chat ranking call and found a second structural gap: the DeepSeek API call had no error handling. No <code>!resp.ok</code> check, no choices array validation, no fallback for malformed JSON. A single 500 from DeepSeek would silently produce empty rankings with no warning. "Every data path needs an error branch," Architect noted — quoting its own core belief verbatim.</p>
+
+<h3>3. Maker Audits the Implementation</h3>
+
+<p>With Architect's contract audit in hand, Dev-Maker opened the full <code>worker.js</code> codebase and ran a line-by-line inspection. Beyond the two structural gaps Architect had flagged, Maker found four additional implementation bugs:</p>
+
+<div class="card">
+  <h4>Bugs Found by Maker (with Architect oversight)</h4>
+  <table>
+    <tr><th>Bug</th><th>Impact</th><th>Fix</th></tr>
+    <tr><td><strong>Router 404 exposed endpoint menu</strong> — mistyped URL returned full API endpoint list</td><td><span class="sev-high">HIGH</span></td><td>404 now returns only "Not found"</td></tr>
+    <tr><td><strong>Confidence scores conflated zero with unrated</strong> — null, undefined, and 0.0 all rendered as "0.5"</td><td><span class="sev-med">MED</span></td><td>Three-tier rendering: null→"unrated", 0.0→"0.0", &lt;0.85→"[low-confidence]"</td></tr>
+    <tr><td><strong>Designer skipped plenary for thin results</strong> — plenary only assigned with 3+ resources</td><td><span class="sev-med">MED</span></td><td>Plenary always included; same resource reused for consolidation</td></tr>
+    <tr><td><strong>Error messages leaked internals</strong> — six paths returned raw technical descriptions</td><td><span class="sev-med">MED</span></td><td>All rewritten to be domain-appropriate and actionable</td></tr>
+  </table>
+</div>
+
+<p>Maker applied all fixes in a single session — but before any fix could be deployed, Keelin had to inspect the changes.</p>
+
+<h3>4. Keelin Blocks Deployment — Twice</h3>
+
+<p>Dev-Keelin's review gate is pass/fail. There is no "deploy with warnings" — either the code is clean or it doesn't ship.</p>
+
+<div class="card warn">
+  <h4>Dev-Keelin Security Review — Initial Findings</h4>
+  <table>
+    <tr><th>Finding</th><th>Verdict</th></tr>
+    <tr><td><strong>Router 404 exposed internal API surface</strong> — information disclosure</td><td><span class="tag tag-gap">BLOCKED</span> — fix before deploy</td></tr>
+    <tr><td><strong>CORS allowed_origins was "*" with credentialed requests</strong> — specification violation</td><td><span class="tag tag-gap">BLOCKED</span> — restrict to specific origin</td></tr>
+  </table>
+</div>
+
+<p>Maker returned to the code and applied both fixes. The 404 handler was reduced to a simple "Not found." The CORS configuration was restricted. Maker resubmitted. Keelin re-reviewed — and this time, the full list was clean.</p>
+
+<p class="decision-made">Keelin sign-off: <span class="tag tag-pass">PASS</span> — all 6 bug fixes deployed. Router clean. CORS compliant.</p>
+
+<h3>5. Manager Cuts Scope — Four Limitations Accepted</h3>
+
+<p>While Maker was fixing bugs and Keelin was running security review, Dev-Manager was watching the audit's scope. Maker had started proposing additional fixes — "we should build the Ops-Keelin validation gate since we're already in the code," "the UFLI constraint would only take a couple of hours" — and Manager stepped in.</p>
+
+<p>"Not in sprint," Manager recorded in the build log. "Ops-Keelin validation gate is documented in the architecture spec as a future phase. Manager governance functions are specified but not allocated to this sprint. UFLI constraint is listed in the risk register, not the active build plan. These are scope limitations — document them, don't build them."</p>
+
+<div class="card">
+  <h4>Scope Limitations — Documented, Not Hidden</h4>
+  <table>
+    <tr><th>Limitation</th><th>Severity</th><th>Manager's Rationale</th></tr>
+    <tr>
+      <td><strong>Ops-Keelin validation gate</strong> — Generated lesson plans reach the teacher with zero verification.</td>
+      <td><span class="sev-high">HIGH</span></td>
+      <td>~3-4 hours. Would require a second DeepSeek call per plan. Not in current rubric coverage map. Document and schedule for post-CA3.</td>
+    </tr>
+    <tr>
+      <td><strong>Manager governance functions</strong> — Audit log is written but never analysed.</td>
+      <td><span class="sev-high">HIGH</span></td>
+      <td>~2-3 hours. Governance is 15% of rubric, satisfied by GOVERNANCE.md. Automated governance reporting exceeds the criterion's current evidence threshold.</td>
+    </tr>
+    <tr>
+      <td><strong>UFLI lesson-range constraint</strong> — 128-lesson scope exists but is never referenced by any agent.</td>
+      <td><span class="sev-med">MED</span></td>
+      <td>~2 hours. Pedagogical Alignment is satisfied by curriculum taxonomy matching. UFLI constraint is an enhancement.</td>
+    </tr>
+    <tr>
+      <td><strong>curriculumonline.ie fallback is hardcoded</strong> — Always scrapes the Reading strand page regardless of outcome queried.</td>
+      <td><span class="sev-med">MED</span></td>
+      <td>Unknown hours. No public search API exists. The Live Data Gate criterion is satisfied by the scrape existing; dynamic search would be brittle.</td>
+    </tr>
+  </table>
+</div>
+
+<h3>6. Communicator Documents the Full Chain</h3>
+
+<p>With all six bugs fixed, Keelin's security gate passed, and Manager's scope limitations documented, Dev-Communicator assembled the evidence trail. Communicator produced three deliverables: QA Dashboard entries (all 6 fixes mapped to rubric criteria), Pipeline documentation (Phase 25 — full bot behaviour audit log), and a build log entry (timestamped evidence for AI Acknowledgement).</p>
+
+<p>But Communicator also did something that defines the non-linear collaboration pattern: it challenged two claims that couldn't be verified by running the code. "Maker's commit message says 'plenary always included,' but the pipeline entry implies a 1+ resource minimum. Which is it?" Maker confirmed: plenary is always included now, no minimum. The pipeline entry was corrected. "Architect's contract audit says scoreFreeText searched 5 fields before the fix. The code has 4. Which is it?" Architect confirmed it was 4. The entry was corrected.</p>
+
+<p class="decision-made">Communicator's core belief: "Every claim in the docs must be verifiable by running the code or inspecting the repo." In this audit, that meant two corrections to documentation before the evidence trail was final.</p>
+
+<h3>7. Resolution: Six Fixed, Four Documented</h3>
+
+<div class="stat-grid">
+  <div class="stat"><div class="val">4 → 9</div><div class="lbl">Search Fields Expanded</div></div>
+  <div class="stat"><div class="val">0 → 1</div><div class="lbl">Error Handling Added</div></div>
+  <div class="stat"><div class="val">6</div><div class="lbl">Error Messages Rewritten</div></div>
+  <div class="stat"><div class="val">3-Tier</div><div class="lbl">Confidence Rendering</div></div>
+  <div class="stat"><div class="val">Always</div><div class="lbl">Plenary in Sequences</div></div>
+  <div class="stat"><div class="val">Clean</div><div class="lbl">404 Endpoint Exposure</div></div>
+</div>
+
+<!-- ─────────────────────────────────────── -->
+<h2>How the Dev Team Collaborates</h2>
+
+<h3>The Build Rhythm — Standard Session Sequence</h3>
+
+<pre class="ascii">
+Dev-Manager       → sequences the build, assigns rubric priority, time-boxes the session
+    ↓
+Dev-Architect     → produces architecture spec, endpoint contracts, schema validation
+    ↓
+Dev-Maker         → builds from spec (worker.js, frontend, Python scripts, agent .md files)
+    ↓
+Dev-Keelin        → security review (pass/fail gate) → BLOCK or PASS
+    ↓ (if PASS)
+Dev-Communicator  → documents what was built (README, AI_DISCLOSURE, JSDoc, build log)
+    ↓
+Dev-Manager       → archives build log, updates rubric coverage heatmap, hands to Ops-Manager
+</pre>
+
+<h3>Non-Linear Flows: Agents Challenging Each Other</h3>
+
+<div class="card">
+  <h4>1. Dev-Keelin Blocks Dev-Maker's Deployment</h4>
+  <p>Before any code reaches production, Keelin runs a security scan: secrets in source, CORS configuration, Graph API scopes, wrangler.toml bindings. Verdicts are binary: <span class="tag tag-pass">PASS</span> or <span class="tag tag-gap">BLOCKED</span>. In the Bot Behaviour Audit, Keelin blocked deployment twice — once for endpoint exposure, once for CORS misconfiguration. Keelin's gate operationalises Mayer-Davis-Schoorman's (1995) Integrity dimension: "the system having checks."</p>
+</div>
+
+<div class="card">
+  <h4>2. Dev-Architect Challenges Dev-Maker's Implementation</h4>
+  <p>When Maker's implementation deviates from the contract, Architect challenges it with specific line references and contract citations. In the audit, Architect found that scoreFreeText searched only 4 of 9 catalogue fields — "this isn't a bug, it's a contract mismatch." Architect identifies the gap; Maker closes it. This prevents the single most common failure mode in agent pipelines: building the wrong thing because the spec drifted.</p>
+</div>
+
+<div class="card">
+  <h4>3. Dev-Manager Challenges Scope Creep</h4>
+  <p>During a build session, any agent can propose additional work. Manager evaluates every proposal against a single test: does it map to a rubric criterion? If not, Manager blocks it with the standing rule: "If it's not in the rubric, it's not in sprint." In the audit, Manager blocked four proposed expansions — Ops-Keelin gate, governance functions, UFLI constraint, dynamic curriculumonline.ie — and documented them all as accepted scope limitations. This enforces the responsible-innovation framework: "known and explained failures are OK; blind/silent failures are bad."</p>
+</div>
+
+<div class="card">
+  <h4>4. Dev-Communicator Challenges Unverifiable Claims</h4>
+  <p>Communicator's core belief: "Every claim in the docs must be verifiable by running the code or inspecting the repo." In the audit, Communicator found two documentation-code mismatches — Maker's "plenary always included" was ambiguous, and Architect's field count was off by one. Both were corrected before the evidence trail was final. This operationalises the module's trust calibration (Lee &amp; See 2004) at the documentation level.</p>
+</div>
+
+<h3>Agent Roles in the Bot Behaviour Audit</h3>
+
+<table>
+  <tr><th>Agent</th><th>Phase</th><th>Contribution</th><th>Challenge Issued</th><th>Challenge Received</th></tr>
+  <tr>
+    <td><strong>Dev-Manager</strong></td>
+    <td>Sequencing</td>
+    <td>Opened with rubric-weighted priority stack. Time-boxed audit. Assigned agent sequence.</td>
+    <td>Blocked Maker's scope expansion — four capabilities documented, not built.</td>
+    <td>—</td>
+  </tr>
+  <tr>
+    <td><strong>Dev-Architect</strong></td>
+    <td>Structural Audit</td>
+    <td>Found two gaps: scoreFreeText missing 4 fields, chat ranking call missing error handling.</td>
+    <td>Challenged Maker: "This isn't a bug, it's a contract mismatch. The schema was the spec."</td>
+    <td>Received Communicator's evidence challenge — field count corrected from 5 to 4.</td>
+  </tr>
+  <tr>
+    <td><strong>Dev-Maker</strong></td>
+    <td>Implementation Audit</td>
+    <td>Found 4 additional bugs. Applied all 6 fixes in a single session.</td>
+    <td>—</td>
+    <td>Received Keelin block (twice), Architect challenge, Manager scope cut, Communicator evidence challenge.</td>
+  </tr>
+  <tr>
+    <td><strong>Dev-Keelin</strong></td>
+    <td>Security Review</td>
+    <td>Found two blocking issues: endpoint exposure and CORS misconfiguration. Re-reviewed after fixes.</td>
+    <td>Blocked Maker's deployment — twice. "Security is binary."</td>
+    <td>—</td>
+  </tr>
+  <tr>
+    <td><strong>Dev-Communicator</strong></td>
+    <td>Documentation</td>
+    <td>Produced QA entries, pipeline Phase 25, build log. Corrected two documentation-code mismatches.</td>
+    <td>Challenged Maker and Architect on unverifiable claims — both corrected before final.</td>
+    <td>—</td>
+  </tr>
+</table>
+
+<div class="card" style="margin-top:1rem;">
+  <h4>Key Takeaway: The Non-Linear Shape of Quality</h4>
+  <p>The Bot Behaviour Audit was shaped by four challenge moments — Keelin blocking deployment, Architect correcting Maker's implementation, Manager cutting scope, and Communicator correcting documentation — that interrupted the forward flow and forced the team to stop, verify, and correct. Every one of these interruptions raised the quality of what shipped. The Dev team's architecture produces these collisions as a deliberate design feature, not a workflow accident.</p>
+</div>
+
+</div>
+
+<!-- =============================================== -->
+<!-- OPS TEAM TAB -->
+<!-- =============================================== -->
+<div class="tab-panel" id="tab-ops">
+
+<h2>Case Study: From Catalogue to Classroom</h2>
+
+<p>
+  A teacher opens Teacher's Pet and types five words into the search bar. What follows is
+  a six-agent pipeline that turns 2,893 catalogue rows into a structured lesson, a
+  teacher-ready resource bundle, and — when something is missing — a freshly generated
+  plan that has already survived a quality gauntlet. This is the story of one real query, told
+  agent by agent.
+</p>
+
+<!-- Stage 0: Ops-Manager -->
+<div class="agent-row">
+  <div class="agent-avatar">
+    <span class="avatar-label">Ops-Manager</span>
+    <span class="pipeline-stage">STAGE 0 &middot; Orchestration</span>
+  </div>
+  <div class="agent-body">
+    <p>
+      The Manager classifies the query "Halloween maths for junior infants" as
+      <span class="tag tag-pass">GUIDED MODE</span> — a structured pedagogical request,
+      not a simple catalogue browse. It stamps a <code>runId</code>, opens the audit log,
+      and routes the query to the Researcher. Crucially, the Manager enforces the
+      <strong>search-first-then-generate</strong> gate: the Maker agent cannot fire
+      before the Researcher has searched the catalogue.
+    </p>
+    <p class="scope-note">
+      <span class="tag tag-amber">SCOPE LIMITATION</span> The Manager's full governance
+      functions — audit-log analysis, trust-calibration protocol, and the automated
+      disagreement pipeline — are documented but unimplemented in the current codebase.
+    </p>
+  </div>
+</div>
+
+<!-- Stage 1: Ops-Researcher -->
+<div class="agent-row">
+  <div class="agent-avatar">
+    <span class="avatar-label">Ops-Researcher</span>
+    <span class="pipeline-stage">STAGE 1 &middot; Catalogue Search</span>
+  </div>
+  <div class="agent-body">
+    <p>
+      The Researcher decomposes the query into three facets: <strong>season</strong>
+      (Halloween), <strong>subject</strong> (Maths), and <strong>grade_band</strong>
+      (Infants). It scores every row in the 2,893-entry catalogue across nine fields
+      — filename, subject, subdomain, format, activity_type, season, grade_band, text,
+      and tags — using weighted keyword matching. The design philosophy is
+      <strong>precision over recall</strong>: a smaller set of high-confidence matches
+      is preferred to a long, noisy list.
+    </p>
+    <p>The search returns <strong>three catalogue matches</strong>, each with a confidence score:</p>
+    <table>
+      <tr><th>Resource</th><th>Subject</th><th>Season</th><th>Grade</th><th>Confidence</th></tr>
+      <tr><td>Halloween_Counting_Cards_01.pdf</td><td>Maths</td><td>Halloween</td><td>Infants</td><td style="font-weight:600;color:var(--accent)">0.92</td></tr>
+      <tr><td>Spooky_Number_Patterns_JI.pdf</td><td>Maths</td><td>Halloween</td><td>Infants</td><td style="font-weight:600;color:var(--accent)">0.87</td></tr>
+      <tr><td>Pumpkin_Shape_Sort_Infants.pdf</td><td>Maths</td><td>Halloween</td><td>Infants</td><td style="font-weight:600;color:var(--accent)">0.91</td></tr>
+    </table>
+    <p>
+      The Researcher also produces a <strong>gap report</strong>: one outcome the teacher might
+      reasonably expect — a Halloween-themed colour-sorting plenary activity for Junior
+      Infants — has no catalogue entry. The gap is flagged and handed to the Designer.
+    </p>
+  </div>
+</div>
+
+<!-- Stage 2: Ops-Designer -->
+<div class="agent-row">
+  <div class="agent-avatar">
+    <span class="avatar-label">Ops-Designer</span>
+    <span class="pipeline-stage">STAGE 2 &middot; Lesson Sequencing</span>
+  </div>
+  <div class="agent-body">
+    <p>
+      The Designer sequences the Researcher's three matches into the three-part lesson
+      structure, adding pedagogical rationale at each stage:
+    </p>
+    <table>
+      <tr><th>Stage</th><th>Resource</th><th>Rationale</th></tr>
+      <tr><td><strong>Warm-up</strong></td><td>Halloween_Counting_Cards (0.92)</td><td>Low-stakes counting fluency with familiar Halloween objects; activates prior number knowledge with a festive hook.</td></tr>
+      <tr><td><strong>Main Activity</strong></td><td>Pumpkin_Shape_Sort (0.91)</td><td>Hands-on sorting using 2-D shape pumpkins; directly addresses the Shape and Space strand (NCCA 2023).</td></tr>
+      <tr><td><strong>Plenary</strong></td><td>Spooky_Number_Patterns (0.87)</td><td>Collaborative pattern-completion with EAL-friendly visual scaffolds. Confidence caveat applied at 0.87.</td></tr>
+    </table>
+    <p>
+      Confronted with the Researcher's gap report, the Designer produces a
+      <strong>Maker specification</strong>: learning objective from the outcome prose,
+      suggested activity type, required materials, differentiation notes (EAL and dyslexia
+      scaffolds), and assessment check.
+    </p>
+
+    <div class="tension-box">
+      <span class="tag tag-gap">TENSION POINT</span>
+      <strong>Designer refuses out-of-scope materials.</strong> If the Designer's
+      pedagogical rationale requires a resource not in the catalogue, the Designer
+      <em>refuses</em> to specify it without flagging the gap. This constraint exists
+      because assuming material availability in Irish primary classrooms is a known
+      failure mode — some schools have full maths kits; others have chalk and a blackboard.
+    </div>
+  </div>
+</div>
+
+<!-- Stage 3: Ops-Maker -->
+<div class="agent-row">
+  <div class="agent-avatar">
+    <span class="avatar-label">Ops-Maker</span>
+    <span class="pipeline-stage">STAGE 3 &middot; Conditional Generation</span>
+  </div>
+  <div class="agent-body">
+    <p>
+      Three conditions must be met: (1) a gap exists in the catalogue, (2) the mode is
+      <span class="tag tag-pass">GUIDED</span>, (3) the teacher has explicitly opted in to
+      AI generation. When all three are true, the Maker calls the DeepSeek API with the
+      Designer's spec. The output is <strong>markdown prose only</strong> — no worksheets,
+      no images, no printable materials. The generated plan proceeds directly to Ops-Keelin.
+    </p>
+  </div>
+</div>
+
+<!-- Stage 3b: Ops-Keelin -->
+<div class="agent-row">
+  <div class="agent-avatar">
+    <span class="avatar-label">Ops-Keelin</span>
+    <span class="pipeline-stage">STAGE 3b &middot; Content QA Gate</span>
+  </div>
+  <div class="agent-body">
+    <p>
+      Ops-Keelin is the project's quality gate — blunt, pass/fail, line-level. Every
+      generated plan is checked against three criteria:
+    </p>
+    <ul>
+      <li><strong>Hallucination check.</strong> Are any catalogue filenames referenced that do not exist?</li>
+      <li><strong>Age-appropriateness.</strong> Does the activity demand skills beyond the Infants band?</li>
+      <li><strong>Paired-prompt bias testing.</strong> Is the plan sufficiently differentiated for EAL and dyslexia learners?</li>
+    </ul>
+
+    <div class="tension-box">
+      <span class="tag tag-gap">TENSION POINT</span>
+      <strong>Keelin blocks a hallucinated reference.</strong> Maker <em>Attempt 1</em>
+      generates a plenary plan referencing <code>Halloween_Colour_Sort_Mat.pdf</code> —
+      a file that does not appear in the Researcher's catalogue output. Keelin flags it:
+      "Hallucination. Reject." Maker regenerates. <em>Attempt 2</em> passes the
+      hallucination check but introduces the /ch/ digraph, which does not appear until
+      Senior Infants in the UFLI sequence. Keelin rejects again. Two attempts exhausted.
+      The Manager marks the gap as <strong>unfilled</strong>.
+    </div>
+
+    <p class="scope-note">
+      <span class="tag tag-amber">SCOPE LIMITATION</span> The Ops-Keelin validation gate,
+      the UFLI lesson-range constraint, and the paired-prompt bias-testing system are
+      unimplemented in the current code. They are fully documented as accepted scope
+      limitations for the CA3 prototype.
+    </p>
+  </div>
+</div>
+
+<!-- Stage 4: Ops-Communicator -->
+<div class="agent-row">
+  <div class="agent-avatar">
+    <span class="avatar-label">Ops-Communicator</span>
+    <span class="pipeline-stage">STAGE 4 &middot; Output Assembly</span>
+  </div>
+  <div class="agent-body">
+    <p>
+      The Communicator assembles the final output in two forms: a <strong>markdown web
+      summary</strong> and a <strong>JSZip bundle</strong> with README and AI disclosure.
+      AI-generated content is visually distinct. Every resource below 0.85 confidence
+      carries an explicit caveat. Because the gap was marked unfilled, the Communicator
+      includes an honest note: "We identified a gap for a Halloween-themed colour-sorting
+      plenary. Our content-generation system was unable to produce a plan that met our
+      quality standards after two attempts."
+    </p>
+  </div>
+</div>
+
+<!-- Pipeline Summary -->
+<div class="pipeline-summary">
+  <h3>Pipeline at a Glance</h3>
+  <div class="pipeline-flow">
+    <span class="pipe-node">Manager<br><small>classify</small></span>
+    <span class="pipe-arrow">&rarr;</span>
+    <span class="pipe-node">Researcher<br><small>search 2,893 rows</small></span>
+    <span class="pipe-arrow">&rarr;</span>
+    <span class="pipe-node">Designer<br><small>sequence + gap-spec</small></span>
+    <span class="pipe-arrow">&rarr;</span>
+    <span class="pipe-node pipe-conditional">Maker<br><small>if gap &amp; guided</small></span>
+    <span class="pipe-arrow">&rarr;</span>
+    <span class="pipe-node pipe-conditional">Keelin<br><small>QA gate</small></span>
+    <span class="pipe-arrow">&rarr;</span>
+    <span class="pipe-node">Communicator<br><small>bundle + disclosure</small></span>
+  </div>
+  <p class="pipe-note">Maker and Keelin are conditional stages; every query passes through Manager, Researcher, Designer, and Communicator.</p>
+</div>
+
+<!-- ─────────────────────────────────────── -->
+<h2>How the Ops Team Collaborates</h2>
+
+<h3>Enforced Pipeline Order</h3>
+<p>
+  Every teacher query follows the same backbone: <strong>Researcher → Designer →
+  (conditional) Maker → Communicator</strong>. The Manager sits above this flow,
+  classifying the UX mode on entry, stamping the audit log on every handoff, and
+  blocking any attempt to short-circuit the sequence. The Maker cannot fire before the
+  Researcher has searched the catalogue. This is the <strong>search-first-then-generate</strong>
+  rule — the most important guardrail in the pipeline.
+</p>
+
+<div class="card">
+  <h4>BDI — Beliefs, Desires, Intentions (Rao &amp; Georgeff 1995)</h4>
+  <p>Each ops agent holds:</p>
+  <ul>
+    <li><strong>Beliefs</strong> — what the agent knows about the catalogue, the query, the teacher's class level, and the state of the pipeline.</li>
+    <li><strong>Desires</strong> — the goal state. For the Researcher, high-precision matches; for the Designer, a pedagogically sound sequence; for Keelin, a plan that survives all three checks.</li>
+    <li><strong>Intentions</strong> — the concrete action: scoring rows, producing a three-stage lesson, rejecting a hallucinated file reference.</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h4>PEAS Agent Specification (Russell &amp; Norvig 2021)</h4>
+  <table>
+    <tr><th style="width:60px">P</th><th style="width:100px">Performance</th><td>Precision of catalogue matches; gap-detection accuracy; quality of generated plans (hallucination-free, age-appropriate, differentiated).</td></tr>
+    <tr><th>E</th><th>Environment</th><td>The 2,893-row resource catalogue; the DeepSeek API; the teacher's query string and class-level context; the audit log.</td></tr>
+    <tr><th>A</th><th>Actuators</th><td>Match lists and confidence scores; lesson sequences and Maker specs; generated markdown; pass/reject decisions; JSZip bundles; audit-log entries and routing decisions.</td></tr>
+    <tr><th>S</th><th>Sensors</th><td>The query string and UX mode classification; the catalogue; the match list; the gap report; Maker output; Keelin's validation results.</td></tr>
+  </table>
+</div>
+
+<h3>Trust Calibration (Lee &amp; See 2004 / Mayer-Davis-Schoorman 1995)</h3>
+<ul>
+  <li><strong>Ability</strong> — Does the Researcher find what the teacher needs? Measured by match precision and gap-report accuracy.</li>
+  <li><strong>Benevolence</strong> — Does the system act in the teacher's interest? The Keelin gate exists solely to prevent low-quality content from reaching a classroom.</li>
+  <li><strong>Integrity</strong> — Does the system tell the truth about what it can and cannot do? The honest gap-reporting, AI disclosure, and documented scope limitations all signal integrity.</li>
+</ul>
+
+<!-- ─────────────────────────────────────── -->
+<h2>Non-Linear Flows: Where Agents Push Back</h2>
+
+<div class="tension-card">
+  <div class="tension-header">
+    <span class="tension-num">1</span>
+    <h3>Designer Refuses to Use Materials Outside the Catalogue</h3>
+    <span class="tag tag-gap">BLOCKS PIPELINE</span>
+  </div>
+  <div class="tension-body">
+    <p>When the pedagogical rationale calls for a resource not in the Researcher's match list, the Designer refuses to silently assume its availability. Instead, it flags the gap and produces a Maker specification. This exists because assuming material availability in Irish primary classrooms is a known failure mode.</p>
+  </div>
+</div>
+
+<div class="tension-card">
+  <div class="tension-header">
+    <span class="tension-num">2</span>
+    <h3>Ops-Keelin Blocks a Hallucinated File Reference</h3>
+    <span class="tag tag-gap">REJECT &middot; ATTEMPT 1</span>
+  </div>
+  <div class="tension-body">
+    <p>Maker references a file not in the catalogue. Keelin cross-references the Researcher's match list, finds no such file, and rejects with a line-level citation. In a classroom context, a teacher following a plan referencing a non-existent resource loses planning time and trust.</p>
+  </div>
+</div>
+
+<div class="tension-card">
+  <div class="tension-header">
+    <span class="tension-num">3</span>
+    <h3>Ops-Keelin Catches a UFLI Sound-Boundary Violation</h3>
+    <span class="tag tag-gap">REJECT &middot; ATTEMPT 2</span>
+  </div>
+  <div class="tension-body">
+    <p>Maker's second attempt passes the hallucination check but introduces a sound beyond the class's UFLI lesson range. Keelin checks the scope-and-sequence, finds the violation, and rejects. Introducing sounds before they are taught is a known failure mode in LLM-generated literacy content.</p>
+  </div>
+</div>
+
+<div class="tension-card">
+  <div class="tension-header">
+    <span class="tension-num">4</span>
+    <h3>Manager Detects a Researcher-Designer Disagreement</h3>
+    <span class="tag tag-amber">LOGGED, NOT SILENCED</span>
+  </div>
+  <div class="tension-body">
+    <p>The Researcher returns a match at confidence 0.92. The Designer flags it as pedagogically unsuitable — the activity type is "worksheet" but worksheets are inappropriate as a warm-up for Junior Infants. Rather than suppress the conflict, the Manager logs it with both agents' rationales and surfaces it via the Communicator.</p>
+  </div>
+</div>
+
+<div class="tension-card">
+  <div class="tension-header">
+    <span class="tension-num">5</span>
+    <h3>Manager Enforces Search-First-Then-Generate</h3>
+    <span class="tag tag-gap">HARD GATE</span>
+  </div>
+  <div class="tension-body">
+    <p>The Maker is the most resource-intensive and risk-prone agent. The Manager enforces that it never runs before the Researcher has completed its catalogue search. If the Researcher returns zero matches, the pipeline skips directly to the Communicator — a hallucinated lesson plan is worse than no plan.</p>
+  </div>
+</div>
+
+<div class="tension-card">
+  <div class="tension-header">
+    <span class="tension-num">6</span>
+    <h3>Two Strikes and the Gap Is Unfilled</h3>
+    <span class="tag tag-gap">TERMINAL</span>
+  </div>
+  <div class="tension-body">
+    <p>After two rejections, the gap is marked unfilled and the Manager instructs the Communicator to present it honestly. This is a deliberate quality-over-coverage trade-off: the platform would rather admit a gap than pump a low-quality plan into a classroom. The limit also prevents an infinite correction loop burning API credits.</p>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────── -->
+<h2>Partnership Progression Ladder</h2>
+
+<p>The Partnership Progression ladder (del Rosal 2024, HUMANLIKE) maps the evolution of human-AI collaboration across four rungs: <strong>Tool → Advisor → Digital Colleague → Partner</strong>. Each rung reflects an increasing level of agency, initiative, and trust.</p>
+
+<table>
+  <tr><th>Agent</th><th>Ladder Rung</th><th>Justification</th></tr>
+  <tr>
+    <td><strong>Ops-Researcher</strong></td>
+    <td><span class="tag tag-pass">ADVISOR</span></td>
+    <td>Scores matches, produces confidence ratings, identifies gaps — adding a layer of judgment beyond raw search. Does not initiate action or challenge other agents; produces a structured artefact and hands it downstream.</td>
+  </tr>
+  <tr>
+    <td><strong>Ops-Designer</strong></td>
+    <td><span class="tag tag-pass">DIGITAL COLLEAGUE</span></td>
+    <td>Sequences resources with pedagogical rationale, <em>refuses</em> to design beyond catalogue constraints. This refusal is an independent boundary-setting action — it exercises bounded autonomy within a defined domain.</td>
+  </tr>
+  <tr>
+    <td><strong>Ops-Maker</strong></td>
+    <td><span class="tag tag-pass">TOOL</span></td>
+    <td>Generates only when explicitly triggered, only from a Designer-provided spec, only in markdown prose. No independent judgment. A deliberate constraint on the riskiest component.</td>
+  </tr>
+  <tr>
+    <td><strong>Ops-Keelin</strong></td>
+    <td><span class="tag tag-pass">DIGITAL COLLEAGUE</span></td>
+    <td>Exercises the highest bounded autonomy: binary pass/fail decisions that alter pipeline output, enforces quality standards independently, terminates the generation loop after two failures. Has the authority to say "no" with line-level evidence.</td>
+  </tr>
+  <tr>
+    <td><strong>Ops-Communicator</strong></td>
+    <td><span class="tag tag-pass">ADVISOR</span></td>
+    <td>Assembles and caveats output but does not independently alter lesson structure or resource selection. Advises through confidence caveats and gap disclosures; leaves final judgment to the teacher.</td>
+  </tr>
+  <tr>
+    <td><strong>Ops-Manager</strong></td>
+    <td><span class="tag tag-pass">DIGITAL COLLEAGUE</span></td>
+    <td>Classifies UX mode, enforces pipeline gates, logs disagreements, makes routing decisions no other agent can override. Its architectural role — an orchestrator with enforcement authority — places it firmly in the Digital Colleague rung.</td>
+  </tr>
+</table>
+
+<p class="scope-note">
+  <span class="tag tag-amber">NOTE</span> No agent in the current pipeline reaches the <strong>Partner</strong> rung. A Partner-level agent would proactively identify a teacher's unstated needs, adapt its behaviour based on longitudinal data, and co-create resources with the teacher in a sustained collaborative relationship. This is the long-term aspiration of the Teacher's Pet project but lies beyond the CA3 prototype scope.
+</p>
+
+</div>
+
+<hr style="margin-top:2rem;">
+<p style="font-size:0.75rem; color: var(--muted);">
+  Agent collaboration case study for <a href="https://github.com/danmkelly/CustEngageCA3" style="color:var(--accent);">github.com/danmkelly/CustEngageCA3</a> ·
+  <a href="index.html" style="color:var(--accent);">Teacher's Pet</a> ·
+  <a href="pipeline_thoughts.html" style="color:var(--accent);">Design Journey</a> ·
+  <a href="qa.html" style="color:var(--accent);">QA Dashboard</a> ·
+  CA3 Final Project, H9CEAI Customer Engagement &amp; AI, NCI PGDip/MSc AI for Business, August 2026.
+</p>
+
+<script>
+function showTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(function(b) {
+    if (b.getAttribute('onclick') && b.getAttribute('onclick').indexOf("'" + name + "'") !== -1) b.classList.add('active');
+  });
+  history.replaceState(null, null, '#' + name);
+}
+(function() {
+  var hash = window.location.hash.replace('#', '');
+  if (hash === 'dev' || hash === 'ops') showTab(hash);
+})();
+</script>
+</body>
+</html>
