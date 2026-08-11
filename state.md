@@ -123,7 +123,7 @@ GitHub Pages (static frontend) → Cloudflare Worker (API + agent orchestration)
 2. **English + Maths only** — Two taxonomy styles (coded outcomes + progression continua) fully demonstrable
 3. **No Gaeilge** — LLMs unreliable in Irish; tagged from folder only, excluded from demo
 4. **UFLI programme reference** — 128-lesson scope-and-sequence as JSON; cross-refs to curriculum outcomes
-5. **Search-first, generate-as-fallback** — Gap resolution via curriculumonline.ie search before AI generation
+5. **Search-first, generate-on-demand** — Gap detection drives catalogue improvement (curriculumonline.ie search first). Lesson plan generation is a standalone, always-available feature (decoupled tile), not conditional on a gap existing.
 6. **App-only auth** — Business tenant (modernise.ie) enables zero-friction download; production path is delegated OAuth via MSAL.js
 7. **Lesson plans experimental** — Decoupled from bundle, honestly branded
 8. **Split Keelin** — Dev-Keelin (security gate) and Ops-Keelin (content QA) are separate agents with non-overlapping scopes

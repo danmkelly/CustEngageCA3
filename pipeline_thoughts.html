@@ -210,7 +210,7 @@
   <tr><td><strong>Ops-Manager</strong></td>
     <td>Session orchestration, UX mode classification, audit logging, governance cadence</td>
     <td>Session audit log in Excel: query, mode, agents invoked, matches, exclusions, disagreements, Ops-Keelin outcomes, bundle delivered</td>
-    <td>Will not silently drop disagreements. Enforces search-first, generate-as-fallback.</td>
+    <td>Will not silently drop disagreements. Enforces search-first pipeline order.</td>
   </tr>
   <tr><td><strong>Ops-Keelin</strong> <span class="tag tag-purple">qa</span></td><td>Outcome alignment, hallucination detection, paired-prompt bias testing, UFLI boundary enforcement</td><td>Pass/fail content verdict per plan — max 2 Maker attempts per gap</td>
     <td>Blocks content if plans hallucinate catalogue references, exceed UFLI lessons, fail bias tests, or are age-inappropriate</td>
@@ -337,8 +337,8 @@ Guard: generated plans must not use sounds from lessons > 54</pre>
 
 <div class="card">
   <h4>Decision 5: Search first, generate as fallback</h4>
-  <p>Gap resolution: (1) query catalogue → (2) if gap, search curriculumonline.ie for public NCCA resources → (3) teacher reviews suggested resources, adds to catalogue → (4) only if nothing found and teacher requests: Maker generates a lesson plan. Generated content is marked with AI provenance. Teacher keeps control of what enters their catalogue.</p>
-  <p class="decision-made">→ Decision: Search-first, generate-as-fallback. Bundle = matched resources + teacher-approved discovered resources + generated lesson plan (only if gaps remain). No worksheet generation.</p>
+  <p>Gap resolution: (1) query catalogue → (2) if gap, search curriculumonline.ie for public NCCA resources → (3) teacher reviews suggested resources, adds to catalogue → (4) lesson plan generation is always available as a standalone teacher-initiated feature via a dedicated frontend tile, independent of gap detection. Generated content is marked with AI provenance. Teacher keeps control of what enters their catalogue.</p>
+  <p class="decision-made">→ Decision: Search-first, generate-on-demand. Bundle = matched resources + teacher-approved discovered resources + generated lesson plan (standalone, always available). No worksheet generation.</p>
 </div>
 
 <div class="card">

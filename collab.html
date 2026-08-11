@@ -462,14 +462,15 @@ Dev-Manager       → archives build log, updates rubric coverage heatmap, hands
 <div class="agent-row">
   <div class="agent-avatar">
     <span class="avatar-label">Ops-Maker</span>
-    <span class="pipeline-stage">STAGE 3 &middot; Conditional Generation</span>
+    <span class="pipeline-stage">STAGE 3 &middot; Standalone Generation</span>
   </div>
   <div class="agent-body">
     <p>
-      Three conditions must be met: (1) a gap exists in the catalogue, (2) the mode is
-      <span class="tag tag-pass">GUIDED</span>, (3) the teacher has explicitly opted in to
-      AI generation. When all three are true, the Maker calls the DeepSeek API with the
-      Designer's spec. The output is <strong>markdown prose only</strong> — no worksheets,
+      Lesson plan generation is a standalone, always-available feature — a dedicated tile
+      in the frontend that the teacher can trigger at any point, on any interaction or bundle,
+      independent of whether catalogue matches were found. The Maker calls the DeepSeek API
+      with the Designer's spec (if a gap was detected and sequenced) or with a general
+      curriculum context, and produces <strong>markdown prose only</strong> — no worksheets,
       no images, no printable materials. The generated plan proceeds directly to Ops-Keelin.
     </p>
   </div>

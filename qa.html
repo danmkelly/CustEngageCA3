@@ -190,7 +190,7 @@
   <td>E04</td>
   <td>Trust = Ability + Benevolence + Integrity</td>
   <td>Mayer, Davis &amp; Schoorman (1995)</td>
-  <td><strong>Ability:</strong> demonstrated through confidence scores (0.5/0.7/0.9 tiers — each explained), catalogue grounded in real OneDrive files, gap reports that honestly state coverage limitations. <strong>Benevolence:</strong> generates lesson plans ONLY as last resort (search-first, generate-as-fallback gate), never introduces phonemes beyond specified UFLI lessons, EAL/dyslexia paired-prompt bias testing. <strong>Integrity:</strong> every generated plan carries [AI-Generated | Not Classroom-Tested] badge, AI disclosure is multi-surface (UI badge + API response + bundle README + Excel catalogue). Diagnostic move: if a teacher says "I don't trust this plan," the system can point to: which dimension — the low confidence score (ability), the algorithmic gap (benevolence — it's a generated plan, not a human-created resource), or the disclosure badge (integrity — it told you it was AI).</td>
+  <td><strong>Ability:</strong> demonstrated through confidence scores (0.5/0.7/0.9 tiers — each explained), catalogue grounded in real OneDrive files, gap reports that honestly state coverage limitations. <strong>Benevolence:</strong> AI-generated lesson plans carry [AI-Generated | Not Classroom-Tested] badges; never introduces phonemes beyond specified UFLI lessons; EAL/dyslexia paired-prompt bias testing. <strong>Integrity:</strong> every generated plan carries [AI-Generated | Not Classroom-Tested] badge, AI disclosure is multi-surface (UI badge + API response + bundle README + Excel catalogue). Diagnostic move: if a teacher says "I don't trust this plan," the system can point to: which dimension — the low confidence score (ability), the algorithmic gap (benevolence — it's a generated plan, not a human-created resource), or the disclosure badge (integrity — it told you it was AI).</td>
   <td><span class="tag tag-pass">PASS</span></td>
 </tr>
 <tr>
@@ -369,7 +369,7 @@
   <td>I06</td>
   <td>Agent vs. Chatbot</td>
   <td>Wooldridge &amp; Jennings (1995)</td>
-  <td>Per the module: "a chatbot waits to be asked; an agent is given a goal and decides what to do next." Teacher's Pet is an agent system: given a search query or curriculum outcome, the Manager classifies the mode, the pipeline runs autonomously (search → sequence → gap detect → conditional generation → summary → audit log), and the Communicator produces the formatted output. The system decides which agents to invoke, in what order, with what handoff data. The conditional Maker gate ("search first, generate as fallback") is an agent deciding, not a chatbot waiting.</td>
+  <td>Per the module: "a chatbot waits to be asked; an agent is given a goal and decides what to do next." Teacher's Pet is an agent system: given a search query or curriculum outcome, the Manager classifies the mode, the pipeline runs autonomously (search → sequence → gap detect → summary → audit log), and the Communicator produces the formatted output. The system decides which agents to invoke, in what order, with what handoff data. Lesson plan generation is a standalone teacher-initiated feature — decoupled from the search pipeline, available at any point via a dedicated frontend tile.</td>
   <td><span class="tag tag-pass">PASS</span></td>
 </tr>
 <tr>
@@ -383,7 +383,7 @@
   <td>I08</td>
   <td>BDI — Beliefs, Desires, Intentions</td>
   <td>Rao &amp; Georgeff (1995)</td>
-  <td><strong>Beliefs:</strong> catalogue (2,895 rows), taxonomies (Language TF codes, Maths PC continua, UFLI 128-lesson scope), curriculumonline.ie outcomes. Grounded in verifiable sources — no fabricated catalogue entries. <strong>Desires:</strong> pipeline goals ranked: (1) find catalogue matches, (2) detect gaps, (3) only then generate. This ranking prevents the system from generating a plan when catalogue resources exist — a BDI conflict resolution rule. <strong>Intentions:</strong> guided mode: outcome → grade-band → match → sequence → gap → (conditional) generate → summary → audit. Bounded by MAX_SEARCH_RESULTS (20), RATE_LIMIT_MS (60s), and max 2 Maker attempts. Includes escalation rule: if Maker fails twice, gap left honestly unfilled. This is a defensible BDI spec in the module's terms.</td>
+  <td><strong>Beliefs:</strong> catalogue (2,895 rows), taxonomies (Language TF codes, Maths PC continua, UFLI 128-lesson scope), curriculumonline.ie outcomes. Grounded in verifiable sources — no fabricated catalogue entries. <strong>Desires:</strong> pipeline goals ranked: (1) find catalogue matches, (2) detect gaps, (3) provide lesson plan generation as a standalone teacher-initiated feature — available on any interaction or bundle, independent of gap detection. <strong>Intentions:</strong> guided mode: outcome → grade-band → match → sequence → gap detection → summary → audit. Lesson plan generation is always available via a dedicated frontend tile. Bounded by MAX_SEARCH_RESULTS (20), RATE_LIMIT_MS (60s), and max 2 Maker attempts per plan. Includes escalation rule: if Maker fails twice, gap left honestly unfilled. This is a defensible BDI spec in the module's terms.</td>
   <td><span class="tag tag-pass">PASS</span></td>
 </tr>
 <tr>
@@ -428,7 +428,7 @@
   <td>I13</td>
   <td>Three AI Capability Types</td>
   <td>Davenport &amp; Ronanki (2018)</td>
-  <td><strong>Process automation:</strong> grade-band normalisation (Infants→C1, 1st-2nd→C2), regex-based outcome-code extraction, MS Graph token refresh with auto-retry. <strong>Cognitive insight:</strong> freetext keyword scoring, semantic similarity (More Like This), curriculum gap detection across catalogue vs. taxonomy. <strong>Cognitive engagement:</strong> DeepSeek lesson plan generation (conditional, flagged) + Communicator summary formatting. The module's maturity question — "fit-for-purpose, not highest type wins" — is respected: the system does not use LLMs for grade-band normalisation (a deterministic rule does it better) but does use LLMs for lesson plan generation (where fluency adds value).</td>
+  <td><strong>Process automation:</strong> grade-band normalisation (Infants→C1, 1st-2nd→C2), regex-based outcome-code extraction, MS Graph token refresh with auto-retry. <strong>Cognitive insight:</strong> freetext keyword scoring, semantic similarity (More Like This), curriculum gap detection across catalogue vs. taxonomy. <strong>Cognitive engagement:</strong> DeepSeek lesson plan generation (standalone, teacher-initiated, [AI-Generated] flagged) + Communicator summary formatting. The module's maturity question — "fit-for-purpose, not highest type wins" — is respected: the system does not use LLMs for grade-band normalisation (a deterministic rule does it better) but does use LLMs for lesson plan generation (where fluency adds value).</td>
   <td><span class="tag tag-pass">PASS</span></td>
 </tr>
 <tr>
@@ -835,7 +835,7 @@
   <td><span class="tag tag-pass">FULL</span></td>
 </tr>
 <tr>
-  <td><strong>Handoff and Orchestration</strong><br>Each agent's output → next agent's real input. Unbroken pipeline. Conditional routing (Maker only on gap).</td>
+  <td><strong>Handoff and Orchestration</strong><br>Each agent's output → next agent's real input. Unbroken pipeline. Maker is a standalone always-available feature decoupled from the core search pipeline.</td>
   <td>~25%</td>
   <td>worker/worker.js (lines 1078–1173: Manager→Researcher→Designer→conditional Maker→Communicator, with data flow at each stage). pipeline_thoughts.html (Ops handoffs diagram).</td>
   <td><span class="tag tag-pass">FULL</span></td>
