@@ -113,8 +113,8 @@
     <tr><th>Teacher's Pet</th><th>Generalised equivalent</th></tr>
     <tr><td>Irish Primary Curriculum + UFLI</td><td>Any professional reference framework</td></tr>
     <tr><td>~1,800 teaching resources on OneDrive</td><td>Any professional's private reference collection</td></tr>
-    <tr><td>Three entry modes</td><td>Structured lookup, free-text recall, exploratory browsing — same for any domain</td></tr>
-    <tr><td>Lesson plan generation for gaps</td><td>Brief generation, proposal drafting, research synthesis — any structured professional output</td></tr>
+    <tr><td>Two entry modes</td><td>Structured lookup, free-text recall — same for any domain</td></tr>
+    <tr><td>Lesson plan generation</td><td>Brief generation, proposal drafting, research synthesis — any structured professional output</td></tr>
   </table>
 </div>
 
@@ -233,7 +233,6 @@
                                                    → if still fail: gap left honestly unfilled
 
   Free-text mode: Researcher → Designer → Communicator (no Maker, no Ops-Keelin, no gap analysis)
-  Browse mode:    Client-side only. No Worker call.
 </pre>
 
 <p><strong>Why two Keelins:</strong> Dev-Keelin guards the deployment boundary (secrets, CORS, Graph scopes); Ops-Keelin guards the teacher boundary (content accuracy, bias, age checks). Their scopes don't overlap — failing one doesn't mean failing the other. Both block on fail: Dev-Keelin blocks deployment, Ops-Keelin blocks content from reaching the teacher. Trust calibration (Lee &amp; See, 2004): the system knows its limits and communicates them.</p>
@@ -336,7 +335,7 @@ Guard: generated plans must not use sounds from lessons > 54</pre>
 </div>
 
 <div class="card">
-  <h4>Decision 5: Search first, generate as fallback</h4>
+  <h4>Decision 5: Search first, generate on demand</h4>
   <p>Gap resolution: (1) query catalogue → (2) if gap, search curriculumonline.ie for public NCCA resources → (3) teacher reviews suggested resources, adds to catalogue → (4) lesson plan generation is always available as a standalone teacher-initiated feature via a dedicated frontend tile, independent of gap detection. Generated content is marked with AI provenance. Teacher keeps control of what enters their catalogue.</p>
   <p class="decision-made">→ Decision: Search-first, generate-on-demand. Bundle = matched resources + teacher-approved discovered resources + generated lesson plan (standalone, always available). No worksheet generation.</p>
 </div>
@@ -410,15 +409,15 @@ Guard: generated plans must not use sounds from lessons > 54</pre>
 
 <div class="card warn" style="border-left-color: var(--amber);">
   <h4>Catalogue hosting — GitHub Pages JSON (Decision 7)</h4>
-  <p>Personal OneDrive does not support app-only Graph auth for file operations. The catalogue is now served as a static JSON file from GitHub Pages (<code>data/catalogue.json</code>). The Worker fetches it on cold-start and caches it in memory. The frontend also loads it directly via <code>GET /api/catalogue</code> for browse mode. This is a practical response to a deployment constraint — the architecture documents it honestly rather than hiding it.</p>
-  <p><strong>Bundle downloads:</strong> Resource files are fetched from OneDrive using MSAL.js delegated auth (popup-based, <code>Files.Read</code> scope). The Worker receives the token via <code>Authorization</code> header and uses <code>/me/drive/root:/Teaching Resources/...</code> for file downloads. Users who decline sign-in still get a zip with README + generated plans. Backslashes in catalogue paths are normalised to forward slashes for the Graph API.</p>
+  <p>Personal OneDrive does not support app-only Graph auth for file operations. The catalogue is now served as a static JSON file from GitHub Pages (<code>data/catalogue.json</code>). The Worker fetches it on cold-start and caches it in memory. The frontend also loads it directly via <code>GET /api/catalogue</code> for the client-side catalogue view. This is a practical response to a deployment constraint — the architecture documents it honestly rather than hiding it.</p>
+  <p><strong>Bundle downloads:</strong> Resource files are fetched from OneDrive for Business via app-only Microsoft Graph auth on a business tenant (modernise.ie) — no user sign-in, no popup, no MSAL.js. All 2,893 catalogue resources are downloadable. 22 files are also pre-loaded on GitHub Pages as a no-auth fallback.</p>
 </div>
 
 <div class="card">
   <h4>Catalogue persistence — append, never rebuild (JSON-based)</h4>
   <table>
     <tr><th>File</th><th>Purpose</th><th>Update model</th></tr>
-    <tr><td><strong>data/catalogue.json</strong></td><td>Live operational catalogue served from GitHub Pages. Worker fetches at cold-start, browser fetches via /api/catalogue for browse mode. 23 fields per row.</td><td>catalogue_populator.py writes new rows (append). Existing rows updated only if human review flags change tags. Committed to repo and pushed to GitHub Pages for Worker to pick up on next cold-start.</td></tr>
+    <tr><td><strong>data/catalogue.json</strong></td><td>Live operational catalogue served from GitHub Pages. Worker fetches at cold-start, browser fetches via /api/catalogue for client-side view. 23 fields per row.</td><td>catalogue_populator.py writes new rows (append). Existing rows updated only if human review flags change tags. Committed to repo and pushed to GitHub Pages for Worker to pick up on next cold-start.</td></tr>
     <tr><td><strong>Catalogue.xlsx (OneDrive)</strong></td><td>Original Excel catalogue — retained for audit sheet writes only (MS Graph table rows endpoint works with app-only auth).</td><td>Audit rows appended via /api/query pipeline. Not used for catalogue reads.</td></tr>
   </table>
 </div>
@@ -446,12 +445,11 @@ Guard: generated plans must not use sounds from lessons > 54</pre>
 <!-- ============================================================== -->
 <div class="tab-panel" id="tab-ux">
 
-<h2>Three Entry Points, One Results Surface</h2>
+<h2>Two Entry Points, One Results Surface</h2>
 
 <div class="stat-grid">
   <div class="stat"><div class="val">1</div><div class="lbl">Guided — "I know my outcome"</div></div>
   <div class="stat"><div class="val">2</div><div class="lbl">Free-text — "I remember a resource"</div></div>
-  <div class="stat"><div class="val">3</div><div class="lbl">Browse — "Surprise me"</div></div>
 </div>
 
 <table>
@@ -461,19 +459,12 @@ Guard: generated plans must not use sounds from lessons > 54</pre>
     <td>Progressive dropdowns: Subject → Strand → Stage → Outcome + free-text constraints</td>
     <td>Researcher queries Excel by outcome_code + stage. Full pipeline with gap analysis and search-first discovery.</td>
     <td>Yes</td>
-    <td>Only as fallback (Decision 5)</td>
+    <td>Standalone (always available)</td>
   </tr>
   <tr>
     <td><strong>Free-text</strong></td>
     <td>Single search box. Any description: "blue balloons phonics"</td>
     <td>Researcher runs semantic search against content descriptions. No curriculum inference unless user mentions outcomes explicitly.</td>
-    <td>No</td>
-    <td>No</td>
-  </tr>
-  <tr>
-    <td><strong>Browse</strong></td>
-    <td>Filter chips: Subject, Grade, Format, Season. Intersect to narrow.</td>
-    <td>Full catalogue JSON cached client-side. Filtering in-browser. Instant. No Worker call.</td>
     <td>No</td>
     <td>No</td>
   </tr>
@@ -633,7 +624,7 @@ Guard: generated plans must not use sounds from lessons > 54</pre>
 <p>Discovered two-regime problem: modernised curriculum has outcome codes (TF, PC); 1999 curriculum doesn't. No public API from NCCA — taxonomies must be hand-authored. Jolly Phonics absent from collection despite being Ireland's dominant programme; UFLI is the teacher's chosen method (24 files).</p>
 
 <h3>Phase 6: Gap Filling Strategy</h3>
-<p>Evolved from "generate for every gap" → "search first, generate as fallback." Teacher keeps control of what enters their catalogue. curriculumonline.ie scraping tested and confirmed viable (91 outcome prose matches in raw HTML).</p>
+<p>Evolved from "generate for every gap" → "search first, generate on demand." Teacher keeps control of what enters their catalogue. curriculumonline.ie scraping tested and confirmed viable (91 outcome prose matches in raw HTML).</p>
 
 <h3>Phase 7: Architecture Decisions</h3>
 <p>Google Sheets → Excel Online (MS ecosystem). Client-side JSZip → Cloudflare Worker server-side (no exposed keys). MSAL.js auth → app-only Graph auth (no friction for demo, delegated auth as production fix). Pre-sync subset → all files bundleable (zero content limits).</p>
@@ -642,7 +633,7 @@ Guard: generated plans must not use sounds from lessons > 54</pre>
 <p>Dev team builds once (Architect, Maker, Communicator, Manager). Ops team runs on query (Researcher, Designer, Maker, Communicator, Manager). Keelin shared as security/QA consultant. 11 agents across 6 role types prove the module's argument that agents are domain-specific, not generic.</p>
 
 <h3>Phase 9: UX &amp; Interaction</h3>
-<p>Three entry points (Guided, Free-text, Browse) converging on one results+refinement panel. Disagreement as first-class interaction: thumbs down (session-level), "Not for this outcome" (catalogue improvement), "Generate something better" (Maker with negative example). Bundle always explicit and deliberate.</p>
+<p>Two entry points (Guided, Free-text) converging on one results+refinement panel. Disagreement as first-class interaction: thumbs down (session-level), "Not for this outcome" (catalogue improvement), "Generate something better" (Maker with negative example). Bundle always explicit and deliberate.</p>
 
 <h3>Phase 10: Tests Passed</h3>
 <p>curriculumonline.ie scraping: <span class="go">GO</span>. Gemini Flash vision: <span class="go">GO</span> (10/10 image-heavy PDFs correctly tagged, ~$2 for full parse). DeepSeek text classification: <span class="go">GO</span> (~$3, ~90 min). All blocking unknowns resolved. Ready to build.</p>
@@ -693,7 +684,7 @@ Guard: generated plans must not use sounds from lessons > 54</pre>
 <p>The module's final evaluative move asks: "name the mechanism, don't just assert a conclusion." The mechanisms at play in Teacher's Pet's LLM weaknesses are:</p>
 <p><strong>1. Confidence as a proxy, not a guarantee.</strong> The catalogue's confidence scores (0.5 = auto-assigned, 0.7-0.9 = AI-classified, 1.0 = human-reviewed) are an honest tiered system, but they represent the <em>classification confidence</em> of the AI that tagged the resource — not the <em>search relevance</em> of the match. A high-confidence resource tag does not mean "this resource is perfect for your search." This conflation is the most subtle trust calibration issue in the system.</p>
 <p><strong>2. Keyword matching is pre-semantic.</strong> The scoreFreeText function counts substring occurrences — it cannot distinguish "Christmas reading comprehension" from a file that contains all three words but is actually a Halloween phonics worksheet that mentions reading Christmas books. The chat mode's two-stage semantic ranking (keyword retrieval → DeepSeek relevance ranking) partially addresses this, but the first stage still relies on keyword matching and the second stage adds latency and cost. An embedding-based vector search would solve this definitively but requires a different infrastructure (Cloudflare Vectorize or Pinecone).</p>
-<p><strong>3. Generation without validation is delivery without quality control.</strong> The Maker→Communicator pipeline (no Keelin gate) is the system's most honest ethical failure. The module's core tension — "search first, generate as fallback" (Decision 5) — is architecturally correct, but the fallback itself is unguarded. This is exactly the kind of gap the module's responsible-innovation framework is designed to surface: the system has a "what could go wrong" list (GOVERNANCE.md) but not yet the "what makes it go right" mechanisms (Ops-Keelin).</p>
+<p><strong>3. Generation without validation is delivery without quality control.</strong> The Maker→Communicator pipeline (no Keelin gate) is the system's most honest ethical failure. The module's core tension — "search first, generate on demand" (Decision 5) — is architecturally correct, but the fallback itself is unguarded. This is exactly the kind of gap the module's responsible-innovation framework is designed to surface: the system has a "what could go wrong" list (GOVERNANCE.md) but not yet the "what makes it go right" mechanisms (Ops-Keelin).</p>
 <p><strong>4. The catalogue is one teacher's world.</strong> 2,895 resources, 1,438 outcome-tagged (50%), 1,484 grade/format-tagged (51%). The content-based recommender has asymmetric coverage: well-indexed folders (Phonics, 563 files) dominate results; sparsely-indexed areas are systematically under-surfaced. This is the Critical Recommender gap (Jannach &amp; Jugovac 2019) applied to a personal collection: the system optimises for what it can see, not what the teacher needs. The gap detection feature partially mitigates this by naming what's missing, but the underlying data asymmetry remains.</p>
 <p>The module teaches that "the real question is not 'do you trust it' but 'is your trust calibrated?'" (Lee &amp; See 2004). For Teacher's Pet, trust calibration means: search results are keyword-grounded (not semantic), generated content is unverified (no QA gate), curriculum fallback is static (not outcome-driven), and catalogue coverage is asymmetric (some folders dominate). The system is honest about all four — the QA page documents them, the UI badges flag AI-generated content, and the gap reports name what's missing. The calibration is in the documentation.</p>
 

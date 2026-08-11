@@ -161,7 +161,7 @@
   <td>E01</td>
   <td>Customer Engagement Lifecycle</td>
   <td>Pansari &amp; Kumar (2017)</td>
-  <td>Teacher's Pet addresses four of the five lifecycle stages for its teacher-user: <strong>Attract</strong> (empty-state prompts: "Pick a mode above, three ways in"), <strong>Engage</strong> (three-mode UX with guided/freetext/browse — each a different cognitive entry point), <strong>Persuade</strong> (confidence scores, curriculum alignment, gap reports with actionable alternatives), <strong>Retain</strong> (bundle as completion action, session feedback via thumbs + flags). The "Convert" stage in this context is the resource selection → bundle download action — a deliberate, teacher-initiated step.</td>
+  <td>Teacher's Pet addresses four of the five lifecycle stages for its teacher-user: <strong>Attract</strong> (empty-state prompts: "Pick a mode above, two ways in"), <strong>Engage</strong> (two-mode UX with guided selection and chat bot — each a different cognitive entry point), <strong>Persuade</strong> (confidence scores, curriculum alignment, gap reports with actionable alternatives), <strong>Retain</strong> (bundle as completion action, session feedback via thumbs + flags). The "Convert" stage in this context is the resource selection → bundle download action — a deliberate, teacher-initiated step.</td>
   <td><span class="tag tag-pass">PASS</span></td>
 </tr>
 <tr>
@@ -181,7 +181,7 @@
 </table>
 
 <div class="card"><h4>Netflix as reference integration <span class="module-ref">(W01 Deck 4)</span></h4>
-<p>The module treats Netflix as a worked example showing all five lifecycle stages, all three intelligences, and the co-creation loop simultaneously — with the caveat "reference, not recipe." Teacher's Pet adapts this pattern at a different scale: the <strong>three-mode search surface</strong> (guided/freetext/browse) is Teacher's Pet's equivalent of Netflix's multiple discovery paths — each mode serves a different teacher mental state. The <strong>refinement bar</strong> parallels the "because you watched…" explainability layer. The <strong>bundle download</strong> is the terminal action — the equivalent of pressing "play."</p></div>
+<p>The module treats Netflix as a worked example showing all five lifecycle stages, all three intelligences, and the co-creation loop simultaneously — with the caveat "reference, not recipe." Teacher's Pet adapts this pattern at a different scale: the <strong>two-mode search surface</strong> (guided selection / Interactive Bot Selection) is Teacher's Pet's equivalent of Netflix's multiple discovery paths — each mode serves a different teacher mental state. The <strong>refinement bar</strong> parallels the "because you watched…" explainability layer. The <strong>bundle download</strong> is the terminal action — the equivalent of pressing "play."</p></div>
 
 <h2>Week 2 — Trust as an Engineering Problem</h2>
 <table>
@@ -266,14 +266,14 @@
   <td>E13</td>
   <td>Attention Scarcity</td>
   <td>Simon (1971) / Davenport &amp; Beck (2001)</td>
-  <td>Teacher's Pet treats the teacher's attention as the scarce resource it is. Three entry modes match three teacher mental states — no mode requires more cognitive load than the teacher brings. Results capped at 20. Descriptions truncated to 140 chars (expandable for AI plans). Refinement chips provide rapid local filtering without API round-trips. The system earns attention by delivering relevant catalogue matches fast — not by keeping the teacher scrolling.</td>
+  <td>Teacher's Pet treats the teacher's attention as the scarce resource it is. Two entry modes match two teacher mental states — no mode requires more cognitive load than the teacher brings. Results capped at 20. Descriptions truncated to 140 chars (expandable for AI plans). Refinement chips provide rapid local filtering without API round-trips. The system earns attention by delivering relevant catalogue matches fast — not by keeping the teacher scrolling.</td>
   <td><span class="tag tag-pass">PASS</span></td>
 </tr>
 <tr>
   <td>E14</td>
   <td>System 1 / System 2</td>
   <td>Kahneman (2011)</td>
-  <td>The module asks: "match the interaction to the decision the customer deserves to make." For Teacher's Pet: (1) <strong>Browse mode</strong> (System 1-appropriate) — instant chip-tap filtering, no API call, immediate visual feedback; (2) <strong>Guided mode</strong> (System 2-appropriate) — progressive dropdowns that build a specific curriculum outcome, deliberate selection before search; (3) <strong>Free-text mode</strong> (bridging) — quick input, but results are browseable. The bundle action ("Bundle & Download") requires explicit selection beforehand — no one-tap generation-to-download pipeline. Generation (the highest-stakes AI interaction) is the most deliberate: gap detected → teacher clicks "Generate lesson plan" → waiting → result appears flagged as AI.</td>
+  <td>The module asks: "match the interaction to the decision the customer deserves to make." For Teacher's Pet: (1) <strong>Guided mode</strong> (System 2-appropriate) — progressive dropdowns that build a specific curriculum outcome, deliberate selection before search; (2) <strong>Interactive Bot Selection</strong> (bridging System 1 and System 2) — natural-language chat that retrieves catalogue-grounded resources with conversational context. The bundle action ("Bundle & Download") requires explicit selection beforehand — no one-tap generation-to-download pipeline. Generation (the highest-stakes AI interaction) is the most deliberate: gap detected → teacher clicks "Generate lesson plan" → waiting → result appears flagged as AI.</td>
   <td><span class="tag tag-pass">PASS</span></td>
 </tr>
 <tr>
@@ -299,7 +299,7 @@
   <td>E17</td>
   <td>B = MAP (Motivation × Ability × Prompt)</td>
   <td>Fogg (2009 / 2019)</td>
-  <td>Applied as a design audit: <strong>Motivation:</strong> "What resources do I have for this outcome?" — solved by catalogue search with gap alerts. Confidence scores provide diagnostic value. <strong>Ability:</strong> three entry modes reduce cognitive load (no wrong door). Refinement chips are instantaneous (client-side). Free-text search requires only typing + Enter. <strong>Prompt:</strong> empty-state invitation, persistent Bundle &amp; Download badge with count, gap cards with hot triggers ("Generate lesson plan"). The module's diagnostic frame: if a teacher isn't bundling, is it low motivation (results are poor — fix catalogue quality), low ability (too many clicks — bundle is one button after selection), or no prompt (the badge is subtle — the count badge with number is the fix)? All three are addressed.</td>
+  <td>Applied as a design audit: <strong>Motivation:</strong> "What resources do I have for this outcome?" — solved by catalogue search with gap alerts. Confidence scores provide diagnostic value. <strong>Ability:</strong> two entry modes reduce cognitive load (no wrong door). Refinement chips are instantaneous (client-side). Interactive Bot Selection requires only typing. <strong>Prompt:</strong> empty-state invitation, persistent Bundle &amp; Download badge with count, gap cards with hot triggers ("Generate lesson plan"). The module's diagnostic frame: if a teacher isn't bundling, is it low motivation (results are poor — fix catalogue quality), low ability (too many clicks — bundle is one button after selection), or no prompt (the badge is subtle — the count badge with number is the fix)? All three are addressed.</td>
   <td><span class="tag tag-pass">PASS</span></td>
 </tr>
 <tr>
@@ -336,7 +336,7 @@
   <td>I02</td>
   <td>Conversation Flow Anatomy</td>
   <td>Module framework</td>
-  <td>The five-part anatomy maps to the UX structure: <strong>Opener:</strong> empty state + three-mode tabs ("Pick a mode above, three ways in"). <strong>Intent:</strong> guided (curriculum outcome), freetext (resource recall), browse (exploration) — three distinct intents, each with its own form. <strong>Slots:</strong> guided mode uses progressive dropdowns (one selection at a time, validated); freetext takes a single query. <strong>Recovery:</strong> gap cards with actionable alternatives ("Search curriculumonline.ie" + "Generate lesson plan"); error banners; excluded section for rejected resources. <strong>Closer:</strong> bundle download with summary README and AI disclosure. The module's core ethic — "design the unexpected first" — is satisfied: the system handles zero results (gap cards), API failures (error banners), and user disagreement (thumbs down + exclusion).</td>
+  <td>The five-part anatomy maps to the UX structure: <strong>Opener:</strong> empty state + two-mode tabs ("Pick a mode above, two ways in"). <strong>Intent:</strong> guided (curriculum outcome), freetext (resource recall) — two distinct intents, each with its own form. <strong>Slots:</strong> guided mode uses progressive dropdowns (one selection at a time, validated); Interactive Bot Selection takes a natural-language query with conversation history. <strong>Recovery:</strong> gap cards with actionable alternatives ("Search curriculumonline.ie" + "Generate lesson plan"); error banners; excluded section for rejected resources. <strong>Closer:</strong> bundle download with summary README and AI disclosure. The module's core ethic — "design the unexpected first" — is satisfied: the system handles zero results (gap cards), API failures (error banners), and user disagreement (thumbs down + exclusion).</td>
   <td><span class="tag tag-pass">PASS</span></td>
 </tr>
 <tr>
@@ -350,7 +350,7 @@
   <td>I04</td>
   <td>Service Blueprinting</td>
   <td>Bitner, Ostrom &amp; Morgan (2008)</td>
-  <td><strong>Line of interaction:</strong> teacher ↔ search UI (three modes, refinement bar, result cards, bundle button). Each result click, each chip toggle, each bundle — a moment of truth. <strong>Line of visibility:</strong> above the line: the frontend. Below the line: the Worker pipeline (Manager → Researcher → Designer → Maker → Communicator) + MS Graph API (audit + bundle downloads). <strong>Internal line:</strong> DeepSeek API (generation), curriculumonline.ie (scraping), GitHub Pages (catalogue JSON). The blueprint reveals a critical failure point: the bundle can't download files from personal OneDrive (app-only auth limitation — the backstage process silently fails while the frontend shows "Preparing your bundle"). This is exactly the kind of failure the module's blueprinting is designed to reveal — the README lists download errors, but the teacher sees a zip download succeed (with only README + generated plans inside).</td>
+  <td><strong>Line of interaction:</strong> teacher ↔ search UI (two modes, refinement bar, result cards, bundle button). Each result click, each chip toggle, each bundle — a moment of truth. <strong>Line of visibility:</strong> above the line: the frontend. Below the line: the Worker pipeline (Manager → Researcher → Designer → Maker → Communicator) + MS Graph API (audit + bundle downloads). <strong>Internal line:</strong> DeepSeek API (generation), curriculumonline.ie (scraping), GitHub Pages (catalogue JSON). The blueprint reveals a critical failure point: the bundle can't download files from personal OneDrive (app-only auth limitation — the backstage process silently fails while the frontend shows "Preparing your bundle"). This is exactly the kind of failure the module's blueprinting is designed to reveal — the README lists download errors, but the teacher sees a zip download succeed (with only README + generated plans inside).</td>
   <td><span class="tag tag-minor">MINOR</span></td>
 </tr>
 <tr>
@@ -390,7 +390,7 @@
   <td>I09</td>
   <td>Partnership Progression Ladder</td>
   <td>del Rosal (2024), HUMANLIKE</td>
-  <td><strong>Tool:</strong> the system answers searches and stops (freetext, browse — gives you results, you decide). <strong>Advisor:</strong> guided mode recommends resource sequences with confidence scores; gap reports suggest alternatives. <strong>Digital Colleague:</strong> the Ops pipeline owns the end-to-end resource matching + sequencing + gap detection workflow — bounded lane, escalates gaps to the teacher. <strong>Partner:</strong> not claimed. The system does not have memory, judgment, or standing across sessions. The module warns: "name it, don't overclaim it." Teacher's Pet operates at Tool↔Advisor↔Digital Colleague, depending on the mode — and is honest about it.</td>
+  <td><strong>Tool:</strong> the system answers searches and stops (freetext/chat — gives you results, you decide). <strong>Advisor:</strong> guided mode recommends resource sequences with confidence scores; gap reports suggest alternatives. <strong>Digital Colleague:</strong> the Ops pipeline owns the end-to-end resource matching + sequencing + gap detection workflow — bounded lane, escalates gaps to the teacher. <strong>Partner:</strong> not claimed. The system does not have memory, judgment, or standing across sessions. The module warns: "name it, don't overclaim it." Teacher's Pet operates at Tool↔Advisor↔Digital Colleague, depending on the mode — and is honest about it.</td>
   <td><span class="tag tag-pass">PASS</span></td>
 </tr>
 </table>
@@ -402,7 +402,7 @@
   <td>I10</td>
   <td>Recommender Taxonomy</td>
   <td>Ricci et al. (2022) / Burke (2002)</td>
-  <td><strong>Content-based:</strong> strong. Resources filtered by subject, subdomain, grade_band, format, season, pedagogy, programme. Freetext scoring across 5 fields. "More like this" triggers similarity re-search. <strong>Collaborative filtering:</strong> not implemented — single-teacher system, no multi-user ratings or co-purchase patterns. Known gap per module: "pick a family based on what data you actually have." <strong>Hybrid:</strong> the three-mode search system functions as a retrieval-augmented recommender: curriculum-structured lookup (guided) + semantic search (freetext) + faceted browsing (chips). Burke's seven hybridisation strategies are not directly applied, but the system's combination of content-based filtering with LLM-powered semantic similarity is a form of mixed hybridisation.</td>
+  <td><strong>Content-based:</strong> strong. Resources filtered by subject, subdomain, grade_band, format, season, pedagogy, programme. Freetext scoring across 5 fields. "More like this" triggers similarity re-search. <strong>Collaborative filtering:</strong> not implemented — single-teacher system, no multi-user ratings or co-purchase patterns. Known gap per module: "pick a family based on what data you actually have." <strong>Hybrid:</strong> the two-mode search system functions as a retrieval-augmented recommender: curriculum-structured lookup (guided) + semantic search (freetext) with client-side refinement chips.. Burke's seven hybridisation strategies are not directly applied, but the system's combination of content-based filtering with LLM-powered semantic similarity is a form of mixed hybridisation.</td>
   <td><span class="tag tag-note">NOTE</span></td>
 </tr>
 <tr>
@@ -454,21 +454,21 @@
   <td>P01</td>
   <td>The Missing Middle — Six Sub-Roles</td>
   <td>Daugherty &amp; Wilson (2018)</td>
-  <td><strong>Humans help machines — Train:</strong> teacher provides feedback (thumbs up/down, "Not for this outcome" flags). <strong>Explain:</strong> confidence scores, AI badge, AI_DISCLOSURE.md — makes AI output accountable. <strong>Sustain:</strong> GOVERNANCE.md monthly review cadence, Ops-Keelin QA gate, rate limiter. <strong>Machines help humans — Amplify:</strong> the system searches 2,895 personal resources in <1 second; a human couldn't. <strong>Interact:</strong> three-mode UX meets the teacher in their current mental state. <strong>Embody:</strong> N/A — no physical-world extension. The module's warning — "each of the six carries its own failure mode" — is respected: automation bias is countered by the Maker-as-last-resort gate; fluency-mistaken-for-competence is countered by the [AI-Generated] badge.</td>
+  <td><strong>Humans help machines — Train:</strong> teacher provides feedback (thumbs up/down, "Not for this outcome" flags). <strong>Explain:</strong> confidence scores, AI badge, AI_DISCLOSURE.md — makes AI output accountable. <strong>Sustain:</strong> GOVERNANCE.md monthly review cadence, Ops-Keelin QA gate, rate limiter. <strong>Machines help humans — Amplify:</strong> the system searches 2,895 personal resources in <1 second; a human couldn't. <strong>Interact:</strong> two-mode UX meets the teacher in their current mental state. <strong>Embody:</strong> N/A — no physical-world extension. The module's warning — "each of the six carries its own failure mode" — is respected: automation bias is countered by the [AI-Generated] badge and standalone generation tile; fluency-mistaken-for-competence is countered by the [AI-Generated] badge.</td>
   <td><span class="tag tag-pass">PASS</span></td>
 </tr>
 <tr>
   <td>P02</td>
   <td>Automation-Augmentation Paradox</td>
   <td>Raisch &amp; Krakowski (2021)</td>
-  <td>The module frames this as "both/and, not either/or — short-run automation can quietly undercut the very human expertise that long-run augmentation depends on." Teacher's Pet's design respects this: the system surfaces resources the teacher already owns (augmentation), rather than generating everything from scratch (automation that would erode the teacher's material knowledge). The Maker is a last resort, not the default flow — this preserves the teacher's awareness of their own collection.</td>
+  <td>The module frames this as "both/and, not either/or — short-run automation can quietly undercut the very human expertise that long-run augmentation depends on." Teacher's Pet's design respects this: the system surfaces resources the teacher already owns (augmentation), rather than generating everything from scratch (automation that would erode the teacher's material knowledge). Lesson plan generation is a standalone always-available feature — teacher-initiated, decoupled from search — preserving the teacher's agency over when to use AI.</td>
   <td><span class="tag tag-pass">PASS</span></td>
 </tr>
 <tr>
   <td>P03</td>
   <td>Levels of Automation (Four Function Types)</td>
   <td>Parasuraman, Sheridan &amp; Wickens (2000)</td>
-  <td>Applied per function: <strong>Acquiring information:</strong> Level 6 (offers complete set, teacher decides — browse mode) / Level 4 (suggests one way — guided mode). <strong>Analysing:</strong> Level 4 (suggests alternatives — gap cards with "search curriculumonline.ie" + "generate lesson plan"). <strong>Deciding:</strong> Level 2 (offers options, human selects — teacher picks which resources to bundle, whether to generate). <strong>Acting:</strong> Level 1 (human acts, computer doesn't help — bundle download is teacher-triggered, not automatic). Automation levels are set independently per function, as the module requires.</td>
+  <td>Applied per function: <strong>Acquiring information:</strong> Level 5 (executes and informs — Interactive Bot Selection) / Level 4 (suggests one way — guided mode). <strong>Analysing:</strong> Level 4 (suggests alternatives — gap cards with "search curriculumonline.ie" + "generate lesson plan"). <strong>Deciding:</strong> Level 2 (offers options, human selects — teacher picks which resources to bundle, whether to generate). <strong>Acting:</strong> Level 1 (human acts, computer doesn't help — bundle download is teacher-triggered, not automatic). Automation levels are set independently per function, as the module requires.</td>
   <td><span class="tag tag-pass">PASS</span></td>
 </tr>
 <tr>
@@ -602,10 +602,10 @@
 <h2>Functional Quality Scorecard</h2>
 <div class="stat-grid">
   <div class="stat"><div class="val">5/5</div><div class="lbl">API Correctness<br>All endpoints 200</div></div>
-  <div class="stat"><div class="val">4/5</div><div class="lbl">Search Relevance<br>2,895 rows, 3 modes, 9-field search</div></div>
+  <div class="stat"><div class="val">4/5</div><div class="lbl">Search Relevance<br>2,895 rows, 2 modes, 9-field search</div></div>
   <div class="stat"><div class="val">4/5</div><div class="lbl">Generation Quality<br>~4.7K chars valid markdown</div></div>
   <div class="stat"><div class="val">4/5</div><div class="lbl">Bundle Integrity<br>README works, app-only auth</div></div>
-  <div class="stat"><div class="val">4.5/5</div><div class="lbl">UI/UX Polish<br>Warm theme, 3-mode, chips</div></div>
+  <div class="stat"><div class="val">4.5/5</div><div class="lbl">UI/UX Polish<br>Warm theme, 2-mode, chips</div></div>
   <div class="stat"><div class="val">4.5/5</div><div class="lbl">Error Handling<br>CORS, validation, improved msgs</div></div>
   <div class="stat"><div class="val">4/5</div><div class="lbl">Data Quality<br>1,438 tagged (50%)</div></div>
 </div>
@@ -810,7 +810,7 @@
 <tr>
   <td>K30</td>
   <td>QA</td>
-  <td><strong>Bot behaviour audit — 6 bugs fixed, 4 known limitations documented.</strong> Systematic teacher-centric test battery (7 query scenarios × 3 modes) revealed: grade-band filter correctly working post-K23 season fix; season-aware search now functional; Christmas/5th-6th gap is a catalogue data issue (only 3 resources tagged at that cross-section), not a search bug. Remaining documented limitations: (1) Ops-Keelin validation gate unimplemented — generated content reaches teacher unverified, (2) Manager governance functions missing — no audit log analysis, no trust calibration protocol, no disagreement tracking, (3) UFLI lesson-range constraint absent from Researcher and Maker, (4) curriculumonline.ie fallback hardcoded to single URL — does not construct dynamic search URLs from outcome prose. See Reflection section below for LLM-weakness analysis.</td>
+  <td><strong>Bot behaviour audit — 6 bugs fixed, 4 known limitations documented.</strong> Systematic teacher-centric test battery (7 query scenarios × 2 modes) revealed: grade-band filter correctly working post-K23 season fix; season-aware search now functional; Christmas/5th-6th gap is a catalogue data issue (only 3 resources tagged at that cross-section), not a search bug. Remaining documented limitations: (1) Ops-Keelin validation gate unimplemented — generated content reaches teacher unverified, (2) Manager governance functions missing — no audit log analysis, no trust calibration protocol, no disagreement tracking, (3) UFLI lesson-range constraint absent from Researcher and Maker, (4) curriculumonline.ie fallback hardcoded to single URL — does not construct dynamic search URLs from outcome prose. See Reflection section below for LLM-weakness analysis.</td>
   <td><span class="sev-high">HIGH</span></td>
   <td><span class="tag tag-amber">DOCUMENTED</span></td>
 </tr>
@@ -876,7 +876,7 @@
   <h4>Recurring module conventions — all satisfied</h4>
   <table>
     <tr><td style="width:180px"><strong>Agent persona template</strong><br><span style="font-size:0.68rem">(W04: identity, role, beliefs, style, boundaries, skill)</span></td><td>All 11 agent .md files follow this template exactly.</td></tr>
-    <tr><td><strong>Conversation flow .md template</strong><br><span style="font-size:0.68rem">(W06: Opener/Intent/Slots/Recovery/Closer)</span></td><td>Adapted from conversation to UX flow. Three-mode panel structure maps to Intent. Gap cards = Recovery. Bundle = Closer. See I02 above.</td></tr>
+    <tr><td><strong>Conversation flow .md template</strong><br><span style="font-size:0.68rem">(W06: Opener/Intent/Slots/Recovery/Closer)</span></td><td>Adapted from conversation to UX flow. Two-mode panel structure maps to Intent. Gap cards = Recovery. Bundle = Closer. See I02 above.</td></tr>
     <tr><td><strong>Trust/Disclosure .md artefacts</strong><br><span style="font-size:0.68rem">(W02/W03: AI_DISCLOSURE.md, GOVERNANCE.md)</span></td><td>Both present and comprehensive. AI_DISCLOSURE.md appended to every bundle. GOVERNANCE.md covers all three required elements.</td></tr>
     <tr><td><strong>Mechanism-naming convention</strong><br><span style="font-size:0.68rem">(Cross-module: name the mechanism, not just the conclusion)</span></td><td>Every framework assessment in this QA page names: which author/year, which claim, and how Teacher's Pet operationalises it — never just "PASS."</td></tr>
     <tr><td><strong>Five Innovators as roles, not tools</strong><br><span style="font-size:0.68rem">(W04, mandated in Final Project)</span></td><td>Ops pipeline treats each agent as a domain-specific role with explicit boundaries. Dev-Keelin and Ops-Keelin are distinct roles with non-overlapping scopes.</td></tr>
