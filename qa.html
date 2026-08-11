@@ -580,7 +580,7 @@
 <tr><td>V03</td><td>POST /api/query (refine)</td><td>type=refine, base_query + refinement_text → re-searches with merged context</td><td><span class="tag tag-pass">200 OK</span></td></tr>
 <tr><td>V04</td><td>POST /api/query (similar)</td><td>type=similar, description → operates as freetext search by description</td><td><span class="tag tag-pass">200 OK</span></td></tr>
 <tr><td>V05</td><td>POST /api/generate-lesson</td><td>TF4/C1 → 4,697-char markdown lesson plan (no duplicate badge after fix)</td><td><span class="tag tag-pass">200 OK</span></td></tr>
-<tr><td>V06</td><td>POST /api/bundle</td><td>5 resource_ids + delegated_token → 2 pre-loaded + 3 Graph API downloads → 9.5 MB application/zip with README + all files. MSAL → modernise.ie → Graph → OneDrive for Business end-to-end.</td><td><span class="tag tag-pass">200 OK</span></td></tr>
+<tr><td>V06</td><td>POST /api/bundle</td><td>5 resource_ids → 2 pre-loaded + 3 Graph API downloads → 9.5 MB application/zip with README + all files. App-only Graph auth on business tenant — no sign-in required.</td><td><span class="tag tag-pass">200 OK</span></td></tr>
 <tr><td>V07</td><td>GET /api/catalogue</td><td>2,895 rows, all 23 fields per row (confidence, grade_band, format, etc.)</td><td><span class="tag tag-pass">200 OK</span></td></tr>
 <tr><td>V08</td><td>GET /api/taxonomy/language</td><td>Language curriculum JSON (TF codes, strands, elements, outcomes by stage)</td><td><span class="tag tag-pass">200 OK</span></td></tr>
 <tr><td>V09</td><td>GET / (frontend)</td><td>Frontend loads on GitHub Pages — 200</td><td><span class="tag tag-pass">200 OK</span></td></tr>
@@ -604,7 +604,7 @@
   <div class="stat"><div class="val">5/5</div><div class="lbl">API Correctness<br>All endpoints 200</div></div>
   <div class="stat"><div class="val">4/5</div><div class="lbl">Search Relevance<br>2,895 rows, 3 modes, 9-field search</div></div>
   <div class="stat"><div class="val">4/5</div><div class="lbl">Generation Quality<br>~4.7K chars valid markdown</div></div>
-  <div class="stat"><div class="val">4/5</div><div class="lbl">Bundle Integrity<br>README works, MSAL popup</div></div>
+  <div class="stat"><div class="val">4/5</div><div class="lbl">Bundle Integrity<br>README works, app-only auth</div></div>
   <div class="stat"><div class="val">4.5/5</div><div class="lbl">UI/UX Polish<br>Warm theme, 3-mode, chips</div></div>
   <div class="stat"><div class="val">4.5/5</div><div class="lbl">Error Handling<br>CORS, validation, improved msgs</div></div>
   <div class="stat"><div class="val">4/5</div><div class="lbl">Data Quality<br>1,438 tagged (50%)</div></div>
@@ -670,7 +670,7 @@
 <tr>
   <td>K10</td>
   <td>Bundle</td>
-  <td><s><strong>Bundle file downloads fail.</strong></s> <strong>Resolved.</strong> MSAL.js popup-based delegated auth with <code>Files.Read</code> scope. User signs in via popup, token passed to Worker which uses <code>/me/drive/root:</code> for delegated downloads. Falls back to README-only zip if user declines sign-in.</td>
+  <td><s><strong>Bundle file downloads fail.</strong></s> <strong>Resolved.</strong> App-only Microsoft Graph auth on a business tenant (modernise.ie). Worker uses client credentials to fetch files directly from OneDrive for Business — no user sign-in, no popup, no MSAL.js. All 2,893 catalogue resources downloadable. 22 files pre-loaded on GitHub Pages as no-auth fallback.</td>
   <td><span class="sev-high">HIGH</span></td>
   <td><span class="tag tag-fixed">RESOLVED</span></td>
 </tr>
@@ -698,7 +698,7 @@
 <tr>
   <td>K14</td>
   <td>Env</td>
-  <td><strong>MSAL redirect caused browser profile hopping.</strong> loginRedirect opened a new Edge instance under a different profile. Switched to loginPopup which opens in the current session. Redirect URI normalized to always end with /index.html.</td>
+  <td><strong>MSAL redirect caused browser profile hopping (historical).</strong> During early development, MSAL.js loginRedirect opened a new Edge instance under a different profile. Switched to loginPopup temporarily, then migrated to app-only Graph auth on a business tenant (Decision 6) — no sign-in required. Historical finding; MSAL.js no longer used.</td>
   <td><span class="sev-med">MED</span></td>
   <td><span class="tag tag-fixed">FIXED</span></td>
 </tr>
